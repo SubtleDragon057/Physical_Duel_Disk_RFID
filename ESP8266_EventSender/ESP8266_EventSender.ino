@@ -1,5 +1,3 @@
-#include <ArduinoJson.h>
-
 /* Adapted From:
    WebSocketClientSocketIO.ino
    Created on: 06.06.2016 by Links2004
@@ -8,9 +6,8 @@
    For use with: Project ATEM Duel Disk Proto
 */
 
-
-
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
 #include <WebSocketsClient.h>
@@ -20,7 +17,7 @@
 ESP8266WiFiMulti WiFiMulti;
 SocketIOclient socketIO;
 
-String socketIP = "192.168.1.64";
+String socketIP = "";
 int socketPort = 8080;
 
 String eventInfo[6] = {
@@ -87,7 +84,7 @@ void setup() {
     WiFi.softAPdisconnect(true);
   }
 
-  WiFiMulti.addAP("ThatsNoMoon", "D34thst4R");
+  WiFiMulti.addAP(networkName, networkPass);
 
   //WiFi.disconnect();
   while (WiFiMulti.run() != WL_CONNECTED) {
