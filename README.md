@@ -1,2 +1,2 @@
-# Physical_Duel_Disk_Arduino_Code
+# Project ATEM - Physical Duel Disk (Arduino)
  
