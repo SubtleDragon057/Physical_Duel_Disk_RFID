@@ -19,6 +19,8 @@ SocketIOclient socketIO;
 
 String socketIP = "";
 int socketPort = 8080;
+const char* networkName = "name";
+const char* networkPass = "pass";
 
 String eventInfo[6] = {
   "eventType",
