@@ -14,13 +14,17 @@
 #include <SocketIOclient.h>
 #include <Hash.h>
 
+#include "LocalFunctions.h"
+
 ESP8266WiFiMulti WiFiMulti;
 SocketIOclient socketIO;
+LocalFunctions func;
 
 String socketIP = "";
 int socketPort = 8080;
 const char* networkName = "name";
 const char* networkPass = "pass";
+
 
 String eventInfo[6] = {
   "eventType",
@@ -74,6 +78,7 @@ void socketIOEvent(socketIOmessageType_t type, uint8_t * payload, size_t length)
 void setup() {
 
   Serial.begin(9600);
+  func.Begin(deckList);
 
   for (uint8_t t = 4; t > 0; t--) {
     Serial.printf("[SETUP] BOOT WAIT %d...\n", t);
@@ -96,9 +101,9 @@ void setup() {
   String ip = WiFi.localIP().toString();
   Serial.printf("[SETUP] WiFi Connected %s\n", ip.c_str());
 
-  socketIO.begin("192.168.1.64", 8080);
+  socketIO.begin(socketIP, socketPort);
   socketIO.onEvent(socketIOEvent);
-  CreateRoom();
+  func.CreateRoom();
 }
 
 void loop() {
@@ -108,179 +113,32 @@ void loop() {
     String data = Serial.readString();
 
     eventInfo[0] = data.substring(0, 1);
-    eventInfo[1] = GetZoneName((data.substring(2, 3)).toInt());
+    eventInfo[1] = func.GetZoneName((data.substring(2, 3)).toInt());
     eventInfo[2] = data.substring(4, 12);
     eventInfo[3] = data.substring(13, 14);
     eventInfo[4] = data.substring(15, 16);
 
-    eventInfo[5] = GetCardPosition(eventInfo);
-    GetCardEvent(eventInfo[0].toInt(), eventInfo);
+    eventInfo[5] = func.GetCardPosition(eventInfo);
+    String json = GetCardEvent(eventInfo[0].toInt(), eventInfo);
+     
+    socketIO.sendEVENT(json);
   }
 }
 
-String GetCardPosition(String eventInfo[]) {
-  String cardPosition = "faceUp";
-
-  if(eventInfo[3] == "0" && eventInfo[4] == "0") {
-    return cardPosition = "faceDownDefence";
-  }
-  else if(eventInfo[3] == "0" && eventInfo[4] == "1") {
-    return cardPosition = "faceUpDefence";
-  }
-  else if(eventInfo[3] == "1" && eventInfo[4] == "0") {
-    return cardPosition = "faceDown";
-  }
-
-  return cardPosition;
-}
-
-void GetCardEvent(int eventName, String eventInfo[]) {
-  switch (eventName) {
+String GetCardEvent(int eventName, String eventInfo[]) {
+   String event;
+   
+   switch (eventName) {
     case 1:
-      SummonEvent(eventInfo);
+      event = func.SummonEvent(eventInfo);
       break;
     case 2:
-      RemoveCardEvent(eventInfo);
-      break;
-    case 3:
-      PositionChangeEvent(eventInfo);
-      break;
-    case 4:
-      SetSpellEvent(eventInfo);
-      break;
-    case 5:
-      //Activate Spell Event
+      event = func.RemoveCardEvent(eventInfo);
       break;
     case 6:
-      CreateRoom();
+      event = func.CreateRoom();
       break;
+         
+    return event;
   }
-}
-
-String GetZoneName(int zoneNumber) {
-  String zoneName;
-
-  switch (zoneNumber) {
-    case 1:
-      zoneName = "mainMonster1";
-      break;
-    case 2:
-      zoneName = "mainMonster2";
-      break;
-    case 3:
-      zoneName = "mainMonster3";
-      break;
-    case 4:
-      zoneName = "spellTrap1";
-      break;
-    case 5:
-      zoneName = "spellTrap2";
-      break;
-    case 6:
-      zoneName = "spellTrap3";
-      break;
-  }
-
-  return zoneName;
-}
-
-void SummonEvent(String eventInfo[]) {
-
-  const size_t CAPACITY = JSON_ARRAY_SIZE(2) + 4 * JSON_OBJECT_SIZE(2);
-  StaticJsonDocument<CAPACITY> doc;
-  JsonArray array = doc.to<JsonArray>();
-
-  array.add("card:play");
-
-  JsonObject params = array.createNestedObject();
-  params["cardId"] = eventInfo[2];
-  params["zoneName"] = eventInfo[1];
-  params["cardPosition"] = eventInfo[5];
-
-  String output;
-  serializeJson(doc, output);
-
-  socketIO.sendEVENT(output);
-}
-
-void RemoveCardEvent(String eventInfo[]) {
-
-  const size_t CAPACITY = JSON_ARRAY_SIZE(2) + 3 * JSON_OBJECT_SIZE(2);
-  StaticJsonDocument<CAPACITY> doc;
-  JsonArray array = doc.to<JsonArray>();
-
-  array.add("card:remove");
-
-  JsonObject params = array.createNestedObject();
-  params["zoneName"] = eventInfo[1];
-  //params["battleMode"] = eventInfo[3];
-  //params["faceMode"] = eventInfo[4];
-
-  String output;
-  serializeJson(doc, output);
-
-  socketIO.sendEVENT(output);
-  Serial.println(output);
-}
-
-void PositionChangeEvent(String eventInfo[]) {
-
-  const size_t CAPACITY = JSON_ARRAY_SIZE(2) + 3 * JSON_OBJECT_SIZE(2);
-  StaticJsonDocument<CAPACITY> doc;
-  JsonArray array = doc.to<JsonArray>();
-
-  array.add("positionChangeEvent");
-
-  JsonObject params = array.createNestedObject();
-  params["zoneName"] = eventInfo[1];
-  params["battleMode"] = eventInfo[3];
-  params["faceMode"] = eventInfo[4];
-
-  String output;
-  serializeJson(doc, output);
-
-  socketIO.sendEVENT(output);
-  Serial.println(output);
-}
-
-void SetSpellEvent(String eventInfo[]) {
-
-  const size_t CAPACITY = JSON_ARRAY_SIZE(2) + 4 * JSON_OBJECT_SIZE(2);
-  StaticJsonDocument<CAPACITY> doc;
-  JsonArray array = doc.to<JsonArray>();
-
-  array.add("spellTrapSetEvent");
-
-  JsonObject params = array.createNestedObject();
-  params["cardId"] = eventInfo[2];
-  params["zoneName"] = eventInfo[1];
-  params["setMode"] = eventInfo[3];
-  params["extraMode"] = "0";
-
-  String output;
-  serializeJson(doc, output);
-
-  socketIO.sendEVENT(output);
-}
-
-void CreateRoom() {
-  const size_t CAPACITY = JSON_ARRAY_SIZE(2) + 2 * JSON_OBJECT_SIZE(2);
-  StaticJsonDocument<CAPACITY> doc;
-  JsonArray array = doc.to<JsonArray>();
-
-  array.add("room:create");
-  
-  JsonArray decklist = array.createNestedArray();
-  for(int i = 0; i < (sizeof(deckList)/sizeof(deckList[0])); i++) {
-    decklist.add(deckList[i]);
-  }
-
-  JsonObject params = array.createNestedObject();
-  params["roomName"] = NULL;
-  params["deckList"] = decklist;
-
-  String output;
-  serializeJson(doc, output);
-
-  socketIO.sendEVENT(output);
 }

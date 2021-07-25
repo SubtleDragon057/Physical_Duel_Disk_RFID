@@ -10,11 +10,14 @@
 #include <MFRC522.h>
 #include <SoftwareSerial.h>
 
+#include "LocalFunctions.h"
+
 //---------------------------------------------------------------------------------//
 //----------------------------------Globals----------------------------------------//
 //---------------------------------------------------------------------------------//
 
 SoftwareSerial toESP(0, 1);
+LocalFunctions func;
 
 //RFID Readers
 const byte numReaders = 3;
@@ -48,7 +51,6 @@ byte lightPinFace[numReaders] = { A3, A4, A5 };
 //Info for Writing & Reading the blocks
 byte block = 4;
 byte readBackBlock[16];
-byte cardID[16];
 
 //This is where you put the cards to write to the NFC chips. See NOTE for details
 const byte cardsToRead = 1;
@@ -99,7 +101,7 @@ void setup() {
     cardSlots[i].PCD_SetAntennaGain(MFRC522::PCD_RxGain::RxGain_avg);
 
 #ifdef ANTENNA DEBUG
-    debugRFIDConnection(i);
+    func.DebugRFIDConnection(i, ssPins, cardSlots);
 #endif
     delay(10);
   }
@@ -113,6 +115,8 @@ void setup() {
   for (byte i = 0; i < 6; i++) {
     key.keyByte[i] = 0xFF;
   }
+
+  func.InitializeWriteFeatures(key, block, cardsToRead);
 }
 
 
@@ -122,7 +126,7 @@ void loop() {
   if (digitalRead(spellButton1) == LOW && digitalRead(spellButton3) == LOW) {
     delay(5000);
     if (digitalRead(spellButton1) == LOW && digitalRead(spellButton3) == LOW) {
-      writeModeActivated();
+      func.WriteModeActivated(cardSlots[1], cardNames);
     }
     else {
       Serial.println("buttons released too early");
@@ -171,7 +175,7 @@ void loop() {
 
           cardNoLongerPresent = false;
 
-          readBlock(block, readBackBlock);
+          func.ReadBlock(cardSlots[slot], readBackBlock);
           readRFID = (String((char*)readBackBlock)).substring(1, 16);
 
           //Check for Spell or Trap Card
@@ -189,14 +193,14 @@ void loop() {
         if (isMonster) {
 
           //Check for Attack or Defence mode
-          newBattleMode = CheckMode(lightValueBattle,
+          newBattleMode = func.CheckMode(lightValueBattle,
                                     lightPinBattle,
                                     slot,
                                     currentLightValueBattle,
                                     cardBattleMode);
 
           //Check if card is Face Up, or Face Down
-          newFaceMode = CheckMode(lightValueFace,
+          newFaceMode = func.CheckMode(lightValueFace,
                                   lightPinFace,
                                   slot,
                                   currentLightValueFace,
@@ -286,16 +290,6 @@ void loop() {
         cardSlots[slot].PCD_StopCrypto1();
       }//for Loop
     } //Zone Loop
-
-    else if(result == MFRC522::STATUS_INVALID) {
-      //Serial.println("Invalid");
-    }
-    else if(result == MFRC522::STATUS_ERROR) {
-      //Serial.println("Error");
-    }
-    else if(result == MFRC522::STATUS_TIMEOUT) {
-      //Serial.println("Timeout");
-    }
   } //Reader Loop
 
   delay(500);
@@ -304,191 +298,3 @@ void loop() {
   Serial.println(F("Restarting Loop"));
 #endif
 } //Loop
-
-
-//-------------------------------------------------------------------------------------------------------------------------//
-//-----------------------------------------------------FUNCTIONS-----------------------------------------------------------//
-//-------------------------------------------------------------------------------------------------------------------------//
-
-int readBlock(int blockNumber, byte arrayAddress[]) {
-
-  int k = currentReader;
-  int largestModulo4Number = blockNumber / 4 * 4;
-  int trailerBlock = largestModulo4Number + 3;
-  byte buffersize = 18;
-
-  byte status = cardSlots[k].PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &key, &(cardSlots[k].uid));
-  if (status != MFRC522::STATUS_OK) {
-
-#ifdef DEBUG
-    Serial.println(F("Read Card method - Authentication error"));
-#endif
-
-    return 3;
-  }
-
-  status = cardSlots[k].MIFARE_Read(blockNumber, arrayAddress, &buffersize);
-  if (status != MFRC522::STATUS_OK) {
-
-#ifdef DEBUG
-    Serial.println(F("Read Card method - Read error"));
-#endif
-
-    return 4;
-  }
-} //Read Block
-
-void writeModeActivated() {
-
-  bool isNewTag = false;
-  String tagID;
-  String newTagID;
-  String currentCardOnReader;
-  int r = 1;
-  currentReader = r;
-
-  Serial.println(F("---WRITE MODE ACTIVATED---"));
-  Serial.println();
-
-  for (int i = 0; i < cardsToRead; i++) {
-
-    Serial.println(F("Place new card"));
-    cardSlots[r].PCD_Init();
-
-    while (!cardSlots[r].PICC_IsNewCardPresent()) {}
-
-    if (cardSlots[r].PICC_ReadCardSerial()) {
-      newTagID = (cardSlots[r].uid.uidByte);
-    }
-
-    if (tagID != newTagID) {
-      isNewTag = true;
-    }
-
-    if (isNewTag) {
-
-      for (int h = 0; h < 9; h++) {
-        cardID[h] = cardNames[i][h] + 48;
-      }
-
-      writeBlock(block, cardID);
-      Serial.print(F("Writing"));
-      delay(500);
-      for (int i = 0; i < 3; i++) {
-        Serial.print('.');
-        delay(500);
-      }
-      Serial.println("Success!");
-      tagID = newTagID;
-      currentCardOnReader = newTagID;
-    }
-    else {
-      tagID = newTagID;
-      currentCardOnReader = newTagID;
-      i--;
-    }
-
-    isNewTag = false;
-    Serial.println("Remove Card");
-
-    while (tagID == currentCardOnReader) {
-      cardSlots[r].PCD_Init();
-      if (cardSlots[r].PICC_IsNewCardPresent() && cardSlots[r].PICC_ReadCardSerial()) {
-        currentCardOnReader = (cardSlots[r].uid.uidByte);
-      }
-      else if (!cardSlots[r].PICC_ReadCardSerial()) {
-        currentCardOnReader = "0";
-      }
-      cardSlots[r].PICC_HaltA();
-      cardSlots[r].PCD_StopCrypto1();
-    }
-
-    if (i < cardsToRead) {
-      Serial.print("Checking For Next Card");
-      for (int i = 0; i < 3; i++) {
-        Serial.print('.');
-        delay(500);
-      }
-      Serial.println();
-      Serial.println();
-      delay(1000);
-    }
-    else if (i >= cardsToRead) {
-      Serial.println("---All Cards Written---");
-    }
-  }
-  Serial.println(F("Returning to Game..."));
-  Serial.println();
-} //Write Mode
-
-int writeBlock(int blockNumber, byte arrayAddress[]) {
-
-  int k = currentReader;
-  byte status;
-  int largestModulo4Number = blockNumber / 4 * 4;
-  int trailerBlock = largestModulo4Number + 3;
-
-  if (blockNumber > 2 && (blockNumber + 1) % 4 == 0) {
-    Serial.print(blockNumber);
-    Serial.println(" is a Trailer Block");
-    return 2;
-  }
-
-  status = cardSlots[k].PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &key, &(cardSlots[k].uid));
-  if (status != MFRC522::STATUS_OK) {
-
-#ifdef WRITE
-    Serial.print("MIFARE_Write() Authentication Failed: ");
-    Serial.println(cardSlots[k].GetStatusCodeName(status));
-#endif
-    //return 3;
-  }
-
-  status = cardSlots[k].MIFARE_Write(blockNumber, arrayAddress, 16);
-  if (status != MFRC522::STATUS_OK) {
-
-#ifdef WRITE
-    Serial.print("MIFARE_Write() BlockWrite failed: ");
-    Serial.println(cardSlots[k].GetStatusCodeName(status));
-#endif
-    cardSlots[k].PCD_StopCrypto1();
-    return 4;
-  }
-  Serial.println("Configuring card ID");
-  cardSlots[k].PCD_StopCrypto1();
-} //Write Block
-
-bool CheckMode(int value[], byte pin[], int slot, int current[], int cardMode[]) {
-
-  int mode;
-  bool newMode;
-
-  value[slot] = analogRead(pin[slot]);
-  if (value[slot] != current[slot]) {
-    if (value[slot] > 300) {
-      mode = 0; //This is Def
-    }
-    else {
-      mode = 1; //Default is Att
-    }
-
-    if (mode != cardMode[slot]) {
-      newMode = true;
-      cardMode[slot] = mode;
-    }
-
-    return newMode;
-  }
-}
-
-void debugRFIDConnection(int i) {
-  Serial.print(F("Reader #"));
-  Serial.print(i);
-  Serial.print(F(" Initialized on pin "));
-  Serial.print(String(ssPins[i]));
-  Serial.print(F(". Antenna strength: "));
-  Serial.print(cardSlots[i].PCD_GetAntennaGain());
-  Serial.print(F(". Version: "));
-  cardSlots[i].PCD_DumpVersionToSerial();
-  Serial.println("---");
-}
