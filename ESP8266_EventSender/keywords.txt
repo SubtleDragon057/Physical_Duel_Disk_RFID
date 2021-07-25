@@ -1,0 +1,24 @@
+#######################################
+# Syntax Coloring Map For Local Functions
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+LocalFunctions	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+Begin	KEYWORD2
+GetCardPosition	KEYWORD2
+GetZoneName	KEYWORD2
+SummonEvent	KEYWORD2
+RemoveCardEvent	KEYWORD2
+CreateRoom	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
