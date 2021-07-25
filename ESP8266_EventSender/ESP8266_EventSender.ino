@@ -22,8 +22,9 @@ LocalFunctions func;
 
 String socketIP = "";
 int socketPort = 8080;
-char* networkName = "Name";
-char* networkPass = "Pass";
+const char* networkName = "name";
+const char* networkPass = "pass";
+
 
 String eventInfo[6] = {
   "eventType",
