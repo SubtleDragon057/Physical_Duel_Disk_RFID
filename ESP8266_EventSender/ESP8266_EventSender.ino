@@ -125,19 +125,19 @@ void loop() {
 }
 
 String GetCardEvent(int eventName, String eventInfo[]) {
-   String e;
+   String event;
    
    switch (eventName) {
     case 1:
-      e = func.SummonEvent(eventInfo);
+      event = func.SummonEvent(eventInfo);
       break;
     case 2:
-      e = func.RemoveCardEvent(eventInfo);
+      event = func.RemoveCardEvent(eventInfo);
       break;
     case 6:
-      e = func.CreateRoom();
+      event = func.CreateRoom();
       break;
          
-    return e;
+    return event;
   }
 }

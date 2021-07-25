@@ -1,0 +1,30 @@
+#######################################
+# Syntax Coloring Map For ProjectATEM
+#######################################
+
+#######################################
+# Library (KEYWORD3)
+#######################################
+
+LocalFunctions	KEYWORD3
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+LocalFunctions	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+InitializeWriteFeatures	KEYWORD2
+CheckMode	KEYWORD2
+WriteModeActivated	KEYWORD2
+WriteBlock	KEYWORD2
+ReadBlock	KEYWORD2
+DebugRFIDConnection	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
