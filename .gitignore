@@ -1,2 +1,9 @@
 # Visual Studio cache directory
 .vs/
+
+__vm/
+\debug
+
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user

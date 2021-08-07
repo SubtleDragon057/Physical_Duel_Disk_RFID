@@ -10,20 +10,22 @@
 #include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
-#include <WebSocketsClient.h>
 #include <SocketIOclient.h>
+#include <WebSockets.h>
+#include <WebSockets4WebServer.h>
+#include <WebSocketsClient.h>
+#include <WebSocketsServer.h>
+#include <WebSocketsVersion.h>
 #include <Hash.h>
 
 #include "LocalFunctions.h"
+#include "Secrets.h"
 
 ESP8266WiFiMulti WiFiMulti;
 SocketIOclient socketIO;
 LocalFunctions func;
+SECRETS secrets;
 
-String socketIP = "";
-int socketPort = 8080;
-const char* networkName = "name";
-const char* networkPass = "pass";
 
 String eventInfo[6] = {
   "eventType",
@@ -90,7 +92,7 @@ void setup() {
     WiFi.softAPdisconnect(true);
   }
 
-  WiFiMulti.addAP(networkName, networkPass);
+  WiFiMulti.addAP(secrets.networkName, secrets.networkPass);
 
   //WiFi.disconnect();
   while (WiFiMulti.run() != WL_CONNECTED) {
@@ -100,7 +102,7 @@ void setup() {
   String ip = WiFi.localIP().toString();
   Serial.printf("[SETUP] WiFi Connected %s\n", ip.c_str());
 
-  socketIO.begin(socketIP, socketPort);
+  socketIO.begin(secrets.socketIP, secrets.socketPort);
   socketIO.onEvent(socketIOEvent);
   func.CreateRoom();
 }
