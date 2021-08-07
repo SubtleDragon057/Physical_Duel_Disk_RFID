@@ -7,3 +7,6 @@ __vm/
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
+
+#Ignore any changes to the secrets so the default isn't changed
+ESP8266_EventSender/Secrets.h

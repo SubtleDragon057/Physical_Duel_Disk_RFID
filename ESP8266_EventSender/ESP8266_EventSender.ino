@@ -6,6 +6,7 @@
    For use with: Project ATEM Duel Disk Proto
 */
 
+#include "Secrets.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
@@ -26,51 +27,45 @@ SocketIOclient socketIO;
 LocalFunctions func;
 SECRETS secrets;
 
+bool isInDuelRoom = false;
+String customID = "SubtleDragon057";
 
-String eventInfo[6] = {
-  "eventType",
-  "zoneName",
-  "cardID",
-  "battleMode",
-  "faceMode",
-  "position"
-};
-
-int deckList[3] = {
+int deckList[20] = {
   25652259,
   64788463,
-  90876561
+  90876561,
+  89631139,
+  24140059,
+  32207100,
+  79965360,
+  41356845,
+  62325062,
+  46052429,
+  18036057,
+  70924884,
+  64428736,
+  53162898,
+  31102447,
+  89386122,
+  36629203,
+  99785935,
+  67987611,
+  29654737
 };
 
-
-void socketIOEvent(socketIOmessageType_t type, uint8_t * payload, size_t length) {
+void socketIOEvent(socketIOmessageType_t type, uint8_t * payload, std::size_t length) {
   switch (type) {
     case sIOtype_DISCONNECT:
       Serial.printf("[IOc] Disconnected!\n");
       break;
     case sIOtype_CONNECT:
       Serial.printf("[IOc] Connected to url: %s\n", payload);
-
-      // join default namespace (no auto join in Socket.IO V3)
-      socketIO.send(sIOtype_CONNECT, "/");
       break;
     case sIOtype_EVENT:
       Serial.printf("[IOc] get event: %s\n", payload);
       break;
-    case sIOtype_ACK:
-      Serial.printf("[IOc] get ack: %u\n", length);
-      hexdump(payload, length);
-      break;
     case sIOtype_ERROR:
       Serial.printf("[IOc] get error: %u\n", length);
-      hexdump(payload, length);
-      break;
-    case sIOtype_BINARY_EVENT:
-      Serial.printf("[IOc] get binary: %u\n", length);
-      hexdump(payload, length);
-      break;
-    case sIOtype_BINARY_ACK:
-      Serial.printf("[IOc] get binary ack: %u\n", length);
       hexdump(payload, length);
       break;
   }
@@ -79,7 +74,7 @@ void socketIOEvent(socketIOmessageType_t type, uint8_t * payload, size_t length)
 void setup() {
 
   Serial.begin(9600);
-  func.Begin(deckList);
+  func.Begin(deckList, customID);
 
   for (uint8_t t = 4; t > 0; t--) {
     Serial.printf("[SETUP] BOOT WAIT %d...\n", t);
@@ -99,47 +94,53 @@ void setup() {
     delay(100);
   }
 
-  String ip = WiFi.localIP().toString();
-  Serial.printf("[SETUP] WiFi Connected %s\n", ip.c_str());
-
   socketIO.begin(secrets.socketIP, secrets.socketPort);
   socketIO.onEvent(socketIOEvent);
-  func.CreateRoom();
 }
 
 void loop() {
   socketIO.loop();
 
-  if (Serial.available()) {
-    String data = Serial.readString();
+  while (!isInDuelRoom) {
+      if (!Serial.available()) return;
 
-    eventInfo[0] = data.substring(0, 1);
-    eventInfo[1] = func.GetZoneName((data.substring(2, 3)).toInt());
-    eventInfo[2] = data.substring(4, 12);
-    eventInfo[3] = data.substring(13, 14);
-    eventInfo[4] = data.substring(15, 16);
+      String data = Serial.readString();
 
-    eventInfo[5] = func.GetCardPosition(eventInfo);
-    String json = GetCardEvent(eventInfo[0].toInt(), eventInfo);
-     
-    socketIO.sendEVENT(json);
+      if (data == "create" || data == "Create") {
+          isInDuelRoom = true;
+
+          String output = func.CreateRoom();
+          socketIO.sendEVENT(output);
+          return;
+      }
+
+      if (data == "Join" || data == "join") {
+          isInDuelRoom = true;
+
+          Serial.println("Which room would you like to join?");
+
+          while (!Serial.available()) {}
+
+          String roomName = Serial.readString();
+
+          String output = func.JoinRoom(roomName);
+          socketIO.sendEVENT(output);
+          return;
+      }
+
+      Serial.println("Command is Invalid. Valid commands are: Create, Join");
   }
-}
+  
+  if (Serial.available()) {
+	  String data = Serial.readString();
 
-String GetCardEvent(int eventName, String eventInfo[]) {
-   String event;
-   
-   switch (eventName) {
-    case 1:
-      event = func.SummonEvent(eventInfo);
-      break;
-    case 2:
-      event = func.RemoveCardEvent(eventInfo);
-      break;
-    case 6:
-      event = func.CreateRoom();
-      break;
-         
-    return event;
+	  String output = func.GetCardEventAsJSON(data);
+
+	  if (output == NULL) {
+          Serial.println("No data available!");
+          return;
+	  }
+
+      socketIO.sendEVENT(output);
   }
 }

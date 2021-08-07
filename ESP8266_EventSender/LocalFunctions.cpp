@@ -6,26 +6,120 @@ LocalFunctions::LocalFunctions()
 {
 }
 
-void LocalFunctions::Begin(int deckList[]) {
+void LocalFunctions::Begin(int deckList[], String customID) {
 	_decklist = deckList;
+	_customID = customID;
 }
 
-String LocalFunctions::GetCardPosition(String eventInfo[]) {
-	String cardPosition = "faceUp";
+String LocalFunctions::GetCardEventAsJSON(String data)
+{
+	String eventInfo[6];
+	
+	eventInfo[0] = data.substring(0, 1); //Event #
+	eventInfo[1] = GetZoneName((data.substring(2, 3)).toInt()); //Zone Name
+	eventInfo[2] = data.substring(4, 12); //Serial #
+	eventInfo[3] = data.substring(13, 14); //Battle Mode
+	eventInfo[4] = data.substring(15, 16); //Face Mode
+	eventInfo[5] = GetCardPosition(eventInfo); //Position
 
-	if (eventInfo[3] == "0" && eventInfo[4] == "0") {
-		return cardPosition = "faceDownDefence";
-	}
-	else if (eventInfo[3] == "0" && eventInfo[4] == "1") {
-		return cardPosition = "faceUpDefence";
-	}
-	else if (eventInfo[3] == "1" && eventInfo[4] == "0") {
-		return cardPosition = "faceDown";
-	}
+	String output = GetCardEvent(eventInfo[0].toInt(), eventInfo);
 
-	return cardPosition;
+	return output;
 }
 
+String LocalFunctions::CreateRoom() {
+	StaticJsonDocument<384> dynamicDoc;
+	JsonArray deck = dynamicDoc.createNestedArray();
+	for (int i = 0; i < 20; i++) {
+		deck.add(_decklist[i]);
+	}
+	Serial.println(deck);
+
+	StaticJsonDocument<512> doc;
+	JsonArray jsonArray = doc.to<JsonArray>();
+
+	jsonArray.add("room:create");
+
+	JsonObject params = jsonArray.createNestedObject();
+	params["roomName"] = "";
+	params["deckList"] = deck;
+	params["customDuelistID"] = _customID;
+
+	String output;
+	serializeJson(doc, output);
+
+	return output;
+}
+
+String LocalFunctions::JoinRoom(String roomName)
+{
+	StaticJsonDocument<384> dynamicDoc;
+	JsonArray deck = dynamicDoc.createNestedArray();
+	for (int i = 0; i < 20; i++) {
+		deck.add(_decklist[i]);
+	}
+	Serial.println(deck);
+
+	StaticJsonDocument<512> doc;
+	JsonArray jsonArray = doc.to<JsonArray>();
+
+	jsonArray.add("room:join");
+
+	JsonObject params = jsonArray.createNestedObject();
+	params["roomName"] = roomName;
+	params["deckList"] = deck;
+	params["customDuelistID"] = _customID;
+
+	String output;
+	serializeJson(doc, output);
+
+	return output;
+}
+
+String LocalFunctions::SummonEvent(String eventInfo[]) {
+
+	const std::size_t CAPACITY = JSON_ARRAY_SIZE(2) + 2 * JSON_OBJECT_SIZE(5);
+	StaticJsonDocument<CAPACITY> doc;
+	JsonArray jsonArray = doc.to<JsonArray>();
+
+	jsonArray.add("card:play");
+
+	JsonObject params = jsonArray.createNestedObject();
+	params["duelistId"] = _customID;
+	params["cardId"] = eventInfo[2];
+	params["copyNumber"] = 1;
+	params["zoneName"] = eventInfo[1];
+	params["cardPosition"] = eventInfo[6];
+
+	String output;
+	serializeJson(doc, output);
+
+	return output;
+}
+
+//TODO: Implement Remove Card logic
+String LocalFunctions::RemoveCardEvent(String eventInfo[]) {
+
+	const std::size_t CAPACITY = JSON_ARRAY_SIZE(2) + 2 * JSON_OBJECT_SIZE(5);
+	StaticJsonDocument<CAPACITY> doc;
+	JsonArray jsonArray = doc.to<JsonArray>();
+
+	jsonArray.add("card:remove");
+
+	JsonObject params = jsonArray.createNestedObject();
+	params["duelistId"] = _customID;
+	params["cardId"] = eventInfo[2];
+	params["copyNumber"] = 1;
+	params["zoneName"] = eventInfo[1];
+	params["cardPosition"] = eventInfo[6];
+
+	String output;
+	serializeJson(doc, output);
+
+	return output;
+}
+
+//Private Functions
 String LocalFunctions::GetZoneName(int zoneNumber) {
 	String zoneName;
 
@@ -53,60 +147,33 @@ String LocalFunctions::GetZoneName(int zoneNumber) {
 	return zoneName;
 }
 
-String LocalFunctions::SummonEvent(String eventInfo[]) {
+String LocalFunctions::GetCardPosition(String eventInfo[]) {
+	String cardPosition = "faceUp";
 
-	const size_t CAPACITY = JSON_ARRAY_SIZE(2) + 4 * JSON_OBJECT_SIZE(2);
-	StaticJsonDocument<CAPACITY> doc;
-	JsonArray jsonArray = doc.to<JsonArray>();
-
-	jsonArray.add("card:play");
-
-	JsonObject params = jsonArray.createNestedObject();
-	params["cardId"] = eventInfo[2];
-	params["zoneName"] = eventInfo[1];
-	params["cardPosition"] = eventInfo[5];
-
-	String output;
-	serializeJson(doc, output);
-
-	return output;
-}
-
-String LocalFunctions::RemoveCardEvent(String eventInfo[]) {
-
-	const size_t CAPACITY = JSON_ARRAY_SIZE(2) + 3 * JSON_OBJECT_SIZE(2);
-	StaticJsonDocument<CAPACITY> doc;
-	JsonArray jsonArray = doc.to<JsonArray>();
-
-	jsonArray.add("card:remove");
-
-	JsonObject params = jsonArray.createNestedObject();
-	params["zoneName"] = eventInfo[1];
-
-	String output;
-	serializeJson(doc, output);
-
-	return output;
-}
-
-String LocalFunctions::CreateRoom() {
-	const size_t CAPACITY = JSON_ARRAY_SIZE(2) + 2 * JSON_OBJECT_SIZE(2);
-	StaticJsonDocument<CAPACITY> doc;
-	JsonArray jsonArray = doc.to<JsonArray>();
-
-	jsonArray.add("room:create");
-
-	JsonArray activeDeck = jsonArray.createNestedArray();
-	for (int i = 0; i < (sizeof(_decklist) / sizeof(_decklist[0])); i++) {
-		activeDeck.add(_decklist[i]);
+	if (eventInfo[3] == "0" && eventInfo[4] == "0") {
+		return cardPosition = "faceDownDefence";
+	}
+	else if (eventInfo[3] == "0" && eventInfo[4] == "1") {
+		return cardPosition = "faceUpDefence";
+	}
+	else if (eventInfo[3] == "1" && eventInfo[4] == "0") {
+		return cardPosition = "faceDown";
 	}
 
-	JsonObject params = jsonArray.createNestedObject();
-	params["roomName"] = NULL;
-	params["deckList"] = activeDeck;
+	return cardPosition;
+}
 
+String LocalFunctions::GetCardEvent(int eventName, String eventInfo[]) {
 	String output;
-	serializeJson(doc, output);
+
+	switch (eventName) {
+	case 1:
+		output = SummonEvent(eventInfo);
+		break;
+	case 2:
+		output = RemoveCardEvent(eventInfo);
+		break;
+	}
 
 	return output;
 }
