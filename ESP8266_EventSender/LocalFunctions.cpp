@@ -136,22 +136,22 @@ String LocalFunctions::GetZoneName(int zoneNumber) {
 	String zoneName;
 
 	switch (zoneNumber) {
-	case 1:
+	case 0:
 		zoneName = "mainMonster1";
 		break;
-	case 2:
+	case 1:
 		zoneName = "mainMonster2";
 		break;
-	case 3:
+	case 2:
 		zoneName = "mainMonster3";
 		break;
-	case 4:
+	case 3:
 		zoneName = "spellTrap1";
 		break;
-	case 5:
+	case 4:
 		zoneName = "spellTrap2";
 		break;
-	case 6:
+	case 5:
 		zoneName = "spellTrap3";
 		break;
 	}
@@ -162,13 +162,13 @@ String LocalFunctions::GetZoneName(int zoneNumber) {
 String LocalFunctions::GetCardPosition(String eventInfo[]) {
 	String cardPosition = "faceUp";
 
-	if (eventInfo[3] == "0" && eventInfo[4] == "0") {
+	if (eventInfo[3] == "0" && eventInfo[4] == "2") {
 		return cardPosition = "faceDownDefence";
 	}
-	else if (eventInfo[3] == "0" && eventInfo[4] == "1") {
+	else if (eventInfo[3] == "0" && eventInfo[4] == "3") {
 		return cardPosition = "faceUpDefence";
 	}
-	else if (eventInfo[3] == "1" && eventInfo[4] == "0") {
+	else if (eventInfo[3] == "1" && eventInfo[4] == "2") {
 		return cardPosition = "faceDown";
 	}
 
