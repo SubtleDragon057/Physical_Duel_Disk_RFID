@@ -63,6 +63,7 @@ void socketIOEvent(socketIOmessageType_t type, uint8_t * payload, std::size_t le
       break;
     case sIOtype_EVENT:
       Serial.printf("[IOc] get event: %s\n", payload);
+      RecieveEvent(payload);
       break;
     case sIOtype_ERROR:
       Serial.printf("[IOc] get error: %u\n", length);
@@ -143,4 +144,21 @@ void loop() {
 
       socketIO.sendEVENT(output);
   }
+}
+
+void RecieveEvent(uint8_t* payload) {
+    String data = func.RecieveEvent(payload);
+    HandleRecievedEvent(data);
+}
+
+void HandleRecievedEvent(String data) {
+    if (data == "room:close") {
+        isInDuelRoom = false;
+        return;
+    }
+
+    if (data == "room:join") {
+        isInDuelRoom = false;
+        Serial.println("That room doesn't exist! Please try again");
+    }
 }

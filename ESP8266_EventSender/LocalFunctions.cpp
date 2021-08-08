@@ -119,6 +119,18 @@ String LocalFunctions::RemoveCardEvent(String eventInfo[]) {
 	return output;
 }
 
+String LocalFunctions::RecieveEvent(uint8_t* payload)
+{	
+	DynamicJsonDocument doc(1024);
+	DeserializationError error = deserializeJson(doc, payload);
+	if (error) {
+		Serial.println("Error");
+	}
+
+	String data = doc[0];
+	return data;
+}
+
 //Private Functions
 String LocalFunctions::GetZoneName(int zoneNumber) {
 	String zoneName;

@@ -22,6 +22,7 @@ class LocalFunctions
 		String JoinRoom(String roomName);
 		String SummonEvent(String eventInfo[]);
 		String RemoveCardEvent(String eventInfo[]);
+		String RecieveEvent(uint8_t* payload);
 };
 
 #endif
