@@ -26,17 +26,18 @@ const byte numReaders = 3;
 const byte ssPins[] = { 2, 3, 4 };
 const byte resetPin = 8;
 MFRC522 cardSlots[numReaders];
+Zone::ProximitySensor sensors[numReaders];
 
-const byte sensorPins[] = { 8, 9, 10 };
+const byte sensorPins[] = { 5, 6, 7 };
 byte lightPinBattle[] = { A0, A1, A2 };
 byte lightPinFace[] = { A3, A4, A5 };
 
 Zone zones[numReaders];
 
 //Spell/Trap
-byte spellButton1 = 5;
-byte spellButton2 = 6;
-byte spellButton3 = 7;
+byte spellButton1 = A1;
+byte spellButton2 = A2;
+byte spellButton3 = A3;
 
 //Info for Writing & Reading the blocks
 byte block = 4;
@@ -64,7 +65,7 @@ int cardNames[cardsToRead][9] = {
 
 void setup() {
 
-	Serial.begin(9600);
+	Serial.begin(9600); 
 	SPI.begin();
 	toESP.begin(9600);
 
@@ -79,6 +80,8 @@ void setup() {
 
 	read.Initialize(block);
 	write.Initialize(block, cardsToRead);
+
+	Serial.println();
 }
 
 
@@ -89,10 +92,11 @@ void loop() {
 	//Cycle through each zone on the Duel Disk to check for any changes
 	for (int i = 0; i < numReaders; i++) {
 
-		bool isThereANewCard = zones[i].CheckForNewCard();
-		if (!isThereANewCard) return;
-
-		CheckRFIDReader(zones[i]);
+		bool isThereANewCard = zones[i].sensor.CheckForNewCard();
+		if (isThereANewCard) {
+			//delay(500);
+			CheckRFIDReader(zones[i]);
+		}
 	}
 }
 
@@ -102,11 +106,10 @@ void InitializeZones(int zoneNumber) {
 	cardSlots[zoneNumber].PCD_Init(ssPins[zoneNumber], resetPin);
 	cardSlots[zoneNumber].PCD_SetAntennaGain(MFRC522::PCD_RxGain::RxGain_avg);
 
-	Zone::ProximitySensor sensor = Zone::ProximitySensor(sensorPins[zoneNumber]);
-	pinMode(sensor.pin, INPUT);
-	sensor.currentValue = LOW;
+	sensors[zoneNumber].ProximitySensor_Init(sensorPins[zoneNumber]);
 
-	zones[zoneNumber] = Zone(zoneNum, cardSlots[zoneNumber], sensor, lightPinBattle[zoneNumber], lightPinFace[zoneNumber]);
+	zones[zoneNumber].Zone_Init(zoneNum, cardSlots[zoneNumber], sensors[zoneNum], lightPinBattle[zoneNumber], lightPinFace[zoneNumber]);
+	Zone zone = zones[zoneNumber];
 
 	delay(10);
 }
@@ -129,8 +132,12 @@ void CheckRFIDReader(Zone zone) {
 	LocalFunctions::Events eventType = LocalFunctions::NoEvent;
 
 	zone.reader.PCD_Init();
-
-	if (!zone.reader.PICC_IsNewCardPresent()) return;
+	
+	if (!zone.reader.PICC_IsNewCardPresent()) {
+		String data = func.RemoveCard(zone);
+		Serial.println(data);
+		return;
+	}
 
 	//Scan Readers twice in case of collision
 	for (int i = 0; i < 2; i++) {
@@ -154,7 +161,7 @@ void CheckRFIDReader(Zone zone) {
 		eventType = func.SetEventType(zone, &isMonster, cardSerialNumber);
 
 		String data = func.FormatEventInfo(zone, eventType, isMonster);
-		toESP.println(data);
+		Serial.println(data);
 
 		zone.reader.PICC_HaltA();
 		zone.reader.PCD_StopCrypto1();

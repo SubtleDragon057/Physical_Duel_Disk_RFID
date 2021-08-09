@@ -8,7 +8,7 @@ LocalFunctions::LocalFunctions()
 }
 
 bool LocalFunctions::HasModeChanged(Zone zone, Zone::LightValue value) {
-	
+
 	int currentPin = GetCurrentPin(zone, value);
 
 	int lightValue = analogRead(currentPin);
@@ -43,29 +43,37 @@ void LocalFunctions::CheckBattleAndFaceModes(Zone zone) {
 
 String LocalFunctions::FormatEventInfo(Zone zone, LocalFunctions::Events eventType, bool isMonster)
 {
+	String comma = ",";
 	String eventInfo;
 	Zone::Monster monster = zone.GetCurrentMonster();
 
-	eventInfo.concat(eventType + ',');
+	eventInfo.concat(eventType);
+	eventInfo.concat(comma);
 
 	//Card Zone
 	if (isMonster) {
-		eventInfo.concat(zone.zoneNumber + ',');
+		eventInfo.concat(zone.zoneNumber);
+		eventInfo.concat(comma);
 	}
 	else if (!isMonster) {
-		eventInfo.concat((zone.zoneNumber + 3) + ',');
+		eventInfo.concat(zone.zoneNumber + 3);
+		eventInfo.concat(comma);
 	}
 
 	//Card ID and Orientation
 	if (isMonster) {
-		if (monster.serialNumber == "") {
-			eventInfo.concat("00000000" + ',');
+		if (monster.GetSerialNumber() == "") {
+			eventInfo.concat("00000000");
+			eventInfo.concat(comma);
 		}
 		else {
-			eventInfo.concat(monster.serialNumber + ',');
+			eventInfo.concat(monster.GetSerialNumber());
+			eventInfo.concat(comma);
 		}
 
-		eventInfo.concat(monster.battleMode + ',' + monster.faceMode);
+		eventInfo.concat(monster.GetMode(Zone::Battle));
+		eventInfo.concat(comma);
+		eventInfo.concat(monster.GetMode(Zone::Face));
 	}
 	else if (!isMonster) {
 		if (zone.GetCurrentSpell() == "") {
@@ -76,9 +84,9 @@ String LocalFunctions::FormatEventInfo(Zone zone, LocalFunctions::Events eventTy
 		}
 
 		//Spell Cards default to Face Down. Buttons will be used to 'Activate' them...eventually
-		eventInfo.concat(Zone::Monster::FaceDown); 
+		eventInfo.concat(Zone::Monster::FaceDown);
 	}
-	
+
 	return eventInfo;
 }
 
@@ -86,37 +94,37 @@ void LocalFunctions::UpdateBattleMode(Zone::Monster monster, int pin) {
 	int lightValue = analogRead(pin);
 
 	if (lightValue > 300) {
-		monster.battleMode = Zone::Monster::Defence;
+		monster.UpdateMonsterMode(Zone::Battle, Zone::Monster::Defence);
 		return;
 	}
 
-	monster.battleMode = Zone::Monster::Attack;
+	monster.UpdateMonsterMode(Zone::Battle, Zone::Monster::Attack);
 }
 
 void LocalFunctions::UpdateFaceMode(Zone::Monster monster, int pin) {
 	int lightValue = analogRead(pin);
 
 	if (lightValue > 300) {
-		monster.faceMode = Zone::Monster::FaceDown;
+		monster.UpdateMonsterMode(Zone::Face, Zone::Monster::FaceDown);
 		return;
 	}
 
-	monster.faceMode = Zone::Monster::FaceUp;
+	monster.UpdateMonsterMode(Zone::Face, Zone::Monster::FaceUp);
 }
 
 LocalFunctions::Events LocalFunctions::SetEventType(Zone zone, bool* isMonster, String cardSerialNumber)
 {
 	//Changes to Monster Zone
 	Zone::Monster monster = zone.GetCurrentMonster();
-	if (isMonster && cardSerialNumber != monster.serialNumber) {
-
+	if (isMonster) {
 		zone.UpdateCurrentMonster(cardSerialNumber);
-		if (monster.serialNumber == "") {
-			return LocalFunctions::Remove;
+		if (monster.GetSerialNumber() == "") {
+			return Events::Remove;
 		}
 
-		return LocalFunctions::Summon;
+		return Events::Summon;
 	}
+	
 	//TODO: Update position change function or add to ESP??
 	/*else if (isMonster && (newBattleMode || newFaceMode)) {
 
@@ -124,24 +132,45 @@ LocalFunctions::Events LocalFunctions::SetEventType(Zone zone, bool* isMonster, 
 		currentLightValueBattle[slot] = lightValueBattle[slot];
 		currentLightValueFace[slot] = lightValueFace[slot];
 	}*/
+	
 	//Changes to Spell/Trap Zone
-	else if (!isMonster && cardSerialNumber != zone.GetCurrentSpell()) {
-
+	if (!isMonster) {
 		zone.UpdateCurrentSpell(cardSerialNumber);
 		if (zone.GetCurrentSpell() == "") {
-			return LocalFunctions::Remove;
+			return Events::Remove;
 		}
 
-		return LocalFunctions::SetSpellTrap;
+		return Events::SetSpellTrap;
 	}
 
-	//Override constant spell bool to allow monster to disappear when card not present	
-	if (cardSerialNumber != monster.serialNumber) {
+	*isMonster = true;
+	zone.UpdateCurrentMonster(cardSerialNumber);
+	return Events::Remove;
+}
 
-		*isMonster = true;
-		zone.UpdateCurrentMonster(cardSerialNumber);
-		return LocalFunctions::Remove;
-	}
+//TODO: Support Spell Removal
+String LocalFunctions::RemoveCard(Zone zone)
+{
+	String comma = ",";
+	String eventInfo;
+	Zone::Monster monster = zone.GetCurrentMonster();
+
+	eventInfo.concat(Events::Remove);
+	eventInfo.concat(comma);
+
+	eventInfo.concat(zone.zoneNumber);
+	eventInfo.concat(comma);
+
+	eventInfo.concat("00000000");
+	eventInfo.concat(comma);
+
+	eventInfo.concat(Zone::Monster::Modes::Attack);
+	eventInfo.concat(comma);
+	eventInfo.concat(Zone::Monster::Modes::FaceDown);
+
+	monster.UpdateMonsterSerial("00000000");
+
+	return eventInfo;
 }
 
 int LocalFunctions::GetCurrentPin(Zone zone, Zone::LightValue value) {

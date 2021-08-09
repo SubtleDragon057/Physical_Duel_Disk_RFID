@@ -12,15 +12,23 @@ public:
 	};
 
 	class ProximitySensor {
+	private:
+		int _currentValue;
+
 	public:
-		byte pin;
-		int currentValue;
+		byte pin;		
 
 		ProximitySensor();
-		ProximitySensor(byte pinNumber);
+		void ProximitySensor_Init(byte pinNumber);
+		bool CheckForNewCard();
 	};
 
 	class Monster {
+	private:
+		String _serialNumber;
+		int _battleMode;
+		int _faceMode;
+	
 	public:
 		enum Modes {
 			Attack,
@@ -29,11 +37,13 @@ public:
 			FaceUp
 		};
 
-		String serialNumber;
-		int battleMode;
-		int faceMode;
-
 		Monster();
+		Monster(String serialNum, int battleMode, int faceMode);
+
+		String GetSerialNumber();
+		int GetMode(LightValue mode);
+		void UpdateMonsterSerial(String serialNumber);
+		void UpdateMonsterMode(LightValue mode, Modes newMode);
 	};
 
 	int zoneNumber;
@@ -41,12 +51,10 @@ public:
 	ProximitySensor sensor;
 	int battleLightPin;
 	int faceLightPin;
-	Monster monster;
 
 	Zone();
-	Zone(int zoneNum, MFRC522 mfrc522, ProximitySensor proximitySensor, int battleLightPin, int faceLightPin);
+	void Zone_Init(int zoneNum, MFRC522 mfrc522, ProximitySensor proximitySensor, int battleLightPin, int faceLightPin);
 
-	bool CheckForNewCard();
 	void UpdateCurrentMonster(String monsterID);
 	void UpdateCurrentSpell(String spellID);
 	Monster GetCurrentMonster();

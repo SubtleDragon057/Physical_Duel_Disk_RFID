@@ -1,12 +1,12 @@
 # Visual Studio cache directory
 .vs/
-
 __vm/
 \debug
 
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
+*.sln
 
 #Ignore any changes to the secrets so the default isn't changed
 ESP8266_EventSender/Secrets.h

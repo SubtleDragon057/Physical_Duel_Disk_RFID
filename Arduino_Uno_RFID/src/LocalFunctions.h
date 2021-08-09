@@ -12,12 +12,12 @@ private:
 
 public:
 	enum Events {
-		NoEvent,
-		Summon,
-		Remove,
-		PositionChange,
-		SetSpellTrap,
-		ActivateSpellTrap,
+		NoEvent = 0,
+		Summon = 1,
+		Remove = 2,
+		PositionChange = 3,
+		SetSpellTrap = 4,
+		ActivateSpellTrap = 5,
 	};
 
 	LocalFunctions();
@@ -25,7 +25,8 @@ public:
 	bool CheckIfCardIsMonster(byte readBackBlock);
 	void CheckBattleAndFaceModes(Zone zone);
 	String FormatEventInfo(Zone zone, LocalFunctions::Events eventType, bool isMonster);
-	LocalFunctions::Events SetEventType(Zone zone, bool* isMonster, String cardSerialNumber);
+	Events SetEventType(Zone zone, bool* isMonster, String cardSerialNumber);
+	String RemoveCard(Zone zone);
 };
 
 #endif
