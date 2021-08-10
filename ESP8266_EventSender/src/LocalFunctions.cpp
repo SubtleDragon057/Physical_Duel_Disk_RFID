@@ -89,7 +89,7 @@ String LocalFunctions::SummonEvent(String eventInfo[]) {
 	params["cardId"] = eventInfo[2];
 	params["copyNumber"] = 1;
 	params["zoneName"] = eventInfo[1];
-	params["cardPosition"] = eventInfo[6];
+	params["cardPosition"] = eventInfo[5];
 
 	String output;
 	serializeJson(doc, output);
@@ -104,14 +104,14 @@ String LocalFunctions::RemoveCardEvent(String eventInfo[]) {
 	StaticJsonDocument<CAPACITY> doc;
 	JsonArray jsonArray = doc.to<JsonArray>();
 
-	jsonArray.add("card:remove");
+	jsonArray.add("card:play");
 
 	JsonObject params = jsonArray.createNestedObject();
 	params["duelistId"] = _customID;
 	params["cardId"] = eventInfo[2];
 	params["copyNumber"] = 1;
-	params["zoneName"] = eventInfo[1];
-	params["cardPosition"] = eventInfo[6];
+	params["zoneName"] = "hand";
+	params["cardPosition"] = "faceUp";
 
 	String output;
 	serializeJson(doc, output);

@@ -6,7 +6,6 @@
    For use with: Project ATEM Duel Disk Proto
 */
 
-#include "Secrets.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
@@ -19,8 +18,8 @@
 #include <WebSocketsVersion.h>
 #include <Hash.h>
 
-#include "LocalFunctions.h"
-#include "Secrets.h"
+#include "src\LocalFunctions.h"
+#include "src\Secrets.h"
 
 ESP8266WiFiMulti WiFiMulti;
 SocketIOclient socketIO;
