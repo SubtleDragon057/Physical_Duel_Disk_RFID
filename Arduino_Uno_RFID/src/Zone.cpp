@@ -5,7 +5,7 @@ Zone::Zone()
 {
 }
 
-void Zone::Zone_Init(int zoneNum, MFRC522 mfrc522, ProximitySensor proximitySensor, int battlePin, int facePin)
+void Zone::Initialize(int zoneNum, MFRC522 mfrc522, ProximitySensor proximitySensor, int battlePin, int facePin)
 {
 	zoneNumber = zoneNum;
 	reader = mfrc522;
@@ -52,7 +52,7 @@ Zone::ProximitySensor::ProximitySensor()
 {
 }
 
-void Zone::ProximitySensor::ProximitySensor_Init(byte pinNumber)
+void Zone::ProximitySensor::Initialize(byte pinNumber)
 {
 	pin = pinNumber;
 	pinMode(pin, INPUT);

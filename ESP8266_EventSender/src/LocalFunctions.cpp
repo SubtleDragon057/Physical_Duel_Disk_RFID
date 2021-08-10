@@ -6,7 +6,7 @@ LocalFunctions::LocalFunctions()
 {
 }
 
-void LocalFunctions::Begin(int deckList[], String customID) {
+void LocalFunctions::Initialize(int deckList[], String customID) {
 	_decklist = deckList;
 	_customID = customID;
 }

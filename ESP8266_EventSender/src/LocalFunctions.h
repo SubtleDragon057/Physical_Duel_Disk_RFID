@@ -14,7 +14,7 @@ class LocalFunctions
 
 	public:
 		LocalFunctions();
-		void Begin(int deckList[], String customID);		
+		void Initialize(int deckList[], String customID);		
 		
 		String GetCardEventAsJSON(String data);
 		

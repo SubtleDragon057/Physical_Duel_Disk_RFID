@@ -74,7 +74,7 @@ void socketIOEvent(socketIOmessageType_t type, uint8_t * payload, std::size_t le
 void setup() {
 
   Serial.begin(9600);
-  func.Begin(deckList, customID);
+  func.Initialize(deckList, customID);
 
   for (uint8_t t = 4; t > 0; t--) {
     Serial.printf("[SETUP] BOOT WAIT %d...\n", t);

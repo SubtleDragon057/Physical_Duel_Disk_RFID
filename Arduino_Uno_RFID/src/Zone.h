@@ -19,7 +19,7 @@ public:
 		byte pin;		
 
 		ProximitySensor();
-		void ProximitySensor_Init(byte pinNumber);
+		void Initialize(byte pinNumber);
 		bool CheckForNewCard();
 	};
 
@@ -53,7 +53,7 @@ public:
 	int faceLightPin;
 
 	Zone();
-	void Zone_Init(int zoneNum, MFRC522 mfrc522, ProximitySensor proximitySensor, int battleLightPin, int faceLightPin);
+	void Initialize(int zoneNum, MFRC522 mfrc522, ProximitySensor proximitySensor, int battleLightPin, int faceLightPin);
 
 	void UpdateCurrentMonster(String monsterID);
 	void UpdateCurrentSpell(String spellID);

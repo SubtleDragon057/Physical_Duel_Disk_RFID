@@ -106,9 +106,9 @@ void InitializeZones(int zoneNumber) {
 	cardSlots[zoneNumber].PCD_Init(ssPins[zoneNumber], resetPin);
 	cardSlots[zoneNumber].PCD_SetAntennaGain(MFRC522::PCD_RxGain::RxGain_avg);
 
-	sensors[zoneNumber].ProximitySensor_Init(sensorPins[zoneNumber]);
+	sensors[zoneNumber].Initialize(sensorPins[zoneNumber]);
 
-	zones[zoneNumber].Zone_Init(zoneNum, cardSlots[zoneNumber], sensors[zoneNum], lightPinBattle[zoneNumber], lightPinFace[zoneNumber]);
+	zones[zoneNumber].Initialize(zoneNum, cardSlots[zoneNumber], sensors[zoneNum], lightPinBattle[zoneNumber], lightPinFace[zoneNumber]);
 	Zone zone = zones[zoneNumber];
 
 	delay(10);
