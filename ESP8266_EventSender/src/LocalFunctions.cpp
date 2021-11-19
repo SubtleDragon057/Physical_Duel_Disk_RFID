@@ -6,12 +6,11 @@ LocalFunctions::LocalFunctions()
 {
 }
 
-void LocalFunctions::Initialize(int deckList[], String customID) {
+void LocalFunctions::Initialize(int deckList[]) {
 	_decklist = deckList;
-	_customID = customID;
 }
 
-String LocalFunctions::GetCardEventAsJSON(String data)
+String LocalFunctions::GetCardEventAsJSON(String socketID, String data)
 {
 	String eventInfo[6];
 	
@@ -22,7 +21,7 @@ String LocalFunctions::GetCardEventAsJSON(String data)
 	eventInfo[4] = data.substring(15, 16); //Face Mode
 	eventInfo[5] = GetCardPosition(eventInfo); //Position
 
-	String output = GetCardEvent(eventInfo[0].toInt(), eventInfo);
+	String output = GetCardEvent(socketID, eventInfo[0].toInt(), eventInfo);
 
 	return output;
 }
@@ -43,7 +42,6 @@ String LocalFunctions::CreateRoom() {
 	JsonObject params = jsonArray.createNestedObject();
 	params["roomName"] = "";
 	params["deckList"] = deck;
-	params["customDuelistID"] = _customID;
 
 	String output;
 	serializeJson(doc, output);
@@ -68,7 +66,6 @@ String LocalFunctions::JoinRoom(String roomName)
 	JsonObject params = jsonArray.createNestedObject();
 	params["roomName"] = roomName;
 	params["deckList"] = deck;
-	params["customDuelistID"] = _customID;
 
 	String output;
 	serializeJson(doc, output);
@@ -76,7 +73,7 @@ String LocalFunctions::JoinRoom(String roomName)
 	return output;
 }
 
-String LocalFunctions::SummonEvent(String eventInfo[]) {
+String LocalFunctions::SummonEvent(String socketID, String eventInfo[]) {
 
 	const std::size_t CAPACITY = JSON_ARRAY_SIZE(2) + 2 * JSON_OBJECT_SIZE(5);
 	StaticJsonDocument<CAPACITY> doc;
@@ -85,7 +82,7 @@ String LocalFunctions::SummonEvent(String eventInfo[]) {
 	jsonArray.add("card:play");
 
 	JsonObject params = jsonArray.createNestedObject();
-	params["duelistId"] = _customID;
+	params["duelistId"] = socketID;
 	params["cardId"] = eventInfo[2];
 	params["copyNumber"] = 1;
 	params["zoneName"] = eventInfo[1];
@@ -98,7 +95,7 @@ String LocalFunctions::SummonEvent(String eventInfo[]) {
 }
 
 //TODO: Implement Remove Card logic
-String LocalFunctions::RemoveCardEvent(String eventInfo[]) {
+String LocalFunctions::RemoveCardEvent(String socketID, String eventInfo[]) {
 
 	const std::size_t CAPACITY = JSON_ARRAY_SIZE(2) + 2 * JSON_OBJECT_SIZE(5);
 	StaticJsonDocument<CAPACITY> doc;
@@ -107,7 +104,7 @@ String LocalFunctions::RemoveCardEvent(String eventInfo[]) {
 	jsonArray.add("card:play");
 
 	JsonObject params = jsonArray.createNestedObject();
-	params["duelistId"] = _customID;
+	params["duelistId"] = socketID;
 	params["cardId"] = eventInfo[2];
 	params["copyNumber"] = 1;
 	params["zoneName"] = "hand";
@@ -175,15 +172,15 @@ String LocalFunctions::GetCardPosition(String eventInfo[]) {
 	return cardPosition;
 }
 
-String LocalFunctions::GetCardEvent(int eventName, String eventInfo[]) {
+String LocalFunctions::GetCardEvent(String socketID, int eventName, String eventInfo[]) {
 	String output;
 
 	switch (eventName) {
 	case 1:
-		output = SummonEvent(eventInfo);
+		output = SummonEvent(socketID, eventInfo);
 		break;
 	case 2:
-		output = RemoveCardEvent(eventInfo);
+		output = RemoveCardEvent(socketID, eventInfo);
 		break;
 	}
 

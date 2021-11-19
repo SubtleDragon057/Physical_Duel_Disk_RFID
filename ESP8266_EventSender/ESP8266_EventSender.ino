@@ -6,28 +6,43 @@
    For use with: Project ATEM Duel Disk Proto
 */
 
+#define ESP8266
+//#define ESP32
+
 #include <Arduino.h>
 #include <ArduinoJson.h>
+
+#ifdef ESP8266
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
-#include <SocketIOclient.h>
-#include <WebSockets.h>
-#include <WebSockets4WebServer.h>
-#include <WebSocketsClient.h>
-#include <WebSocketsServer.h>
-#include <WebSocketsVersion.h>
 #include <Hash.h>
+#endif
+
+#ifdef ESP32
+#include <Wifi.h>
+#include <WifiMulti.h>
+#include <WiFiClientSecure.h>
+#endif
+
+#include <WebSocketsClient.h>
+#include <SocketIOclient.h>
 
 #include "src\LocalFunctions.h"
 #include "src\Secrets.h"
 
-ESP8266WiFiMulti WiFiMulti;
+#ifdef ESP8266
+ESP8266WiFiMulti wiFiMulti;
+#endif
+#ifdef ESP32
+WiFiMulti wiFiMulti;
+#endif
+
 SocketIOclient socketIO;
 LocalFunctions func;
 SECRETS secrets;
 
 bool isInDuelRoom = false;
-String customID = "SubtleDragon057";
+String socketID;
 
 int deckList[20] = {
   25652259,
@@ -59,6 +74,7 @@ void socketIOEvent(socketIOmessageType_t type, uint8_t * payload, std::size_t le
       break;
     case sIOtype_CONNECT:
       Serial.printf("[IOc] Connected to url: %s\n", payload);
+      socketID = socketIO.getSocketId();
       break;
     case sIOtype_EVENT:
       Serial.printf("[IOc] get event: %s\n", payload);
@@ -66,7 +82,6 @@ void socketIOEvent(socketIOmessageType_t type, uint8_t * payload, std::size_t le
       break;
     case sIOtype_ERROR:
       Serial.printf("[IOc] get error: %u\n", length);
-      hexdump(payload, length);
       break;
   }
 }
@@ -74,7 +89,7 @@ void socketIOEvent(socketIOmessageType_t type, uint8_t * payload, std::size_t le
 void setup() {
 
   Serial.begin(9600);
-  func.Initialize(deckList, customID);
+  func.Initialize(deckList);
 
   for (uint8_t t = 4; t > 0; t--) {
     Serial.printf("[SETUP] BOOT WAIT %d...\n", t);
@@ -87,11 +102,11 @@ void setup() {
     WiFi.softAPdisconnect(true);
   }
 
-  WiFiMulti.addAP(secrets.networkName, secrets.networkPass);
+  wiFiMulti.addAP(secrets.networkName, secrets.networkPass);
 
   //WiFi.disconnect();
-  while (WiFiMulti.run() != WL_CONNECTED) {
-    delay(100);
+  while (wiFiMulti.run() != WL_CONNECTED) {
+      delay(100);
   }
 
   socketIO.begin(secrets.socketIP, secrets.socketPort);
@@ -134,7 +149,7 @@ void loop() {
   if (Serial.available()) {
 	  String data = Serial.readString();
 
-	  String output = func.GetCardEventAsJSON(data);
+	  String output = func.GetCardEventAsJSON(socketID, data);
 
 	  if (output == NULL) {
           Serial.println("No data available!");
