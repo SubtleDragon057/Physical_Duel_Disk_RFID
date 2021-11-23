@@ -6,69 +6,16 @@ LocalFunctions::LocalFunctions()
 {
 }
 
-void LocalFunctions::Initialize(int deckList[]) {
-	_decklist = deckList;
-}
-
 String LocalFunctions::GetCardEventAsJSON(String socketID, String data)
 {
-	String eventInfo[6];
+	String eventInfo[4];
 	
-	eventInfo[0] = data.substring(0, 1); //Event #
-	eventInfo[1] = GetZoneName((data.substring(2, 3)).toInt()); //Zone Name
-	eventInfo[2] = data.substring(4, 12); //Serial #
-	eventInfo[3] = data.substring(13, 14); //Battle Mode
-	eventInfo[4] = data.substring(15, 16); //Face Mode
-	eventInfo[5] = GetCardPosition(eventInfo); //Position
+	eventInfo[0] = data.substring(0, 1); // Event #
+	eventInfo[1] = GetZoneName((data.substring(2, 3)).toInt()); // Zone Name
+	eventInfo[2] = data.substring(4, 12); // Serial #
+	eventInfo[3] = GetCardPosition(data.substring(13, 14)); // Position
 
 	String output = GetCardEvent(socketID, eventInfo[0].toInt(), eventInfo);
-
-	return output;
-}
-
-String LocalFunctions::CreateRoom() {
-	StaticJsonDocument<384> dynamicDoc;
-	JsonArray deck = dynamicDoc.createNestedArray();
-	for (int i = 0; i < 20; i++) {
-		deck.add(_decklist[i]);
-	}
-	Serial.println(deck);
-
-	StaticJsonDocument<512> doc;
-	JsonArray jsonArray = doc.to<JsonArray>();
-
-	jsonArray.add("room:create");
-
-	JsonObject params = jsonArray.createNestedObject();
-	params["roomName"] = "";
-	params["deckList"] = deck;
-
-	String output;
-	serializeJson(doc, output);
-
-	return output;
-}
-
-String LocalFunctions::JoinRoom(String roomName)
-{
-	StaticJsonDocument<384> dynamicDoc;
-	JsonArray deck = dynamicDoc.createNestedArray();
-	for (int i = 0; i < 20; i++) {
-		deck.add(_decklist[i]);
-	}
-	Serial.println(deck);
-
-	StaticJsonDocument<512> doc;
-	JsonArray jsonArray = doc.to<JsonArray>();
-
-	jsonArray.add("room:join");
-
-	JsonObject params = jsonArray.createNestedObject();
-	params["roomName"] = roomName;
-	params["deckList"] = deck;
-
-	String output;
-	serializeJson(doc, output);
 
 	return output;
 }
@@ -116,18 +63,6 @@ String LocalFunctions::RemoveCardEvent(String socketID, String eventInfo[]) {
 	return output;
 }
 
-String LocalFunctions::RecieveEvent(uint8_t* payload)
-{	
-	DynamicJsonDocument doc(1024);
-	DeserializationError error = deserializeJson(doc, payload);
-	if (error) {
-		Serial.println("Error");
-	}
-
-	String data = doc[0];
-	return data;
-}
-
 //Private Functions
 String LocalFunctions::GetZoneName(int zoneNumber) {
 	String zoneName;
@@ -156,16 +91,16 @@ String LocalFunctions::GetZoneName(int zoneNumber) {
 	return zoneName;
 }
 
-String LocalFunctions::GetCardPosition(String eventInfo[]) {
+String LocalFunctions::GetCardPosition(String positionNumber) {
 	String cardPosition = "faceUp";
 
-	if (eventInfo[3] == "0" && eventInfo[4] == "2") {
+	if (positionNumber == "2") {
 		return cardPosition = "faceDownDefence";
 	}
-	else if (eventInfo[3] == "0" && eventInfo[4] == "3") {
+	else if (positionNumber == "3") {
 		return cardPosition = "faceUpDefence";
 	}
-	else if (eventInfo[3] == "1" && eventInfo[4] == "2") {
+	else if (positionNumber == "4") {
 		return cardPosition = "faceDown";
 	}
 

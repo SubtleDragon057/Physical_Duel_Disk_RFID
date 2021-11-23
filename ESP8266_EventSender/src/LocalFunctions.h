@@ -5,23 +5,18 @@
 class LocalFunctions
 {
 	private:
-		int* _decklist;
 
 		String GetZoneName(int zoneNumber);
-		String GetCardPosition(String eventInfo[]);
+		String GetCardPosition(String positionNumber);
 		String GetCardEvent(String socketID, int eventName, String eventInfo[]);
 
 	public:
-		LocalFunctions();
-		void Initialize(int deckList[]);		
+		LocalFunctions();	
 		
 		String GetCardEventAsJSON(String socketID, String data);
 		
-		String CreateRoom();
-		String JoinRoom(String roomName);
 		String SummonEvent(String socketID, String eventInfo[]);
 		String RemoveCardEvent(String socketID, String eventInfo[]);
-		String RecieveEvent(uint8_t* payload);
 };
 
 #endif

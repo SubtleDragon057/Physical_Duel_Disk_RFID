@@ -1,0 +1,36 @@
+#ifndef Button_h
+#define Button_h
+#include "Arduino.h"
+#include "Enums.h"
+
+class Button {
+private:
+	String _name;
+	byte _pin;
+	int _currentState;
+	int _previousState;
+	long _timeSincePressed = 0;
+	long _timeSinceReleased = 0;
+	long _currentMillis;
+	bool _dcOnRelease = false;
+
+	bool ButtonIsPressed(int debounceTime);
+	bool ButtonIsReleased(int debounceTime);
+	bool DoubleClickExpired(int doubleClickTime);
+
+public:	
+	bool enableDoubleClick = false;
+	
+	Button();
+	Button(String name, byte pin);
+
+	String Name() { return _name; }
+	byte Pin() { return _pin; }
+	int ButtonHoldTime() { return _timeSinceReleased - _timeSincePressed; }
+
+    void Initialize();
+	Enums::ButtonClicks CheckButtonForEvent(int debounce, int doubleClickTime);
+	void EnableDoubleClick();
+};
+
+#endif
