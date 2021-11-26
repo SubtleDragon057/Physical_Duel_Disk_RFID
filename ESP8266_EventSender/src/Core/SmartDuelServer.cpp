@@ -11,7 +11,7 @@ bool SmartDuelServer::isConnected = false;
 String SmartDuelServer::ReturnEventName;
 String SmartDuelServer::ReturnData;
 
-void SmartDuelServer::socketIOEvent(socketIOmessageType_t type, uint8_t* payload, std::size_t length) {    
+void SmartDuelServer::socketIOEvent(socketIOmessageType_t type, uint8_t* payload, std::size_t length) {
     switch (type) {
     case sIOtype_DISCONNECT:
         Serial.printf("[IOc] Disconnected!\n");
@@ -21,7 +21,6 @@ void SmartDuelServer::socketIOEvent(socketIOmessageType_t type, uint8_t* payload
         HandleRecievedEvent("Connection", payload);
         break;
     case sIOtype_EVENT:
-        Serial.printf("[IOc] get event: %s\n", payload);
         HandleRecievedEvent("Event", payload);
         break;
     case sIOtype_ERROR:
@@ -48,20 +47,18 @@ String SmartDuelServer::GetSocketId()
     return socketIO.getSocketId();
 }
 
-void SmartDuelServer::HandleRecievedEvent(String type, uint8_t* payload) {
-    StaticJsonDocument<200> filter;
-    filter["DuelRoom"]["Duelists"]["Duelist"][0] = true;
-    filter["DuelRoom"]["Duelists"]["Duelist"][1] = true;
-    
+void SmartDuelServer::HandleRecievedEvent(String type, uint8_t* payload) {    
     DynamicJsonDocument doc(1024);
     DeserializationError error = deserializeJson(doc, payload);
     String eventName = doc[0];
-    String eventData = doc[1]["roomName"];
 
     if (error) {
-        Serial.println("Error");
+        Serial.print("Error: ");
+        Serial.println(error.c_str());
         return;
     }
+
+    String eventData = doc[1]["roomName"];
 
     if (eventName == "room:join") {
         Serial.println("That room doesn't exist! Please try again");

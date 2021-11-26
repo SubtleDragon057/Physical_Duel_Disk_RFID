@@ -1,5 +1,5 @@
 #include "Arduino.h"
-#include "ArduinoJSON.h"
+#include "ArduinoJson.h"
 #include "LocalFunctions.h"
 
 LocalFunctions::LocalFunctions()
@@ -33,7 +33,7 @@ String LocalFunctions::SummonEvent(String socketID, String eventInfo[]) {
 	params["cardId"] = eventInfo[2];
 	params["copyNumber"] = 1;
 	params["zoneName"] = eventInfo[1];
-	params["cardPosition"] = eventInfo[5];
+	params["cardPosition"] = eventInfo[3];
 
 	String output;
 	serializeJson(doc, output);

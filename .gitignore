@@ -11,3 +11,4 @@ __vm/
 #Ignore any changes to the secrets so the default isn't changed
 ESP8266_EventSender/src/Secrets.h
 Arduino_Uno_RFID/CppProperties.json
+*.user

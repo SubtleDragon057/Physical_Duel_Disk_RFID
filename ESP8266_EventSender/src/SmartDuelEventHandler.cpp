@@ -13,12 +13,6 @@ void SmartDuelEventHandler::InitializeLobby(int deckList[]) {
 void SmartDuelEventHandler::HandleLobby(int buttonEvents[])
 {
 	String data = _lobby.CheckLobbyForAction(buttonEvents);
-
-	// TODO: Move this where it makes sense
-	if (SocketID == NULL && SmartDuelServer::isConnected) {
-		SocketID = _server.GetSocketId();
-	}
-
 	if (data == "NoAction") return;
 
 	SendEvent(data);
@@ -33,6 +27,10 @@ void SmartDuelEventHandler::HandleDuelRoom(int buttonEvents[]) {
 
 void SmartDuelEventHandler::Connect(String socketIP, int socketPort) {
 	_server.Initialize(socketIP, socketPort);
+}
+
+String SmartDuelEventHandler::GetSocketId() {
+	return _server.GetSocketId();
 }
 
 void SmartDuelEventHandler::SendEvent(String eventData)

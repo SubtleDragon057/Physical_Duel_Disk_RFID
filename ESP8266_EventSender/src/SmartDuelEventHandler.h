@@ -28,6 +28,7 @@ public:
 
 	// Server Functions
 	void Connect(String socketIP, int socketPort);
+	String GetSocketId();
 	void SendEvent(String eventData);
 	void ListenToServer();
 	void HandleIncomingEvents();

@@ -6,12 +6,13 @@
    For use with: Project ATEM Duel Disk Proto
 */
 
-const bool debug = false;
+const bool debug = true;
 
 #define esp8266
 //#define esp32
 
 #include <Arduino.h>
+#include <Wire.h>
 
 #ifdef esp8266
 #include <ESP8266WiFi.h>
@@ -28,6 +29,7 @@ const bool debug = false;
 #include "src\LocalFunctions.h"
 #include "src\ButtonHandler.h"
 #include "src\SmartDuelEventHandler.h"
+#include "src\SerialEventHandler.h"
 #include "src\Secrets.h"
 #include "src\Core\Entities\Button.h"
 
@@ -40,6 +42,7 @@ WiFiMulti wiFiMulti;
 
 ButtonHandler buttonHandler(debug);
 SmartDuelEventHandler smartDuelEventHandler(debug);
+SerialEventHandler serialEventHandler(debug);
 LocalFunctions func;
 SECRETS secrets;
 
@@ -47,8 +50,8 @@ String socketID;
 
 const byte numButtons = 5;
 Button buttons[numButtons] = {
-    Button("Button1", 5),
-    Button("Button2", 4),
+    Button("Button1", 0),
+    Button("Button2", 2),
     Button("Button3", 14),
     Button("Button4", 12),
     Button("Button5", 13)
@@ -77,16 +80,12 @@ int deckList[20] = {
   29654737
 };
 
-void setup() {
+void setup() {    
 
   Serial.begin(9600);
+  Wire.begin(4, 5);
 
-  for (uint8_t t = 4; t > 0; t--) {
-    Serial.printf("[SETUP] BOOT WAIT %d...\n", t);
-    Serial.flush();
-    delay(1000);
-  }
-
+  serialEventHandler.Initialize();
   buttonHandler.Initialize(numButtons, buttons);
 
   // disable AP
@@ -113,6 +112,12 @@ void loop() {
       smartDuelEventHandler.HandleLobby(buttonHandler.ButtonEvents);
   }
 
+  if (socketID == NULL) {
+      socketID = smartDuelEventHandler.GetSocketId();
+      Serial.print("Socket ID: ");
+      Serial.println(socketID);
+  }
+
   while (smartDuelEventHandler.IsInDuelRoom && !smartDuelEventHandler.IsDueling) {
       smartDuelEventHandler.ListenToServer();
       buttonHandler.CheckButtons();
@@ -124,6 +129,7 @@ void loop() {
   
   if (Serial.available()) {
 	  String data = Serial.readString();
+      Serial.println(data);
 
 	  String output = func.GetCardEventAsJSON(socketID, data);
 

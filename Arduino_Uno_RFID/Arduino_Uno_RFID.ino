@@ -8,6 +8,7 @@ bool debug = false;
 
 #include <MFRC522.h>
 #include <SPI.h>
+#include <Wire.h>
 
 #include "src\ZoneHandler.h"
 #include "src\EventHandler.h"
@@ -45,6 +46,9 @@ void setup() {
 
 	Serial.begin(9600); 
 	SPI.begin();
+	
+	Wire.begin(11);
+	Wire.onRequest(SendToESP);
 
 	zoneHandler.Initialize(numZones, readerPins, attackSensors, 
 		defenceSensors, spellSensors);
@@ -66,4 +70,10 @@ void loop() {
 		String data = eventHandler.FormatEventInfo(zoneHandler.Zones[i], eventType, sensor);
 		Serial.println(data);
 	}
+}
+
+void SendToESP() {
+	Serial.println("Incoming Transmission");
+
+	Wire.write("057");
 }

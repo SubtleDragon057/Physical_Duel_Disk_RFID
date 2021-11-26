@@ -5,10 +5,10 @@
 class SECRETS 
 {
 public:
-	String socketIP = "";
+	String socketIP = "192.168.0.114";
 	int socketPort = 8080;
-	const char* networkName = "";
-	const char* networkPass = "";
+	const char* networkName = "Cliff's Landscaping";
+	const char* networkPass = "7809808530";
 };
 
 #endif
