@@ -1,12 +1,13 @@
-#ifndef SerialEventHandler_h
-#define SerialEventHandler_h
+#ifndef CommunicationsHandler_h
+#define CommunicationsHandler_h
 #include "arduino.h"
 #include "Wire.h"
 
-class SerialEventHandler {
+class CommunicationsHandler {
 private:
 	const byte _arduinoAddress = 11;
 	const byte _connectionResponseLength = 3;
+	const byte _newDuelData = 11;
 
 	byte _message[12] = {
 		0x53,
@@ -28,15 +29,15 @@ private:
 		0x37
 	};
 	
-	bool _debug;	
+	bool _debug;
+
+	bool CheckForResponse();
 
 public:
-	SerialEventHandler(bool debug);
+	CommunicationsHandler(bool debug);
 
 	void Initialize();
-	void InitializeArduinoCommunication();
-	void ResetArduinoConnection();
-	bool CheckForResponse();
+	String PollForNewDuelState();
 };
 
 #endif

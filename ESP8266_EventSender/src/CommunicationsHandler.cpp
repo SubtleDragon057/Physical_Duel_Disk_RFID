@@ -1,13 +1,13 @@
-#include "SerialEventHandler.h"
+#include "CommunicationsHandler.h"
 #include "Arduino.h"
 #include "Wire.h"
 
-SerialEventHandler::SerialEventHandler(bool debug)
+CommunicationsHandler::CommunicationsHandler(bool debug)
 {
 	_debug = debug;
 }
 
-void SerialEventHandler::Initialize()
+void CommunicationsHandler::Initialize()
 {
 	Serial.println();
 	for (uint8_t t = 3; t > 0; t--) {
@@ -15,11 +15,6 @@ void SerialEventHandler::Initialize()
 		Serial.flush();
 		delay(1000);
 	}
-
-	InitializeArduinoCommunication();
-}
-
-void SerialEventHandler::InitializeArduinoCommunication() {
 
 	bool pingArduino = false;
 	while (!pingArduino) {
@@ -34,7 +29,25 @@ void SerialEventHandler::InitializeArduinoCommunication() {
 	Serial.println();
 }
 
-bool SerialEventHandler::CheckForResponse() {
+String CommunicationsHandler::PollForNewDuelState()
+{
+	String response = "";
+
+	Wire.beginTransmission(_arduinoAddress);
+	Wire.write("Check");
+	Wire.endTransmission();
+	
+	Wire.requestFrom(_arduinoAddress, _newDuelData);
+
+	while (Wire.available()) {
+		char message = Wire.read();
+		response += message;
+	}
+	
+	return response;
+}
+
+bool CommunicationsHandler::CheckForResponse() {
 	bool arduinoConnected = false;
 	String response = "";
 

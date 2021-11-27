@@ -20,6 +20,8 @@ EventHandler eventHandler;
 
 const byte numZones = 3;
 
+String message = "";
+
 byte readerPins[numZones + 1] = { 
 	2, 
 	3, 
@@ -48,6 +50,7 @@ void setup() {
 	SPI.begin();
 	
 	Wire.begin(11);
+	Wire.onReceive(ConnectToESP);
 	Wire.onRequest(SendToESP);
 
 	zoneHandler.Initialize(numZones, readerPins, attackSensors, 
@@ -60,20 +63,41 @@ void setup() {
 
 void loop() {
 
+	delay(100);	
+
+}
+
+void ConnectToESP(int numBytes) {
+	message = "";
+
+	while (Wire.available()) {
+		char incoming = Wire.read();
+		message += incoming;
+	}
+}
+
+void SendToESP() {
+	if (message == "SubtleDragon") {
+		Wire.write("057");
+		return;
+	}
+	
 	// Cycle through each zone on the Duel Disk to check for any changes
 	for (int i = 0; i < numZones; i++) {
 		Enums::SensorType sensor = zoneHandler.CheckZone(i);
 
 		if (sensor == Enums::None) continue;
-		
+
 		Enums::Events eventType = eventHandler.SetEventType(zoneHandler.Zones[i], sensor);
 		String data = eventHandler.FormatEventInfo(zoneHandler.Zones[i], eventType, sensor);
+
+		char* output;
+		data.toCharArray(output, 11);
+
 		Serial.println(data);
+		Wire.write(output);
+		return; // TODO: This may cause multiple cards placed in the same frame to be missed!
 	}
-}
 
-void SendToESP() {
-	Serial.println("Incoming Transmission");
-
-	Wire.write("057");
+	Wire.write("12345678901");
 }

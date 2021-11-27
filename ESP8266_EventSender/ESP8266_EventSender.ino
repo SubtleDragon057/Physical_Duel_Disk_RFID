@@ -29,7 +29,7 @@ const bool debug = true;
 #include "src\LocalFunctions.h"
 #include "src\ButtonHandler.h"
 #include "src\SmartDuelEventHandler.h"
-#include "src\SerialEventHandler.h"
+#include "src\CommunicationsHandler.h"
 #include "src\Secrets.h"
 #include "src\Core\Entities\Button.h"
 
@@ -42,7 +42,7 @@ WiFiMulti wiFiMulti;
 
 ButtonHandler buttonHandler(debug);
 SmartDuelEventHandler smartDuelEventHandler(debug);
-SerialEventHandler serialEventHandler(debug);
+CommunicationsHandler communicationsHandler(debug);
 LocalFunctions func;
 SECRETS secrets;
 
@@ -85,7 +85,7 @@ void setup() {
   Serial.begin(9600);
   Wire.begin(4, 5);
 
-  serialEventHandler.Initialize();
+  communicationsHandler.Initialize();
   buttonHandler.Initialize(numButtons, buttons);
 
   // disable AP
@@ -106,7 +106,7 @@ void setup() {
 
 void loop() {
   
-  while (!smartDuelEventHandler.IsInDuelRoom) {      
+  /*while (!smartDuelEventHandler.IsInDuelRoom) {      
       smartDuelEventHandler.ListenToServer();
       buttonHandler.CheckButtons();
       smartDuelEventHandler.HandleLobby(buttonHandler.ButtonEvents);
@@ -122,22 +122,15 @@ void loop() {
       smartDuelEventHandler.ListenToServer();
       buttonHandler.CheckButtons();
       smartDuelEventHandler.HandleDuelRoom(buttonHandler.ButtonEvents);
-  }
+  }*/
   
   smartDuelEventHandler.ListenToServer();
   buttonHandler.CheckButtons();
   
-  if (Serial.available()) {
-	  String data = Serial.readString();
-      Serial.println(data);
+  String output = communicationsHandler.PollForNewDuelState();
+  if (output == "12345678901") return;
 
-	  String output = func.GetCardEventAsJSON(socketID, data);
-
-	  if (output == NULL) {
-          Serial.println("No data available!");
-          return;
-	  }
-
-      smartDuelEventHandler.SendEvent(output);
-  }
+  Serial.println(output);
+  output = func.GetCardEventAsJSON(socketID, output);
+  smartDuelEventHandler.SendEvent(output);
 }

@@ -9,32 +9,27 @@ EventHandler::EventHandler()
 
 String EventHandler::FormatEventInfo(DualCardZone zone, Enums::Events eventType, Enums::SensorType sensor)
 {
-	String comma = ",";
-	String eventInfo;
+	String eventInfo = "";
 	Monster monster = zone.GetCurrentMonster();
 	Spell spell = zone.GetCurrentSpell();
 
 	eventInfo.concat(eventType);
-	eventInfo.concat(comma);
 
 	// Card Zone
 	if (sensor != Enums::SpellTrap) {
 		eventInfo.concat(zone.ZoneNumber);
-		eventInfo.concat(comma);
 	}
 	else {
 		eventInfo.concat(zone.ZoneNumber + 3);
-		eventInfo.concat(comma);
 	}
 
 	// Card ID and Position
 	if (sensor != Enums::SpellTrap) {
 		eventInfo.concat(monster.GetSerialNumber());
-		eventInfo.concat(comma);
 		eventInfo.concat(monster.GetPosition());
 	}
 	else {
-		eventInfo.concat(spell.GetSerialNumber() + comma);
+		eventInfo.concat(spell.GetSerialNumber());
 		eventInfo.concat(spell.GetPosition());
 	}
 
