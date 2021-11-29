@@ -31,13 +31,13 @@ private:
 	
 	bool _debug;
 
-	bool CheckForResponse();
+	bool CheckForArduino();
 
 public:
 	CommunicationsHandler(bool debug);
 
 	void Initialize();
-	String PollForNewDuelState();
+	String PollForNewEvent();
 };
 
 #endif

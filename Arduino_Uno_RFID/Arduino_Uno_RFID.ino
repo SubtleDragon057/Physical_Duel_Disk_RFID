@@ -12,15 +12,15 @@ bool debug = false;
 
 #include "src\ZoneHandler.h"
 #include "src\EventHandler.h"
+#include "src\CommunicationsHandler.h"
 #include "src\Core\Entities\Components.h"
 #include "src\Core\Entities\Enums.h"
 
-ZoneHandler zoneHandler;
-EventHandler eventHandler;
+ZoneHandler zoneHandler(debug);
+EventHandler eventHandler(debug);
+CommunicationsHandler communicationsHandler(debug);
 
 const byte numZones = 3;
-
-String message = "";
 
 byte readerPins[numZones + 1] = { 
 	2, 
@@ -50,8 +50,8 @@ void setup() {
 	SPI.begin();
 	
 	Wire.begin(11);
-	Wire.onReceive(ConnectToESP);
-	Wire.onRequest(SendToESP);
+	Wire.onReceive(HandleRecieve);
+	Wire.onRequest(HandleRequest);
 
 	zoneHandler.Initialize(numZones, readerPins, attackSensors, 
 		defenceSensors, spellSensors);
@@ -60,44 +60,23 @@ void setup() {
 	Serial.println();
 }
 
-
 void loop() {
-
-	delay(100);	
-
-}
-
-void ConnectToESP(int numBytes) {
-	message = "";
-
-	while (Wire.available()) {
-		char incoming = Wire.read();
-		message += incoming;
-	}
-}
-
-void SendToESP() {
-	if (message == "SubtleDragon") {
-		Wire.write("057");
-		return;
-	}
 	
 	// Cycle through each zone on the Duel Disk to check for any changes
 	for (int i = 0; i < numZones; i++) {
-		Enums::SensorType sensor = zoneHandler.CheckZone(i);
+		Enums::SensorType trippedSensor = zoneHandler.CheckForTrippedSensor(i);
 
-		if (sensor == Enums::None) continue;
+		if (trippedSensor == Enums::None) continue;
 
-		Enums::Events eventType = eventHandler.SetEventType(zoneHandler.Zones[i], sensor);
-		String data = eventHandler.FormatEventInfo(zoneHandler.Zones[i], eventType, sensor);
-
-		char* output;
-		data.toCharArray(output, 11);
-
-		Serial.println(data);
-		Wire.write(output);
-		return; // TODO: This may cause multiple cards placed in the same frame to be missed!
+		String eventData = eventHandler.GetFormattedEventData(zoneHandler.Zones[i], trippedSensor);
+		communicationsHandler.HandleNewEvent(eventData);
 	}
+}
 
-	Wire.write("12345678901");
+void HandleRecieve(int numBytes) {
+	communicationsHandler.HandleRecieve();
+}
+
+void HandleRequest() {
+	communicationsHandler.HandleRequest();
 }

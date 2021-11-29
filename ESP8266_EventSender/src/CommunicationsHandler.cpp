@@ -1,14 +1,13 @@
 #include "CommunicationsHandler.h"
 #include "Arduino.h"
 #include "Wire.h"
+#include "Core\Entities\Enums.h"
 
-CommunicationsHandler::CommunicationsHandler(bool debug)
-{
+CommunicationsHandler::CommunicationsHandler(bool debug) {
 	_debug = debug;
 }
 
-void CommunicationsHandler::Initialize()
-{
+void CommunicationsHandler::Initialize() {
 	Serial.println();
 	for (uint8_t t = 3; t > 0; t--) {
 		Serial.printf("[SETUP] BOOT WAIT %d...\n", t);
@@ -16,43 +15,57 @@ void CommunicationsHandler::Initialize()
 		delay(1000);
 	}
 
-	bool pingArduino = false;
-	while (!pingArduino) {
-
-		Serial.println("Connecting");
-		delay(500);
-
-		pingArduino = CheckForResponse();
+	bool isArduinoConnected = false;
+	while (!isArduinoConnected) {
+		isArduinoConnected = CheckForArduino();
+		delay(50);
 	}
 
-	Serial.println("Arduino Is Connected");
+	delay(1000);
+	Serial.println("[SETUP] Arduino Connected");
 	Serial.println();
 }
 
-String CommunicationsHandler::PollForNewDuelState()
-{
-	String response = "";
+String CommunicationsHandler::PollForNewEvent() {
 
 	Wire.beginTransmission(_arduinoAddress);
-	Wire.write("Check");
+	Wire.write(Enums::Communication::HasNewEvent);
 	Wire.endTransmission();
 	
-	Wire.requestFrom(_arduinoAddress, _newDuelData);
+	const byte constByte = 1;
+	Wire.requestFrom(_arduinoAddress, constByte);
 
+	bool hasEvent = false;
 	while (Wire.available()) {
-		char message = Wire.read();
-		response += message;
+		hasEvent = Wire.read();
+	}
+
+	if (hasEvent) {		
+		Wire.beginTransmission(_arduinoAddress);
+		Wire.write(Enums::Communication::GetEventInfo);
+		Wire.endTransmission();
+
+		Wire.requestFrom(_arduinoAddress, _newDuelData);
+
+		String eventData = "";
+
+		while (Wire.available()) {			
+			char message = Wire.read();
+			eventData += message;
+		}
+
+		return eventData;
 	}
 	
-	return response;
+	return "No Events!!";
 }
 
-bool CommunicationsHandler::CheckForResponse() {
+bool CommunicationsHandler::CheckForArduino() {
 	bool arduinoConnected = false;
 	String response = "";
 
 	Wire.beginTransmission(_arduinoAddress);
-	Wire.write("SubtleDragon");
+	Wire.write(Enums::Communication::Connection);
 	Wire.endTransmission();
 
 	Wire.requestFrom(_arduinoAddress, _connectionResponseLength);
@@ -61,7 +74,6 @@ bool CommunicationsHandler::CheckForResponse() {
 		char message = Wire.read();
 		response += message;
 	}
-	
-	Serial.println(response);
+
 	return response == "057";
 }

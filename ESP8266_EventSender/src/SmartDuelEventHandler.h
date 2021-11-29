@@ -4,12 +4,14 @@
 #include "Core\SmartDuelServer.h"
 #include "Features\Lobby.h"
 #include "Features\DuelRoom.h"
+#include "Wrappers\SmartDuelEventWrapper.h"
 
 class SmartDuelEventHandler {
 private:
 	SmartDuelServer _server;
 	Lobby _lobby;
 	DuelRoom _duelRoom;
+	SmartDuelEventWrapper _eventWrapper;
 	bool _debug;
 
 public:
@@ -28,10 +30,9 @@ public:
 
 	// Server Functions
 	void Connect(String socketIP, int socketPort);
-	String GetSocketId();
-	void SendEvent(String eventData);
 	void ListenToServer();
 	void HandleIncomingEvents();
+	void HandleOutgoingEvent(String eventData);
 };
 
 #endif

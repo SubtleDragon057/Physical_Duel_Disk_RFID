@@ -15,10 +15,11 @@ void SmartDuelServer::socketIOEvent(socketIOmessageType_t type, uint8_t* payload
     switch (type) {
     case sIOtype_DISCONNECT:
         Serial.printf("[IOc] Disconnected!\n");
+        SmartDuelServer::isConnected = false;
         break;
     case sIOtype_CONNECT:
         Serial.printf("[IOc] Connected to url: %s\n", payload);
-        HandleRecievedEvent("Connection", payload);
+        SmartDuelServer::isConnected = true;
         break;
     case sIOtype_EVENT:
         HandleRecievedEvent("Event", payload);
@@ -39,7 +40,7 @@ void SmartDuelServer::ListenToServer() {
 }
 
 void SmartDuelServer::SendEvent(String eventData) {
-     socketIO.sendEVENT(eventData);
+    socketIO.sendEVENT(eventData);
 }
 
 String SmartDuelServer::GetSocketId()

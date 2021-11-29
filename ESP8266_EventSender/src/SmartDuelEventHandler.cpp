@@ -15,30 +15,26 @@ void SmartDuelEventHandler::HandleLobby(int buttonEvents[])
 	String data = _lobby.CheckLobbyForAction(buttonEvents);
 	if (data == "NoAction") return;
 
-	SendEvent(data);
+	_server.SendEvent(data);
 }
 
 void SmartDuelEventHandler::HandleDuelRoom(int buttonEvents[]) {
 	String data = _duelRoom.CheckDuelRoomForAction(buttonEvents);
 	if (data == "NoAction") return;
 
-	SendEvent(data);
+	_server.SendEvent(data);
 }
 
 void SmartDuelEventHandler::Connect(String socketIP, int socketPort) {
 	_server.Initialize(socketIP, socketPort);
 }
 
-String SmartDuelEventHandler::GetSocketId() {
-	return _server.GetSocketId();
-}
-
-void SmartDuelEventHandler::SendEvent(String eventData)
-{
-	_server.SendEvent(eventData);
-}
-
 void SmartDuelEventHandler::ListenToServer() {
+	if (_server.isConnected && SocketID == NULL) {
+		SocketID = _server.GetSocketId();
+		Serial.println("Socket ID: " + SocketID);
+	}
+	
 	_server.ListenToServer();
 	HandleIncomingEvents();
 }
@@ -59,4 +55,15 @@ void SmartDuelEventHandler::HandleIncomingEvents() {
 		IsDueling = true;
 		SmartDuelServer::ReturnEventName = "Waiting";
 	}
+}
+
+void SmartDuelEventHandler::HandleOutgoingEvent(String eventData)
+{
+	String output = _eventWrapper.GetCardEventAsJSON(SocketID, eventData);
+
+	if (_debug) {
+		Serial.println(output);
+	}
+
+	_server.SendEvent(output);
 }

@@ -55,9 +55,9 @@ public:
 		AnalogIR defenceSnesors[], AnalogIR spellSensors[]);
 	void Initialize(byte numZones, byte readerPins[], ProximitySensor attackSensors[],
 		AnalogIR defenceSensors[], AnalogIR spellSensors[], byte customKey[]);
-	Enums::SensorType CheckZone(int zoneNumber);
+	Enums::SensorType CheckForTrippedSensor(int zoneNumber);
 	String GetCardSerialNumber(MFRC522 reader);
-	void HandleUpdateCard(DualCardZone& zone, Enums::SensorType sensor);
+	void HandleUpdateCard(DualCardZone& zone, Enums::SensorType sensor, bool isRemoval = false);
 };
 
 #endif

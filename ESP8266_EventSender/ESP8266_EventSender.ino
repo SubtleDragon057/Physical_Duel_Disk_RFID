@@ -6,7 +6,7 @@
    For use with: Project ATEM Duel Disk Proto
 */
 
-const bool debug = true;
+const bool debug = false;
 
 #define esp8266
 //#define esp32
@@ -26,7 +26,6 @@ const bool debug = true;
 #include <WiFiClientSecure.h>
 #endif
 
-#include "src\LocalFunctions.h"
 #include "src\ButtonHandler.h"
 #include "src\SmartDuelEventHandler.h"
 #include "src\CommunicationsHandler.h"
@@ -43,10 +42,7 @@ WiFiMulti wiFiMulti;
 ButtonHandler buttonHandler(debug);
 SmartDuelEventHandler smartDuelEventHandler(debug);
 CommunicationsHandler communicationsHandler(debug);
-LocalFunctions func;
 SECRETS secrets;
-
-String socketID;
 
 const byte numButtons = 5;
 Button buttons[numButtons] = {
@@ -106,31 +102,23 @@ void setup() {
 
 void loop() {
   
-  /*while (!smartDuelEventHandler.IsInDuelRoom) {      
+  while (!smartDuelEventHandler.IsInDuelRoom) {      
       smartDuelEventHandler.ListenToServer();
       buttonHandler.CheckButtons();
       smartDuelEventHandler.HandleLobby(buttonHandler.ButtonEvents);
-  }
-
-  if (socketID == NULL) {
-      socketID = smartDuelEventHandler.GetSocketId();
-      Serial.print("Socket ID: ");
-      Serial.println(socketID);
   }
 
   while (smartDuelEventHandler.IsInDuelRoom && !smartDuelEventHandler.IsDueling) {
       smartDuelEventHandler.ListenToServer();
       buttonHandler.CheckButtons();
       smartDuelEventHandler.HandleDuelRoom(buttonHandler.ButtonEvents);
-  }*/
+  }
   
   smartDuelEventHandler.ListenToServer();
   buttonHandler.CheckButtons();
   
-  String output = communicationsHandler.PollForNewDuelState();
-  if (output == "12345678901") return;
+  String output = communicationsHandler.PollForNewEvent();
+  if (output == "No Events!!") return;
 
-  Serial.println(output);
-  output = func.GetCardEventAsJSON(socketID, output);
-  smartDuelEventHandler.SendEvent(output);
+  smartDuelEventHandler.HandleOutgoingEvent(output);
 }

@@ -17,6 +17,11 @@ public:
 		EnableDouble,
 		Hold
 	};
+	enum Communication {
+		Connection = 0x05,
+		HasNewEvent = 0x04,
+		GetEventInfo = 0x03
+	};
 };
 
 #endif

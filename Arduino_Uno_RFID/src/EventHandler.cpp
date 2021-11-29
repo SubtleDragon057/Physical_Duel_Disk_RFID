@@ -3,37 +3,38 @@
 #include "Core\Zone.h"
 #include "Core\Entities\Enums.h"
 
-EventHandler::EventHandler() 
+EventHandler::EventHandler(bool debug) 
 {
+	_debug = debug;
 }
 
-String EventHandler::FormatEventInfo(DualCardZone zone, Enums::Events eventType, Enums::SensorType sensor)
+String EventHandler::GetFormattedEventData(DualCardZone zone, Enums::SensorType sensor)
 {
-	String eventInfo = "";
+	String eventData = "";
 	Monster monster = zone.GetCurrentMonster();
 	Spell spell = zone.GetCurrentSpell();
 
-	eventInfo.concat(eventType);
+	eventData.concat(SetEventType(zone, sensor));
 
 	// Card Zone
 	if (sensor != Enums::SpellTrap) {
-		eventInfo.concat(zone.ZoneNumber);
+		eventData.concat(zone.ZoneNumber);
 	}
 	else {
-		eventInfo.concat(zone.ZoneNumber + 3);
+		eventData.concat(zone.ZoneNumber + 3);
 	}
 
 	// Card ID and Position
 	if (sensor != Enums::SpellTrap) {
-		eventInfo.concat(monster.GetSerialNumber());
-		eventInfo.concat(monster.GetPosition());
+		eventData.concat(monster.GetSerialNumber());
+		eventData.concat(monster.GetPosition());
 	}
 	else {
-		eventInfo.concat(spell.GetSerialNumber());
-		eventInfo.concat(spell.GetPosition());
+		eventData.concat(spell.GetSerialNumber());
+		eventData.concat(spell.GetPosition());
 	}
 
-	return eventInfo;
+	return eventData;
 }
 
 Enums::Events EventHandler::SetEventType(DualCardZone zone, Enums::SensorType sensor) {
@@ -46,7 +47,7 @@ Enums::Events EventHandler::SetEventType(DualCardZone zone, Enums::SensorType se
 
 		return Enums::Events::SetSpellTrap;
 	}
-	
+
 	Monster monster = zone.GetCurrentMonster();
 	if (monster.GetPosition() == Enums::NoCard) {
 		return Enums::Events::Remove;

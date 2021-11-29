@@ -5,12 +5,15 @@
 #include "Core\Entities\Enums.h"
 
 class EventHandler {
+private:
+	bool _debug;
+	Enums::Events SetEventType(DualCardZone zone, Enums::SensorType sensor);
+
 public:
 
-	EventHandler();
+	EventHandler(bool debug);
 
-	String FormatEventInfo(DualCardZone zone, Enums::Events eventType, Enums::SensorType sensor);
-	Enums::Events SetEventType(DualCardZone zone, Enums::SensorType sensor);
+	String GetFormattedEventData(DualCardZone zone, Enums::SensorType sensor);
 };
 
 #endif
