@@ -33,9 +33,10 @@ void Lobby::UpdateCurrentRoom(String roomName) {
 }
 
 String Lobby::HandleCreateRoomEvent() {
-    StaticJsonDocument<384> staticDoc;
+    StaticJsonDocument<512> staticDoc;
     JsonArray deck = staticDoc.createNestedArray();
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 35; i++) {
+        if (_decklist[i] == 0) continue;
         deck.add(_decklist[i]);
     }
 
@@ -60,9 +61,10 @@ String Lobby::HandleJoinRoomEvent() {
 
     String roomName = Serial.readString();
 
-    StaticJsonDocument<384> dynamicDoc;
-    JsonArray deck = dynamicDoc.createNestedArray();
-    for (int i = 0; i < 20; i++) {
+    StaticJsonDocument<512> staticDoc;
+    JsonArray deck = staticDoc.createNestedArray();
+    for (int i = 0; i < 35; i++) {
+        if (_decklist[i] == 0) continue;
         deck.add(_decklist[i]);
     }
 

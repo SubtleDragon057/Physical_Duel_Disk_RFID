@@ -18,6 +18,46 @@ String SmartDuelEventWrapper::GetCardEventAsJSON(String socketID, String data)
 	return PlayCardEvent(socketID, eventInfo);
 }
 
+String SmartDuelEventWrapper::GetAttackEventAsJSON(String socketID, int monsterID, int copyNumber, String targetZone)
+{
+	const std::size_t CAPACITY = JSON_ARRAY_SIZE(2) + 2 * JSON_OBJECT_SIZE(4);
+	StaticJsonDocument<CAPACITY> doc;
+	JsonArray jsonArray = doc.to<JsonArray>();
+
+	jsonArray.add("card:attack");
+
+	JsonObject params = jsonArray.createNestedObject();
+	params["duelistId"] = socketID;
+	params["cardId"] = monsterID;
+	params["copyNumber"] = copyNumber;
+	params["zoneName"] = targetZone;
+
+	String output;
+	serializeJson(doc, output);
+
+	return output;
+}
+
+String SmartDuelEventWrapper::GetDeclareEventAsJSON(String socketID, int cardID, int copyNumber) {
+	const std::size_t CAPACITY = JSON_ARRAY_SIZE(2) + 2 * JSON_OBJECT_SIZE(5);
+	StaticJsonDocument<CAPACITY> doc;
+	JsonArray jsonArray = doc.to<JsonArray>();
+
+	jsonArray.add("card:declare");
+
+	JsonObject params = jsonArray.createNestedObject();
+	params["duelistId"] = socketID;
+	params["cardId"] = cardID;
+	params["copyNumber"] = copyNumber;
+	params["zoneName"] = nullptr;
+	params["cardPosition"] = nullptr;
+
+	String output;
+	serializeJson(doc, output);
+
+	return output;
+}
+
 String SmartDuelEventWrapper::PlayCardEvent(String socketID, String eventInfo[]) {
 	
 	const std::size_t CAPACITY = JSON_ARRAY_SIZE(2) + 2 * JSON_OBJECT_SIZE(5);
@@ -65,6 +105,23 @@ String SmartDuelEventWrapper::GetZoneName(String zone, String eventType) {
 		break;
 	case 5:
 		zoneName = "spellTrap3";
+		break;
+	}
+
+	return zoneName;
+}
+
+String SmartDuelEventWrapper::GetTargetZoneName(int zoneNumber) {
+	String zoneName = "";
+	switch (zoneNumber) {
+	case 0:
+		zoneName = "mainMonster3";
+		break;
+	case 1:
+		zoneName = "mainMonster2";
+		break;
+	case 2:
+		zoneName = "mainMonster1";
 		break;
 	}
 

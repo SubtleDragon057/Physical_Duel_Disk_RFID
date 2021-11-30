@@ -14,6 +14,9 @@ public:
 	SmartDuelEventWrapper();
 
 	String GetCardEventAsJSON(String socketID, String data);
+	String GetAttackEventAsJSON(String socketID, int monsterID, int copyNumber, String targetZone);
+	String GetDeclareEventAsJSON(String socketID, int cardID, int copyNumber);
+	String GetTargetZoneName(int zoneNumber);
 };
 
 #endif

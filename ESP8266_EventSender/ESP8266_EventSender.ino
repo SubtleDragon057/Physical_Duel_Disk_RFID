@@ -8,8 +8,8 @@
 
 const bool debug = false;
 
-#define esp8266
-//#define esp32
+//#define esp8266
+#define esp32
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -34,9 +34,23 @@ const bool debug = false;
 
 #ifdef esp8266
 ESP8266WiFiMulti wiFiMulti;
+byte sdaPin = 4;
+byte sclPin = 5;
+byte button1Pin = 0;
+byte button2Pin = 2;
+byte button3Pin = 14;
+byte button4Pin = 12;
+byte button5Pin = 13;
 #endif
 #ifdef esp32
 WiFiMulti wiFiMulti;
+byte sdaPin = 21;
+byte sclPin = 22;
+byte button1Pin = 19;
+byte button2Pin = 18;
+byte button3Pin = 5;
+byte button4Pin = 17;
+byte button5Pin = 16;
 #endif
 
 ButtonHandler buttonHandler(debug);
@@ -46,40 +60,44 @@ SECRETS secrets;
 
 const byte numButtons = 5;
 Button buttons[numButtons] = {
-    Button("Button1", 0),
-    Button("Button2", 2),
-    Button("Button3", 14),
-    Button("Button4", 12),
-    Button("Button5", 13)
+    Button("Button1", button1Pin),
+    Button("Button2", button2Pin),
+    Button("Button3", button3Pin),
+    Button("Button4", button4Pin),
+    Button("Button5", button5Pin)
 };
 
-int deckList[20] = {
+int deckList[35] = {
   25652259,
-  64788463,
+  11549357,
   90876561,
-  89631139,
-  24140059,
-  32207100,
-  79965360,
-  41356845,
-  62325062,
-  46052429,
-  18036057,
-  70924884,
-  64428736,
-  53162898,
-  31102447,
-  89386122,
-  36629203,
+  62651957,
+  84636823,
+  65622692,
+  98502113,
+  5818798,
+  11321183,
+  14898066,
+  71413901,
+  64500000,
   99785935,
-  67987611,
-  29654737
+  46986414,
+  76909279,
+  4796100,
+  78193831,
+  89631139,
+  46363422,
+  31553716,
+  39256679,
+  91998119,
+  75347539,
+  77207191
 };
 
 void setup() {    
 
   Serial.begin(9600);
-  Wire.begin(4, 5);
+  Wire.begin(sdaPin, sclPin);
 
   communicationsHandler.Initialize();
   buttonHandler.Initialize(numButtons, buttons);
@@ -116,6 +134,13 @@ void loop() {
   
   smartDuelEventHandler.ListenToServer();
   buttonHandler.CheckButtons();
+  smartDuelEventHandler.HandleButtonInteraction(buttonHandler.ButtonEvents);
+
+  while (!smartDuelEventHandler.HasAttackTarget) {
+      smartDuelEventHandler.ListenToServer();
+      buttonHandler.CheckButtons();
+      smartDuelEventHandler.HandleAttackEvent(buttonHandler.ButtonEvents);
+  }
   
   String output = communicationsHandler.PollForNewEvent();
   if (output == "No Events!!") return;
