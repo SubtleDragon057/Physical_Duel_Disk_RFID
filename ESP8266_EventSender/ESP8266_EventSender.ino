@@ -136,10 +136,10 @@ void loop() {
   buttonHandler.CheckButtons();
   smartDuelEventHandler.HandleButtonInteraction(buttonHandler.ButtonEvents);
 
-  while (!smartDuelEventHandler.HasAttackTarget) {
+  while (!smartDuelEventHandler.HasAttackTarget()) {
       smartDuelEventHandler.ListenToServer();
       buttonHandler.CheckButtons();
-      smartDuelEventHandler.HandleAttackEvent(buttonHandler.ButtonEvents);
+      smartDuelEventHandler.HandleButtonInteraction(buttonHandler.ButtonEvents, true);
   }
   
   String output = communicationsHandler.PollForNewEvent();

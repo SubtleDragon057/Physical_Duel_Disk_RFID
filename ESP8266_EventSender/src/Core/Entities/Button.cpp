@@ -23,7 +23,7 @@ Enums::ButtonClicks Button::CheckButtonForEvent(int debounceTime, int doubleClic
     _currentMillis = millis();
     
     if (DoubleClickExpired(doubleClickTime)) {
-        enableDoubleClick = false;
+        DoubleClickEnabled = false;
         event = Enums::ButtonClicks::Single;
     }
     
@@ -31,24 +31,26 @@ Enums::ButtonClicks Button::CheckButtonForEvent(int debounceTime, int doubleClic
         _timeSincePressed = _currentMillis;
         _previousState = _currentState;
 
-        if (enableDoubleClick && (_currentMillis - _timeSinceReleased) < doubleClickTime) { // Doesn't account for button hold time
+        if (DoubleClickEnabled && (_currentMillis - _timeSinceReleased) < doubleClickTime) { // Doesn't account for button hold time
             _dcOnRelease = true;
         }
         else {
             _dcOnRelease = false;
         }
 
+        IsCurrentlyPressed = true;
         event = Enums::ButtonClicks::ButtonPressed;
     }
     
     if (ButtonIsReleased(debounceTime)) {
         _timeSinceReleased = _currentMillis;
         _previousState = _currentState;
+        IsCurrentlyPressed = false;
         event = Enums::ButtonClicks::ButtonReleased;
 
         if (_dcOnRelease) {
             _dcOnRelease = false;
-            enableDoubleClick = false;
+            DoubleClickEnabled = false;
             event = Enums::ButtonClicks::Double;
         }        
     }
@@ -73,9 +75,9 @@ bool Button::ButtonIsReleased(int debounceTime) {
 }
 
 bool Button::DoubleClickExpired(int doubleClickTime) {
-    return (_currentMillis - _timeSinceReleased) > doubleClickTime && enableDoubleClick && !_dcOnRelease;
+    return (_currentMillis - _timeSinceReleased) > doubleClickTime && DoubleClickEnabled && !_dcOnRelease;
 }
 
 void Button::EnableDoubleClick() {
-    enableDoubleClick = true;
+    DoubleClickEnabled = true;
 }

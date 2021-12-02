@@ -2,6 +2,8 @@
 #include "Arduino.h"
 #include "Features\Lobby.h"
 #include "Core\Entities\Enums.h"
+#include "Core\Utils\JSONUtility.h"
+#include "Features\Entities\EventData.h"
 
 SmartDuelEventHandler::SmartDuelEventHandler(bool debug) {
 	_debug = debug;
@@ -26,80 +28,58 @@ void SmartDuelEventHandler::HandleDuelRoom(int buttonEvents[]) {
 	_server.SendEvent(data);
 }
 
-void SmartDuelEventHandler::HandleButtonInteraction(int buttonEvents[]) {
-	for (int i = 0; i < 5; i++) {
+void SmartDuelEventHandler::HandleButtonInteraction(int buttonEvents[], bool isInBattle) {
+	EventData newData;
+	
+	for (int i = 0; i < 6; i++) {
 		if (buttonEvents[i] == Enums::ButtonClicks::NoChange) continue;
 
-		if(buttonEvents[i] == Enums::ButtonClicks::Single) {
-			HandleActivateSpell(i);
+		if (isInBattle) {
+			String zoneName = GetTargetZoneName(buttonEvents[5], i);
+			newData = _speedDuel.HandleMonsterAttack(SocketID, zoneName);
+			break;
 		}
-		else if (buttonEvents[i] == Enums::ButtonClicks::Double) {
-			HandleActivateMonsterEffect(i);
-		}
-		else if (buttonEvents[i] == Enums::ButtonClicks::Hold) {
-			HandleMonsterAttack(i);
+
+		switch (buttonEvents[i]) {
+			case Enums::ButtonClicks::Single:
+				newData = _speedDuel.HandleActivateSpell(SocketID, i);
+				continue;
+			case Enums::ButtonClicks::Double:
+				newData = _speedDuel.HandleActivateMonsterEffect(SocketID, i);
+				continue;
+			case Enums::ButtonClicks::Hold:
+				_speedDuel.HandleAttackEvent(SocketID, i);
+				continue;
+			case Enums::ButtonClicks::Multi12:
+			case Enums::ButtonClicks::Multi45:
+			case Enums::ButtonClicks::Multi15:
+				HandleMultiButtonEvent(buttonEvents[i]);
+				continue;
 		}
 	}
+
+	String eventData = _jsonUtility.GetCardEventAsJSON(SocketID, newData.EventName, 
+		newData.CardID, newData.CopyNumber, newData.ZoneName);
+	_server.SendEvent(eventData);
 }
 
-void SmartDuelEventHandler::HandleActivateSpell(int zoneNumber) {
-	int spellID = _duelState.GetCardID(SocketID, zoneNumber, false);
-	int copyNum = _duelState.GetCopyNumber(SocketID, zoneNumber, false);
-	if (spellID == 0) {
-		Serial.printf("No valid Spell on Zone: %i\n", zoneNumber);
-		return;
+void SmartDuelEventHandler::HandleMultiButtonEvent(int buttonEventType) {
+	String eventName;
+
+	switch (buttonEventType) {
+		case Enums::ButtonClicks::Multi12:
+			eventName = "duelist:flip-coin";
+			break;
+		case Enums::ButtonClicks::Multi45:
+			eventName = "duelist:roll-dice";
+			break;
+		default:
+			eventName = "duelist:flip-coin";
+			break;
 	}
 	
-	String eventData = _eventWrapper.GetDeclareEventAsJSON(SocketID, spellID, copyNum);
+	String eventData = _jsonUtility.GetDuelistEventAsJSON(SocketID, eventName);
 	_server.SendEvent(eventData);
-	Serial.printf("Spell %i activated on zone: %i\n", spellID, zoneNumber);
-}
-
-void SmartDuelEventHandler::HandleActivateMonsterEffect(int zoneNumber) {
-	int monsterID = _duelState.GetCardID(SocketID, zoneNumber, true);
-	int copyNum = _duelState.GetCopyNumber(SocketID, zoneNumber, true);
-	if (monsterID == 0) {
-		Serial.printf("No valid Spell on Zone: %i\n", zoneNumber);
-		return;
-	}
-
-	String eventData = _eventWrapper.GetDeclareEventAsJSON(SocketID, monsterID, copyNum);
-	_server.SendEvent(eventData);
-	Serial.printf("Monster %i activated on zone: %i\n", monsterID, zoneNumber);
-}
-
-void SmartDuelEventHandler::HandleMonsterAttack(int zoneNumber) {
-	int monsterID = _duelState.GetCardID(SocketID, zoneNumber, true);
-	if (monsterID == 0) {
-		Serial.printf("No valid Monster on Zone: %i\n", zoneNumber);
-		return;
-	}
-
-	_attackingMonster = zoneNumber;
-	HasAttackTarget = false;
-}
-
-void SmartDuelEventHandler::HandleAttackEvent(int buttonEvents[]) {
-	for (int i = 0; i < 5; i++) {
-		if (buttonEvents[i] == Enums::ButtonClicks::NoChange) continue;
-		if (!CheckForValidTarget(i)) {
-			Serial.printf("No Targets on Zone: %i\n", i);
-			return;
-		}
-
-		HasAttackTarget = true;
-		int monsterID = _duelState.GetCardID(SocketID, _attackingMonster, true);
-		int copyNum = _duelState.GetCopyNumber(SocketID, _attackingMonster, true);
-		String zoneName = _eventWrapper.GetTargetZoneName(i);
-
-		String eventData = _eventWrapper.GetAttackEventAsJSON(SocketID, monsterID, copyNum, zoneName);
-		_server.SendEvent(eventData);
-	}
-}
-
-bool SmartDuelEventHandler::CheckForValidTarget(int zoneNumber) {
-	int targetID = _duelState.GetCardID("", zoneNumber, true);
-	return targetID != 0;
 }
 
 void SmartDuelEventHandler::Connect(String socketIP, int socketPort) {
@@ -128,12 +108,13 @@ void SmartDuelEventHandler::HandleIncomingRoomEvents() {
 	else if (SmartDuelServer::ReturnEventName == "room:close") {
 		IsInDuelRoom = false;
 		IsDueling = false;
+		_speedDuel.ClearDuelStates();
 		SmartDuelServer::ReturnEventName = "Waiting";
 	}
 	else if (SmartDuelServer::ReturnEventName == "room:start") {
 		_lobby.UpdateCurrentRoom(SmartDuelServer::ReturnData);
 		IsInDuelRoom = true;
-		_duelState.UpdateDuelistIDs(
+		_speedDuel.UpdateDuelistIDs(
 			SocketID,
 			SmartDuelServer::DuelistID1,
 			SmartDuelServer::DuelistID2);
@@ -144,7 +125,7 @@ void SmartDuelEventHandler::HandleIncomingRoomEvents() {
 
 void SmartDuelEventHandler::HandleIncomingCardEvents() {
 	if (SmartDuelServer::ReturnEventName == "card:play") {
-		_duelState.UpdateDuelState(
+		_speedDuel.UpdateDuelState(
 			SmartDuelServer::DuelistID1,
 			SmartDuelServer::CardID,
 			SmartDuelServer::CopyNumber,
@@ -155,12 +136,31 @@ void SmartDuelEventHandler::HandleIncomingCardEvents() {
 
 void SmartDuelEventHandler::HandleOutgoingEvent(String eventData)
 {
-	String output = _eventWrapper.GetCardEventAsJSON(SocketID, eventData);
+	String output = _jsonUtility.GetCardEventFromArduino(SocketID, eventData);
 
 	if (_debug) {
 		Serial.println(output);
 	}
 
 	_server.SendEvent(output);
-	_duelState.UpdateDuelState(output);
+	_speedDuel.UpdateDuelState(output);
+}
+
+String SmartDuelEventHandler::GetTargetZoneName(int multiButtonEvent, int zoneNumber) {
+	if (multiButtonEvent == Enums::ButtonClicks::Multi15) return "hand";
+	
+	String zoneName = "";
+	switch (zoneNumber) {
+	case 0:
+		zoneName = "mainMonster3";
+		break;
+	case 1:
+		zoneName = "mainMonster2";
+		break;
+	case 2:
+		zoneName = "mainMonster1";
+		break;
+	}
+
+	return zoneName;
 }

@@ -27,7 +27,8 @@ void SmartDuelServer::socketIOEvent(socketIOmessageType_t type, uint8_t* payload
         SmartDuelServer::isConnected = true;
         break;
     case sIOtype_EVENT:
-        Serial.printf("[IOc] Event: %s\n", payload);
+        //Uncomment for debug
+        //Serial.printf("[IOc] Event: %s\n", payload);
         HandleRecievedEvent(payload);
         break;
     case sIOtype_ERROR:
@@ -46,6 +47,7 @@ void SmartDuelServer::ListenToServer() {
 }
 
 void SmartDuelServer::SendEvent(String eventData) {
+    if (eventData == String()) return;    
     socketIO.sendEVENT(eventData);
 }
 

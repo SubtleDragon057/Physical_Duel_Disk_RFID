@@ -1,26 +1,35 @@
 #include "DuelState.h"
 #include "Arduino.h"
 #include "ArduinoJson.h"
-#include "Entities\Playerstate.h"
+#include "Playerstate.h"
 
 DuelState::DuelState()
 {
 }
 
 int DuelState::GetCardID(String duelistID, int zoneNumber, bool isMonsterZone) {
-	Playerstate currentPlayer = _playerstates[0].DuelistID() == duelistID 
-		? _playerstates[0] 
-		: _playerstates[1];
+	PlayerState currentPlayer = _playerStates[0].DuelistID() == duelistID 
+		? _playerStates[0] 
+		: _playerStates[1];
 
 	if (currentPlayer.IsZoneEmpty(isMonsterZone, zoneNumber)) return 0;
 
 	return currentPlayer.GetCardID(isMonsterZone, zoneNumber);
 }
+int DuelState::GetCardID(String duelistID, String zoneName) {
+	PlayerState currentPlayer = _playerStates[0].DuelistID() == duelistID
+		? _playerStates[0]
+		: _playerStates[1];
+
+	if (currentPlayer.IsZoneEmpty(zoneName)) return 0;
+
+	return currentPlayer.GetCardID(zoneName);
+}
 
 int DuelState::GetCopyNumber(String duelistID, int zoneNumber, bool isMonsterZone) {
-	Playerstate currentPlayer = _playerstates[0].DuelistID() == duelistID
-		? _playerstates[0]
-		: _playerstates[1];
+	PlayerState currentPlayer = _playerStates[0].DuelistID() == duelistID
+		? _playerStates[0]
+		: _playerStates[1];
 
 	if (currentPlayer.IsZoneEmpty(isMonsterZone, zoneNumber)) return 0;
 
@@ -30,8 +39,8 @@ int DuelState::GetCopyNumber(String duelistID, int zoneNumber, bool isMonsterZon
 void DuelState::UpdateDuelistIDs(String socketID, String duelist1, String duelist2) {
 	String opponentID = socketID == duelist1 ? duelist2 : duelist1;
 
-	_playerstates[0].UpdateDuelistID(socketID, false);
-	_playerstates[1].UpdateDuelistID(opponentID, true);
+	_playerStates[0].UpdateDuelistID(socketID, false);
+	_playerStates[1].UpdateDuelistID(opponentID, true);
 }
 
 void DuelState::UpdateDuelState(String eventData) {
@@ -49,14 +58,20 @@ void DuelState::UpdateDuelState(String eventData) {
 	String zoneName = doc[1]["zoneName"];
 
 	for (int i = 0; i < 2; i++) {
-		if (_playerstates[i].DuelistID() != duelistID) continue;
-		_playerstates[i].UpdatePlayerstate(GetIntValue(cardID), GetIntValue(copyNum), zoneName);
+		if (_playerStates[i].DuelistID() != duelistID) continue;
+		_playerStates[i].UpdatePlayerstate(GetIntValue(cardID), GetIntValue(copyNum), zoneName);
 	}
 }
 void DuelState::UpdateDuelState(String duelistID, int cardID, int copyNumber, String zoneName) {
 	for (int i = 0; i < 2; i++) {
-		if (_playerstates[i].DuelistID() != duelistID) continue;
-		_playerstates[i].UpdatePlayerstate(cardID, copyNumber, zoneName);
+		if (_playerStates[i].DuelistID() != duelistID) continue;
+		_playerStates[i].UpdatePlayerstate(cardID, copyNumber, zoneName);
+	}
+}
+
+void DuelState::ClearPlayerStates() {
+	for (int i = 0; i < 2; i++) {
+		_playerStates[i].Clear();
 	}
 }
 

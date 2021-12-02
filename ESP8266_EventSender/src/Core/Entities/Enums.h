@@ -15,7 +15,10 @@ public:
 		Single,
 		Double,
 		EnableDouble,
-		Hold
+		Hold,
+		Multi12,
+		Multi45,
+		Multi15
 	};
 	enum Communication {
 		Connection = 0x05,

@@ -4,24 +4,24 @@
 #include "Core\SmartDuelServer.h"
 #include "Features\Lobby.h"
 #include "Features\DuelRoom.h"
-#include "Features\DuelState.h"
-#include "Wrappers\SmartDuelEventWrapper.h"
+#include "Features\SpeedDuel.h"
+#include "Core\Utils\JSONUtility.h"
 #include "Core\Entities\Enums.h"
 
 class SmartDuelEventHandler {
 private:
 	SmartDuelServer _server;
-	DuelState _duelState;
 	Lobby _lobby;
 	DuelRoom _duelRoom;
-	SmartDuelEventWrapper _eventWrapper;
-	int _attackingMonster;
+	SpeedDuel _speedDuel;
+	JSONUtility _jsonUtility;
 	bool _debug;
+
+	String GetTargetZoneName(int multiButtonEvent, int zoneNumber);
 
 public:
 	bool IsInDuelRoom = false;
 	bool IsDueling = false;
-	bool HasAttackTarget = true;
 	String SocketID;
 	
 	SmartDuelEventHandler(bool debug);
@@ -34,12 +34,9 @@ public:
 	void HandleDuelRoom(int buttonEvents[]);
 
 	// Speed Duel Functions
-	void HandleButtonInteraction(int buttonEvents[]);
-	void HandleActivateSpell(int zoneNumber);
-	void HandleActivateMonsterEffect(int zoneNumber);
-	void HandleMonsterAttack(int zoneNumber);
-	void HandleAttackEvent(int buttonEvents[]);
-	bool CheckForValidTarget(int zoneNumber);
+	bool HasAttackTarget() { return _speedDuel.HasAttackTarget; }
+	void HandleButtonInteraction(int buttonEvents[], bool isInBattle = false);
+	void HandleMultiButtonEvent(int buttonEventType);
 
 	// Server Functions
 	void Connect(String socketIP, int socketPort);

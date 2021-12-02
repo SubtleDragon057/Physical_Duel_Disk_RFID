@@ -19,7 +19,8 @@ private:
 	bool DoubleClickExpired(int doubleClickTime);
 
 public:	
-	bool enableDoubleClick = false;
+	bool IsCurrentlyPressed = false;
+	bool DoubleClickEnabled = false;
 	
 	Button();
 	Button(String name, byte pin);

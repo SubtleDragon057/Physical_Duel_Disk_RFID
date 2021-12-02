@@ -41,10 +41,10 @@ void ButtonHandler::Initialize(byte numButtons, Button buttons[], int debouceTim
 void ButtonHandler::CheckButtons() {
     
     for (int i = 0; i < _numButtons; i++) {
-        int buttonEvent = GetButtonEvent(i);
-        ButtonEvents[i] = buttonEvent;
-		delay(25);
+        ButtonEvents[i] = GetButtonEvent(i);
 	}
+
+    ButtonEvents[5] = GetMultiButtonEvent();
 
     if (_debug) {
         PrintEvents(ButtonEvents);
@@ -73,6 +73,69 @@ int ButtonHandler::GetButtonEvent(int buttonNum) {
         : Enums::ButtonClicks::NoChange;
 }
 
+// TODO: Clean up & enable non-trigger button to be released first and still fire multi event
+int ButtonHandler::GetMultiButtonEvent() {
+    if (ButtonEvents[0] == Enums::ButtonClicks::Hold) {
+        if (_buttons[1].IsCurrentlyPressed || _buttons[4].IsCurrentlyPressed) {
+            _enableButton1Multi = true;
+            _multiEventTriggerTime = millis();
+            ButtonEvents[0] = Enums::ButtonClicks::NoChange;
+        }        
+    }
+    else if (ButtonEvents[3] == Enums::ButtonClicks::Hold) {
+        if (_buttons[4].IsCurrentlyPressed) {
+            _enableButton4Multi = true;
+            _multiEventTriggerTime = millis();
+            ButtonEvents[3] = Enums::ButtonClicks::NoChange;
+        }
+    }
+
+    // TODO: Improve Time Expiry
+    if ((millis() - _multiEventTriggerTime) > 250 && (_enableButton1Multi || _enableButton4Multi)) {
+        _enableButton1Multi = false;
+        _enableButton4Multi = false;
+
+        if (_debug) {
+            Serial.println("Multi Event Time Expired");
+        }
+    }
+    
+    if (_enableButton1Multi) {
+        return HandleButton1MultiEvent();
+    }
+    
+    if (_enableButton4Multi) {
+        return HandleButton4MultiEvent();
+    }
+
+    return Enums::ButtonClicks::NoChange;
+}
+
+Enums::ButtonClicks ButtonHandler::HandleButton1MultiEvent() {
+    if (ButtonEvents[1] == Enums::ButtonClicks::Hold) {
+        _enableButton1Multi = false;
+        ButtonEvents[1] = Enums::ButtonClicks::NoChange;
+        return Enums::ButtonClicks::Multi12;
+    }
+    else if (ButtonEvents[4] == Enums::ButtonClicks::Hold) {
+        _enableButton1Multi = false;
+        ButtonEvents[4] = Enums::ButtonClicks::NoChange;
+        return Enums::ButtonClicks::Multi15;
+    }
+
+    return Enums::ButtonClicks::NoChange;
+}
+
+Enums::ButtonClicks ButtonHandler::HandleButton4MultiEvent() {
+    if (ButtonEvents[4] == Enums::ButtonClicks::Hold) {
+        _enableButton4Multi = false;
+        ButtonEvents[4] = Enums::ButtonClicks::NoChange;
+        return Enums::ButtonClicks::Multi45;
+    }
+
+    return Enums::ButtonClicks::NoChange;
+}
+
 Enums::ButtonClicks ButtonHandler::HandleButtonRelease(Button button) {
     int buttonHoldTime = button.ButtonHoldTime();
     
@@ -80,7 +143,7 @@ Enums::ButtonClicks ButtonHandler::HandleButtonRelease(Button button) {
         return Enums::ButtonClicks::Hold;
     }
 
-    if (button.enableDoubleClick) {
+    if (button.DoubleClickEnabled) {
         return Enums::ButtonClicks::Double;
     }
     
@@ -88,10 +151,10 @@ Enums::ButtonClicks ButtonHandler::HandleButtonRelease(Button button) {
 }
 
 void ButtonHandler::PrintEvents(int buttonEvents[]) {
-    for (int i = 0; i < _numButtons; i++) {
+    for (int i = 0; i < _numButtons + 1; i++) {
         int event = buttonEvents[i];
 
-        if (event != Enums::ButtonClicks::NoChange) {
+        if (event != Enums::ButtonClicks::NoChange && i < 5) {
             Serial.print(_buttons[i].Name());
 
             if (event == Enums::ButtonClicks::Single) {
@@ -102,6 +165,17 @@ void ButtonHandler::PrintEvents(int buttonEvents[]) {
             }
             else if (event == Enums::ButtonClicks::Hold) {
                 Serial.println(": Hold");
+            }
+        }
+        else if (event != Enums::ButtonClicks::NoChange) {
+            if (event == Enums::ButtonClicks::Multi12) {
+                Serial.println("Multi 1 & 2");
+            }
+            else if (event == Enums::ButtonClicks::Multi15) {
+                Serial.println("Multi 1 & 5");
+            }
+            else if (event == Enums::ButtonClicks::Multi45) {
+                Serial.println("Multi 4 & 5");
             }
         }
     }

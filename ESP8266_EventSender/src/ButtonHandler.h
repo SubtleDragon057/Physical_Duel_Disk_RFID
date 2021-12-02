@@ -19,16 +19,25 @@ private:
     int _debounce = 20;
     int _doubleClickTime = 275;
     int _holdTime = 1000;
+    int _multiEventTriggerTime;
+
+    bool _enableButton1Multi = false;
+    bool _enableButton4Multi = false;
 
     bool _debug;
 
     int GetButtonEvent(int buttonNum);
-    void PrintEvents(int buttonEvents[]);
+    int GetMultiButtonEvent();
+    Enums::ButtonClicks HandleButton1MultiEvent();
+    Enums::ButtonClicks HandleButton4MultiEvent();
     Enums::ButtonClicks HandleButtonRelease(Button button);
-    
+
+    // Debug feature only
+    void PrintEvents(int buttonEvents[]);    
 
 public:
-    int ButtonEvents[5];
+    // First 5 Events are single button, the Last is Multi Button
+    int ButtonEvents[6];
     
     ButtonHandler(bool debug);
 
