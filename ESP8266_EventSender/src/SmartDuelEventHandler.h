@@ -27,8 +27,7 @@ public:
 	SmartDuelEventHandler(bool debug);
 
 	// Lobby Functions
-	void InitializeLobby(int deckList[]);
-	void HandleLobby(int buttonEvents[]);
+	void HandleLobby(int buttonEvents[], int deckList[]);
 
 	// Duel Room Functions
 	void HandleDuelRoom(int buttonEvents[]);
@@ -39,6 +38,7 @@ public:
 	void HandleMultiButtonEvent(int buttonEventType);
 
 	// Server Functions
+	bool IsConnected() { return _server.isConnected; }
 	void Connect(String socketIP, int socketPort);
 	void ListenToServer();
 	void HandleIncomingRoomEvents();

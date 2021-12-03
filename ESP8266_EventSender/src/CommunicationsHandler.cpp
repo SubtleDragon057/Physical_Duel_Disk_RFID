@@ -7,7 +7,7 @@ CommunicationsHandler::CommunicationsHandler(bool debug) {
 	_debug = debug;
 }
 
-void CommunicationsHandler::Initialize() {
+void CommunicationsHandler::Initialize(const char * networkName, const char * networkPass) {
 	Serial.println();
 	for (uint8_t t = 3; t > 0; t--) {
 		Serial.printf("[SETUP] BOOT WAIT %d...\n", t);
@@ -24,6 +24,8 @@ void CommunicationsHandler::Initialize() {
 	delay(1000);
 	Serial.println("[SETUP] Arduino Connected");
 	Serial.println();
+
+	_wifiManager.Connect(networkName, networkPass);
 }
 
 String CommunicationsHandler::PollForNewEvent() {

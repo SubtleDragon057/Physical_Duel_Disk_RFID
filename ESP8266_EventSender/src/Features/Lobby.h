@@ -5,18 +5,15 @@
 
 class Lobby {
 private:
-	int* _decklist;
-
-	String HandleCreateRoomEvent();
-	String HandleJoinRoomEvent();
+	String HandleCreateRoomEvent(int deckList[]);
+	String HandleJoinRoomEvent(int deckList[]);
 
 public:
 	static String CurrentRoom;
 
 	Lobby();
-	void Initialize(int decklist[]);
 
-	String CheckLobbyForAction(int buttonEvents[]);
+	String CheckLobbyForAction(int buttonEvents[], int deckList[]);
 	void UpdateCurrentRoom(String roomName);
 };
 

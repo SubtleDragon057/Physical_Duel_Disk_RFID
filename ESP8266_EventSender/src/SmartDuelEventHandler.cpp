@@ -9,13 +9,9 @@ SmartDuelEventHandler::SmartDuelEventHandler(bool debug) {
 	_debug = debug;
 }
 
-void SmartDuelEventHandler::InitializeLobby(int deckList[]) {
-	_lobby.Initialize(deckList);
-}
-
-void SmartDuelEventHandler::HandleLobby(int buttonEvents[])
+void SmartDuelEventHandler::HandleLobby(int buttonEvents[], int deckList[])
 {
-	String data = _lobby.CheckLobbyForAction(buttonEvents);
+	String data = _lobby.CheckLobbyForAction(buttonEvents, deckList);
 	if (data == "NoAction") return;
 
 	_server.SendEvent(data);
@@ -87,8 +83,9 @@ void SmartDuelEventHandler::Connect(String socketIP, int socketPort) {
 }
 
 void SmartDuelEventHandler::ListenToServer() {
-	if (_server.isConnected && SocketID == NULL) {
-		SocketID = _server.GetSocketId();
+	String socketID = _server.GetSocketId();
+	if (_server.isConnected && (SocketID == NULL || SocketID != socketID)) {
+		SocketID = socketID;
 		Serial.println("Socket ID: " + SocketID);
 	}
 	
@@ -120,7 +117,7 @@ void SmartDuelEventHandler::HandleIncomingRoomEvents() {
 			SmartDuelServer::DuelistID2);
 		IsDueling = true;
 		SmartDuelServer::ReturnEventName = "Waiting";
-	}	
+	}
 }
 
 void SmartDuelEventHandler::HandleIncomingCardEvents() {

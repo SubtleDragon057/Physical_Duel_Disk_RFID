@@ -8,32 +8,26 @@
 
 const bool debug = false;
 
-//#define esp8266
-#define esp32
-
 #include <Arduino.h>
+#include <FS.h>
+#include <SD.h>
+#include <SPI.h>
 #include <Wire.h>
-
-#ifdef esp8266
-#include <ESP8266WiFi.h>
-#include <ESP8266WiFiMulti.h>
-#include <Hash.h>
-#endif
-
-#ifdef esp32
-#include <Wifi.h>
-#include <WifiMulti.h>
-#include <WiFiClientSecure.h>
-#endif
 
 #include "src\ButtonHandler.h"
 #include "src\SmartDuelEventHandler.h"
 #include "src\CommunicationsHandler.h"
+#include "src\StorageHandler.h"
 #include "src\Secrets.h"
 #include "src\Core\Entities\Button.h"
 
-#ifdef esp8266
-ESP8266WiFiMulti wiFiMulti;
+ButtonHandler buttonHandler(debug);
+SmartDuelEventHandler smartDuelEventHandler(debug);
+CommunicationsHandler communicationsHandler(debug);
+StorageHandler storageHandler(debug);
+SECRETS secrets;
+
+#ifdef ESP8266;
 byte sdaPin = 4;
 byte sclPin = 5;
 byte button1Pin = 0;
@@ -42,22 +36,17 @@ byte button3Pin = 14;
 byte button4Pin = 12;
 byte button5Pin = 13;
 #endif
-#ifdef esp32
-WiFiMulti wiFiMulti;
+#ifdef ESP32
 byte sdaPin = 21;
 byte sclPin = 22;
-byte button1Pin = 19;
-byte button2Pin = 18;
-byte button3Pin = 5;
-byte button4Pin = 17;
-byte button5Pin = 16;
+byte button1Pin = 32;
+byte button2Pin = 33;
+byte button3Pin = 25;
+byte button4Pin = 26;
+byte button5Pin = 27;
 #endif
 
-ButtonHandler buttonHandler(debug);
-SmartDuelEventHandler smartDuelEventHandler(debug);
-CommunicationsHandler communicationsHandler(debug);
-SECRETS secrets;
-
+const byte sdReaderPin = 5;
 const byte numButtons = 5;
 Button buttons[numButtons] = {
     Button("Button1", button1Pin),
@@ -98,52 +87,66 @@ void setup() {
 
   Serial.begin(9600);
   Wire.begin(sdaPin, sclPin);
+  while (!SD.begin(sdReaderPin)) {
+	  HandleRetry("[ERROR] SD Reader Failed To Connect");
+  }
 
-  communicationsHandler.Initialize();
+  communicationsHandler.Initialize(secrets.networkName, secrets.networkPass);
   buttonHandler.Initialize(numButtons, buttons);
-
-  // disable AP
-  if (WiFi.getMode() & WIFI_AP) {
-    WiFi.softAPdisconnect(true);
-  }
-
-  wiFiMulti.addAP(secrets.networkName, secrets.networkPass);
-
-  //WiFi.disconnect();
-  while (wiFiMulti.run() != WL_CONNECTED) {
-      delay(100);
-  }
-
-  smartDuelEventHandler.InitializeLobby(deckList);
   smartDuelEventHandler.Connect(secrets.socketIP, secrets.socketPort);
+  Serial.println();
 }
 
 void loop() {
-  
-  while (!smartDuelEventHandler.IsInDuelRoom) {      
-      smartDuelEventHandler.ListenToServer();
-      buttonHandler.CheckButtons();
-      smartDuelEventHandler.HandleLobby(buttonHandler.ButtonEvents);
-  }
 
-  while (smartDuelEventHandler.IsInDuelRoom && !smartDuelEventHandler.IsDueling) {
-      smartDuelEventHandler.ListenToServer();
-      buttonHandler.CheckButtons();
-      smartDuelEventHandler.HandleDuelRoom(buttonHandler.ButtonEvents);
-  }
-  
-  smartDuelEventHandler.ListenToServer();
-  buttonHandler.CheckButtons();
-  smartDuelEventHandler.HandleButtonInteraction(buttonHandler.ButtonEvents);
+	while (!smartDuelEventHandler.IsConnected()) {
+		smartDuelEventHandler.ListenToServer();
+	}
 
-  while (!smartDuelEventHandler.HasAttackTarget()) {
-      smartDuelEventHandler.ListenToServer();
-      buttonHandler.CheckButtons();
-      smartDuelEventHandler.HandleButtonInteraction(buttonHandler.ButtonEvents, true);
-  }
-  
-  String output = communicationsHandler.PollForNewEvent();
-  if (output == "No Events!!") return;
+	while (!smartDuelEventHandler.IsInDuelRoom) {	
+		smartDuelEventHandler.ListenToServer();
+		
+		if (!storageHandler.IsDeckSet) {
+			buttonHandler.CheckButtons();
+			storageHandler.ChooseDeck(buttonHandler.ButtonEvents);
+		}
 
-  smartDuelEventHandler.HandleOutgoingEvent(output);
+		buttonHandler.CheckButtons();
+		smartDuelEventHandler.HandleLobby(buttonHandler.ButtonEvents, storageHandler.DeckList);
+	}
+
+	// Set to false to allow user to choose new deck when entering lobby again
+	storageHandler.IsDeckSet = false;
+
+	while (smartDuelEventHandler.IsInDuelRoom && !smartDuelEventHandler.IsDueling) {
+		smartDuelEventHandler.ListenToServer();
+		buttonHandler.CheckButtons();
+		smartDuelEventHandler.HandleDuelRoom(buttonHandler.ButtonEvents);
+	}
+
+	smartDuelEventHandler.ListenToServer();
+	buttonHandler.CheckButtons();
+	smartDuelEventHandler.HandleButtonInteraction(buttonHandler.ButtonEvents);
+
+	while (!smartDuelEventHandler.HasAttackTarget()) {
+		smartDuelEventHandler.ListenToServer();
+		buttonHandler.CheckButtons();
+		smartDuelEventHandler.HandleButtonInteraction(buttonHandler.ButtonEvents, true);
+	}
+
+	String output = communicationsHandler.PollForNewEvent();
+	if (output == "No Events!!") return;
+
+	smartDuelEventHandler.HandleOutgoingEvent(output);
+}
+
+void HandleRetry(String errorMessage) {
+	static int i = 0;
+	delay(100);
+	i++;
+
+	if (i >= 10) {
+		Serial.println(errorMessage);
+		i = 0;
+	}
 }
