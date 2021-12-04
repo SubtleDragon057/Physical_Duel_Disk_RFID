@@ -5,6 +5,7 @@
 */
 
 bool debug = false;
+bool handlerDebug = true;
 
 #include <MFRC522.h>
 #include <SPI.h>
@@ -16,9 +17,9 @@ bool debug = false;
 #include "src\Core\Entities\Components.h"
 #include "src\Core\Entities\Enums.h"
 
-ZoneHandler zoneHandler(debug);
-EventHandler eventHandler(debug);
-CommunicationsHandler communicationsHandler(debug);
+ZoneHandler zoneHandler(handlerDebug);
+EventHandler eventHandler(handlerDebug);
+CommunicationsHandler communicationsHandler(handlerDebug);
 
 const byte numZones = 3;
 
@@ -69,6 +70,9 @@ void loop() {
 		if (trippedSensor == Enums::None) continue;
 
 		String eventData = eventHandler.GetFormattedEventData(zoneHandler.Zones[i], trippedSensor);
+		
+		if (eventData == "") return;
+		Serial.println(eventData);
 		communicationsHandler.HandleNewEvent(eventData);
 	}
 }

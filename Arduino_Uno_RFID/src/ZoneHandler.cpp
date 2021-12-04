@@ -17,6 +17,25 @@ void ZoneHandler::Initialize(byte numZones, byte readerPins[], ProximitySensor a
 		_cardSlots[i].PCD_Init(readerPins[i], readerPins[4]);
 		_cardSlots[i].PCD_SetAntennaGain(MFRC522::PCD_RxGain::RxGain_avg);
 
+		if (_debug) {
+			Serial.println(F("*****************************"));
+			Serial.println(F("MFRC522 Digital self test"));
+			Serial.println(F("*****************************"));
+			_cardSlots[i].PCD_DumpVersionToSerial();  // Show version of PCD - MFRC522 Card Reader
+			Serial.println(F("-----------------------------"));
+			Serial.println(F("Only known versions supported"));
+			Serial.println(F("-----------------------------"));
+			Serial.println(F("Performing test..."));
+			bool result = _cardSlots[i].PCD_PerformSelfTest(); // perform the test
+			Serial.println(F("-----------------------------"));
+			Serial.print(F("Result: "));
+			if (result)
+				Serial.println(F("OK"));
+			else
+				Serial.println(F("DEFECT or UNKNOWN"));
+			Serial.println();
+		}
+
 		Zones[i].Initialize(i,
 			_cardSlots[i],
 			attackSensors[i],
@@ -52,6 +71,7 @@ Enums::SensorType ZoneHandler::CheckForTrippedSensor(int zoneNumber) {
 	Enums::SensorType isNewCardPresent = Zones[zoneNumber].isNewCardPresent();
 	if (isNewCardPresent != Enums::None) {
 		if (_debug) {
+			Serial.print("[DEBUG] ");
 			Serial.print(zoneNumber);
 			Serial.print(": Tripped Sensor: ");
 			Serial.println(isNewCardPresent);
@@ -139,5 +159,11 @@ Enums::CardPosition ZoneHandler::GetSpellPosition(AnalogIR spellSensor) {
 String ZoneHandler::GetCardSerialNumber(MFRC522 reader)
 {
 	rfidFunctions.ReadBlock(reader, _readBackBlock);
+
+	if (_debug) {
+		Serial.print("[DEBUG] GetCardSerial: ");
+		Serial.println((String((char*)_readBackBlock)).substring(1, 16));
+	}
+	
 	return (String((char*)_readBackBlock)).substring(1, 16);
 }

@@ -34,6 +34,15 @@ String EventHandler::GetFormattedEventData(DualCardZone zone, Enums::SensorType 
 		eventData.concat(spell.GetPosition());
 	}
 
+	// Handle Error
+	if (eventData == "205" || eventData == "215" || eventData == "225") {
+		Serial.print("[ERROR] Zone: ");
+		Serial.print(eventData[1]);
+		Serial.println(" had a malfunction");
+
+		eventData = "";
+	}
+
 	return eventData;
 }
 
