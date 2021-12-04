@@ -2,8 +2,8 @@
 #include "ZoneHandler.h"
 #include "Core\Entities\Enums.h"
 #include "Core\Entities\YgoCard.h"
+#include "Core\Entities\Components.h"
 #include "Core\Zone.h"
-#include "Features\RFIDFunctions\RFIDFunctions.h"
 
 ZoneHandler::ZoneHandler(bool debug) 
 {
@@ -14,56 +14,15 @@ void ZoneHandler::Initialize(byte numZones, byte readerPins[], ProximitySensor a
 	AnalogIR defenceSensors[], AnalogIR spellSensors[]) {
 	
 	for (int i = 0; i < numZones; i++) {
-		_cardSlots[i].PCD_Init(readerPins[i], readerPins[4]);
-		_cardSlots[i].PCD_SetAntennaGain(MFRC522::PCD_RxGain::RxGain_avg);
-
-		if (_debug) {
-			Serial.println(F("*****************************"));
-			Serial.println(F("MFRC522 Digital self test"));
-			Serial.println(F("*****************************"));
-			_cardSlots[i].PCD_DumpVersionToSerial();  // Show version of PCD - MFRC522 Card Reader
-			Serial.println(F("-----------------------------"));
-			Serial.println(F("Only known versions supported"));
-			Serial.println(F("-----------------------------"));
-			Serial.println(F("Performing test..."));
-			bool result = _cardSlots[i].PCD_PerformSelfTest(); // perform the test
-			Serial.println(F("-----------------------------"));
-			Serial.print(F("Result: "));
-			if (result)
-				Serial.println(F("OK"));
-			else
-				Serial.println(F("DEFECT or UNKNOWN"));
-			Serial.println();
-		}
-
 		Zones[i].Initialize(i,
-			_cardSlots[i],
+			readerPins[i], 
+			readerPins[4],
 			attackSensors[i],
 			defenceSensors[i],
 			spellSensors[i]);
 
 		delay(10);
 	}
-
-	rfidFunctions.Initialize(_block, _cardsToRead);
-}
-void ZoneHandler::Initialize(byte numZones, byte readerPins[], ProximitySensor attackSensors[],
-	AnalogIR defenceSensors[], AnalogIR spellSensors[], byte customKey[]) {
-
-	for (int i = 0; i < numZones; i++) {
-		_cardSlots[i].PCD_Init(readerPins[i], readerPins[4]);
-		_cardSlots[i].PCD_SetAntennaGain(MFRC522::PCD_RxGain::RxGain_avg);
-
-		Zones[i].Initialize(i,
-			_cardSlots[i],
-			attackSensors[i],
-			defenceSensors[i],
-			spellSensors[i]);
-
-		delay(10);
-	}
-
-	rfidFunctions.Initialize(_block, customKey, _cardsToRead);
 }
 
 Enums::SensorType ZoneHandler::CheckForTrippedSensor(int zoneNumber) {
@@ -88,6 +47,8 @@ void ZoneHandler::CheckRFIDReader(DualCardZone &zone, Enums::SensorType sensor) 
 	bool isMonster = false;
 	Enums::Events eventType = Enums::NoEvent;
 
+	Serial.println("[DEBUG] ZoneHandler CheckRFIDReader Entered");
+	
 	bool hasNewCard = zone.ScanForNewCard();
 
 	if (!hasNewCard) {
@@ -109,7 +70,7 @@ void ZoneHandler::CheckRFIDReader(DualCardZone &zone, Enums::SensorType sensor) 
 }
 
 void ZoneHandler::HandleUpdateCard(DualCardZone& zone, Enums::SensorType sensor, bool isRemoval = false) {
-	String cardSerialNumber = GetCardSerialNumber(zone.Reader);
+	String cardSerialNumber = zone.GetCardSerialNumber(_readBackBlock);
 	Enums::CardPosition position;
 
 	if (sensor == Enums::SpellTrap) {
@@ -154,16 +115,4 @@ Enums::CardPosition ZoneHandler::GetSpellPosition(AnalogIR spellSensor) {
 	}
 
 	return Enums::NoCard;
-}
-
-String ZoneHandler::GetCardSerialNumber(MFRC522 reader)
-{
-	rfidFunctions.ReadBlock(reader, _readBackBlock);
-
-	if (_debug) {
-		Serial.print("[DEBUG] GetCardSerial: ");
-		Serial.println((String((char*)_readBackBlock)).substring(1, 16));
-	}
-	
-	return (String((char*)_readBackBlock)).substring(1, 16);
 }

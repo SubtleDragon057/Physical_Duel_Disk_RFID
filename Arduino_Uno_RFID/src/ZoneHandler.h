@@ -4,21 +4,15 @@
 #include "Core\Entities\Enums.h"
 #include "Core\Entities\YgoCard.h"
 #include "Core\Zone.h"
-#include "Features\RFIDFunctions\RFIDFunctions.h"
-#include "Wrappers\YgoCardWrappers.h"
 #include "EventHandler.h"
+#include "Core\Entities\Components.h"
 
 class ZoneHandler {
 private:
-	RFID_Functions rfidFunctions;
-	YgoCardWrappers ygoCardWrapper;
-	
-	MFRC522 _cardSlots[3];
-	
-	bool _debug;
-	
 	byte _block = 4;
 	byte _readBackBlock[16];
+	
+	bool _debug;
 
 	// This is where you put the cards to write to the NFC chips. See NOTE for details
 	const byte _cardsToRead = 1;
@@ -53,10 +47,7 @@ public:
 
 	void Initialize(byte numZones, byte readerPins[], ProximitySensor attackSensors[], 
 		AnalogIR defenceSnesors[], AnalogIR spellSensors[]);
-	void Initialize(byte numZones, byte readerPins[], ProximitySensor attackSensors[],
-		AnalogIR defenceSensors[], AnalogIR spellSensors[], byte customKey[]);
 	Enums::SensorType CheckForTrippedSensor(int zoneNumber);
-	String GetCardSerialNumber(MFRC522 reader);
 	void HandleUpdateCard(DualCardZone& zone, Enums::SensorType sensor, bool isRemoval = false);
 };
 

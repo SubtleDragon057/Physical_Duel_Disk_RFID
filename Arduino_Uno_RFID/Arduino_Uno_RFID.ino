@@ -7,7 +7,6 @@
 bool debug = false;
 bool handlerDebug = true;
 
-#include <MFRC522.h>
 #include <SPI.h>
 #include <Wire.h>
 

@@ -1,7 +1,6 @@
 #ifndef _ZONE_h
 #define _ZONE_h
 #include "Arduino.h"
-#include "MFRC522.h"
 #include "Entities\Enums.h"
 #include "Entities\YgoCard.h"
 #include "Entities\Components.h"
@@ -11,19 +10,21 @@ private:
 	Monster _currentMonster;
 	Spell _currentSpell;
 
+	bool _debug = true;
+
 public:
 	int ZoneNumber;
-	MFRC522 Reader;
+	nfcReader* Reader;
 	ProximitySensor AttackSensor;
 	AnalogIR DefenceSensor;
 	AnalogIR SpellSensor;
 
 	DualCardZone();
-	void Initialize(int zoneNum, MFRC522 reader, ProximitySensor attackSensor, 
+	void Initialize(int zoneNum, byte readerPin, byte resetPin, ProximitySensor attackSensor, 
 		AnalogIR defenceSensor, AnalogIR spellSensor);
 
-	Monster GetCurrentMonster();
-	Spell GetCurrentSpell();
+	Monster GetCurrentMonster() { return _currentMonster; }
+	Spell GetCurrentSpell() { return _currentSpell; }
 	void UpdateCurrentMonster(String monsterID, Enums::CardPosition position);
 	void UpdateCurrentSpell(String spellID, Enums::CardPosition position);
 
@@ -32,6 +33,7 @@ public:
 	bool ScanForNewCard();
 	bool ReadAvailableCard();
 	void StopScanning();
+	String GetCardSerialNumber(byte readBackBlock[]);
 };
 
 #endif

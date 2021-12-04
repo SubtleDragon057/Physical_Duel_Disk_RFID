@@ -1,31 +1,35 @@
 #include "Arduino.h"
 #include "Zone.h"
-#include "MFRC522.h"
 #include "Entities\Enums.h"
+#include "Entities\Components.h"
 
 DualCardZone::DualCardZone()
 {
 }
 
-void DualCardZone::Initialize(int zoneNum, MFRC522 reader, ProximitySensor attackSensor, 
+void DualCardZone::Initialize(int zoneNum, byte readerPin, byte resetPin, ProximitySensor attackSensor,
 	AnalogIR defenceSensor, AnalogIR spellSensor) 
 {
+	bool isMFRC = zoneNum != 2;
+	if (isMFRC) {		
+		Reader = &mfrcReader(readerPin, resetPin);
+	}
+	else {		
+		Reader = &pnReader(readerPin, resetPin);
+	}
+	
 	ZoneNumber = zoneNum;
-	Reader = reader;
 	AttackSensor = attackSensor;
 	DefenceSensor = defenceSensor;
 	SpellSensor = spellSensor;
 
+	if (_debug) {
+		Serial.print(F("[DEBUG] "));
+		Reader->DebugReader();
+	}
+
 	_currentMonster = Monster("", Enums::NoCard);
 	_currentSpell = Spell("", Enums::NoCard);
-}
-
-Monster DualCardZone::GetCurrentMonster() {
-	return _currentMonster;
-}
-
-Spell DualCardZone::GetCurrentSpell() {
-	return _currentSpell;
 }
 
 void DualCardZone::UpdateCurrentMonster(String monsterID, Enums::CardPosition position) {
@@ -55,17 +59,30 @@ Enums::SensorType DualCardZone::isNewCardPresent() {
 
 bool DualCardZone::ScanForNewCard()
 {
-	Reader.PCD_Init();
-	return Reader.PICC_IsNewCardPresent();
+	return Reader->ScanForNewCard();
 }
 
 bool DualCardZone::ReadAvailableCard()
 {
-	return Reader.PICC_ReadCardSerial();
+	return Reader->ReadAvailableCard();
 }
 
 void DualCardZone::StopScanning()
 {
-	Reader.PICC_HaltA();
-	Reader.PCD_StopCrypto1();
+	Reader->StopScanning();
+}
+
+String DualCardZone::GetCardSerialNumber(byte readBackBlock[]) {
+	if (_debug) {
+		Serial.print(F("[DEBUG] GetCardSerial Entered"));
+	}
+	
+	Reader->ReadBlock(readBackBlock);
+
+	if (_debug) {
+		Serial.print(F("[DEBUG] GetCardSerial: "));
+		Serial.println((String((char*)readBackBlock)).substring(1, 16));
+	}
+
+	return (String((char*)readBackBlock)).substring(1, 16);
 }
