@@ -16,19 +16,19 @@ int SmartDuelServer::CopyNumber;
 void SmartDuelServer::socketIOEvent(socketIOmessageType_t type, uint8_t* payload, std::size_t length) {
     switch (type) {
     case sIOtype_DISCONNECT:
-        Serial.printf("[IOc] Disconnected!\n");
+        //Serial.printf("[IOc] Disconnected!\n");
         SmartDuelServer::isConnected = false;
         break;
     case sIOtype_CONNECT:
-        Serial.printf("[IOc] Connected to url: %s\n", payload);
+        //Serial.printf("[IOc] Connected to url: %s\n", payload);
         SmartDuelServer::isConnected = true;
         break;
     case sIOtype_EVENT:
-        Serial.printf("[IOc] Event: %s\n", payload);
+        //Serial.printf("[IOc] Event: %s\n", payload);
         HandleRecievedEvent(payload);
         break;
     case sIOtype_ERROR:
-        Serial.printf("[IOc] get error: %u\n", length);
+        Serial.printf("[IOc] Error: %u\n", length);
         break;
     }
 }
@@ -59,16 +59,14 @@ void SmartDuelServer::HandleRecievedEvent(uint8_t* payload) {
     String eventName = doc[0];
 
     if (error) {
-#ifdef DEBUG
-        Serial.print("Error: ");
+        /*Serial.print("Error: ");
         Serial.println(error.c_str());
         Serial.print("Memory: ");
         Serial.println(doc.memoryUsage());
         Serial.print("Capacity: ");
         Serial.println(doc.capacity());
         Serial.print("Overflow: ");
-        Serial.println(doc.overflowed());
-#endif // DEBUG
+        Serial.println(doc.overflowed());*/
 
         doc.clear();
         doc.garbageCollect();

@@ -17,9 +17,8 @@ void WifiManager::Connect(const char* networkName, const char* networkPass) {
 		HandleRetry("[ERROR] Wifi Not Connected");
 	}
 
-	String networkID = WiFi.SSID();
-	Serial.println();
-	Serial.printf("[SETUP] Wifi Connected: %s\n", networkID.c_str());
+	/*String networkID = WiFi.SSID();
+	Serial.printf("\n[SETUP] Wifi Connected: %s\n", networkID.c_str());*/
 }
 
 void WifiManager::HandleRetry(String errorMessage) {

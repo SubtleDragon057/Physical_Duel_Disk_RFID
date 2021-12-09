@@ -2,8 +2,9 @@
 #include "SD.h"
 #include "Core\Entities\Enums.h"
 
-StorageHandler::StorageHandler()
+StorageHandler::StorageHandler(CommunicationsHandler &communicationsHandler)
 {
+    _communicationsHandler = &communicationsHandler;
 }
 
 void StorageHandler::ChooseDeck(int buttonEvents[]) {
@@ -14,14 +15,10 @@ void StorageHandler::ChooseDeck(int buttonEvents[]) {
 }
 
 String StorageHandler::GetDeckName(int buttonEvents[]) {
-    if (_deckNames->isEmpty()) {
-        GetListOfDecks();
-    }
+    GetListOfDecks();
 
     for (int i = 0; i < 5; i++) {
         if (buttonEvents[i] == Enums::ButtonClicks::NoChange) continue;
-
-        Serial.printf("You chose: %i, %s\n", (i + 1), _deckNames[i].c_str());
         return _deckNames[i];
     }
 
@@ -41,18 +38,19 @@ void StorageHandler::GetListOfDecks() {
         i++;
     }
 
-    Serial.printf("Your deck options are:\n");
-    for (byte i = 0; i < _deckNames->length() - 1; i++) {
-        Serial.printf("%i: %s\n", (i + 1), _deckNames[i].c_str());
+    String text[5];
+    for (byte i = 0; i < 5; i++) {
+        text[i] = String(i + 1) + ": " + _deckNames[i] + '\n';
     }
-    Serial.printf("\nPlease Choose Your Deck Using The Buttons!\n");
+    _communicationsHandler->Display(CommunicationsHandler::UI_DeckSelect, text);
 }
 
 void StorageHandler::ReadYDK(String deckName) {
     _deckYDK = SD.open("/decks/" + deckName);
 
     if (!_deckYDK) {
-        Serial.printf("Couldn't open file!\n");
+        String text[] = { "Couldn't open file!" };
+        _communicationsHandler->Display(CommunicationsHandler::UI_DeckSelect, text);
         return;
     }
 

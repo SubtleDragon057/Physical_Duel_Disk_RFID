@@ -45,8 +45,7 @@ void DuelState::UpdateDuelState(String eventData) {
     DynamicJsonDocument doc(512);
     DeserializationError error = deserializeJson(doc, eventData);
     if (error) {
-        Serial.print("Error: ");
-        Serial.println(error.c_str());
+        Serial.printf("Error: %s\n", error.c_str());
         return;
     }
 
@@ -71,8 +70,6 @@ void DuelState::UpdateDuelState(String duelistID, int cardID, int copyNumber, St
 void DuelState::UpdatePhase(String newPhase, bool isOpponentsTurn) {
 	CurrentPhase = newPhase;
 	IsOpponentsTurn = isOpponentsTurn;
-
-	Serial.printf("Current Phase: %s\n", CurrentPhase.c_str());
 }
 
 String DuelState::GetPhase() {

@@ -8,26 +8,29 @@ CommunicationsHandler::CommunicationsHandler()
 }
 
 void CommunicationsHandler::Initialize(const char * networkName, const char * networkPass) {
-	Serial.println();
+	_display.init();
+	_display.flipScreenVertically();
+	String text[1] = { "Display: Init" };
+	Display(UI_Init, text);
+	
 	for (uint8_t t = 3; t > 0; t--) {
-		Serial.printf("[SETUP] BOOT WAIT %d...\n", t);
-		Serial.flush();
+		text[0] = "[SETUP] BOOT WAIT " + String(t);
+		Display(UI_Init, text);
 		delay(1000);
 	}
 
 	bool isArduinoConnected = false;
-	while (!isArduinoConnected) {
+	do {
 		isArduinoConnected = CheckForArduino();
 		delay(50);
-	}
+	} while (!isArduinoConnected);
 
+	text[0] = "[SETUP] Arduino Connected";
+	Display(UI_Init, text);
 	delay(1000);
-	Serial.printf("[SETUP] Arduino Connected\n");
 
-	_display.init();
-	_display.flipScreenVertically();
-	Display(UI_Init, "Display: Init");
-
+	text[0] = "[SETUP] Connecting Wifi";
+	Display(UI_Init, text);
 	_wifiManager.Connect(networkName, networkPass);
 }
 
@@ -65,12 +68,15 @@ String CommunicationsHandler::PollForNewEvent() {
 	return "No Events!!";
 }
 
-void CommunicationsHandler::Display(UI_Type type, String incomingMessage)
+void CommunicationsHandler::Display(UI_Type type, String incomingMessage[])
 {
 	switch (type)
 	{
 		case UI_Lobby:
 			HandleLobbyUI(incomingMessage);
+			break;
+		case UI_DeckSelect:
+			HandleDeckSelectorUI(incomingMessage);
 			break;
 		case UI_SpeedDuel:
 			HandleSpeedDuelUI(incomingMessage);
@@ -97,7 +103,7 @@ bool CommunicationsHandler::CheckForArduino() {
 	return response == "057";
 }
 
-void CommunicationsHandler::HandleBasicUI(String incomingMessage) {
+void CommunicationsHandler::HandleBasicUI(String incomingMessage[]) {
 	_display.clear();
 
 	_display.setFont(ArialMT_Plain_10);
@@ -105,12 +111,16 @@ void CommunicationsHandler::HandleBasicUI(String incomingMessage) {
 	_display.drawHorizontalLine(0, 13, 128);
 	_display.drawHorizontalLine(0, 14, 128);
 	
-	_display.drawFastImage(32, 19, CC_Image_Width, CC_Image_Height, CC_Image_Bits);
+	_display.drawXbm(32, 20, CC_Logo_Width, CC_Logo_Height, CC_Logo_Bytes);
+
+	_display.setTextAlignment(TEXT_ALIGN_CENTER);
+	_display.drawString(64, 51, incomingMessage[0]);
+	_display.setTextAlignment(TEXT_ALIGN_LEFT);
 
 	_display.display();
 }
 
-void CommunicationsHandler::HandleLobbyUI(String incomingMessage) {
+void CommunicationsHandler::HandleLobbyUI(String incomingMessage[]) {
 	_display.clear();
 
 	_display.setFont(ArialMT_Plain_10);
@@ -119,12 +129,12 @@ void CommunicationsHandler::HandleLobbyUI(String incomingMessage) {
 	_display.drawHorizontalLine(0, 14, 128);
 
 	_display.setFont(ArialMT_Plain_16);
-	_display.drawString(5, 30, "Room: " + incomingMessage);
+	_display.drawString(5, 30, "Room: " + incomingMessage[0]);
 
 	_display.display();
 }
 
-void CommunicationsHandler::HandleSpeedDuelUI(String incomingMessage) {
+void CommunicationsHandler::HandleSpeedDuelUI(String incomingMessage[]) {
 	_display.clear();
 
 	_display.setFont(ArialMT_Plain_10);
@@ -137,7 +147,22 @@ void CommunicationsHandler::HandleSpeedDuelUI(String incomingMessage) {
 	_display.drawHorizontalLine(0, 50, 128);
 
 	_display.setFont(ArialMT_Plain_16);
-	_display.drawString(5, 23, incomingMessage);
+	_display.drawString(5, 23, incomingMessage[0]);
+
+	_display.display();
+}
+
+void CommunicationsHandler::HandleDeckSelectorUI(String incomingMessage[]) {
+	_display.clear();
+
+	_display.setFont(ArialMT_Plain_10);
+	_display.drawString(5, 0, "Deck Selector");
+	_display.drawHorizontalLine(0, 13, 128);
+	_display.drawHorizontalLine(0, 14, 128);
+
+	for (byte i = 0; i < sizeof(incomingMessage); i++) {
+		_display.drawString(5, i + (15 + 10*i), incomingMessage[i]);
+	}
 
 	_display.display();
 }

@@ -9,7 +9,6 @@
 #define DEBUG
 
 #include <Arduino.h>
-#include <FS.h>
 #include <SD.h>
 #include <SPI.h>
 #include <Wire.h>
@@ -24,7 +23,7 @@
 ButtonHandler buttonHandler;
 CommunicationsHandler communicationsHandler;
 SmartDuelEventHandler smartDuelEventHandler(communicationsHandler);
-StorageHandler storageHandler;
+StorageHandler storageHandler(communicationsHandler);
 SECRETS secrets;
 
 #ifdef ESP8266;
@@ -98,13 +97,14 @@ void loop() {
 		smartDuelEventHandler.ListenToServer();
 	}
 
+	while (!storageHandler.IsDeckSet) {
+		smartDuelEventHandler.ListenToServer();
+		buttonHandler.CheckButtons();
+		storageHandler.ChooseDeck(buttonHandler.ButtonEvents);
+	}
+
 	while (!smartDuelEventHandler.IsInDuelRoom) {
 		smartDuelEventHandler.ListenToServer();
-		
-		while (!storageHandler.IsDeckSet) {
-			buttonHandler.CheckButtons();
-			storageHandler.ChooseDeck(buttonHandler.ButtonEvents);
-		}
 
 		buttonHandler.CheckButtons();
 		smartDuelEventHandler.HandleLobby(buttonHandler.ButtonEvents, storageHandler.DeckList);

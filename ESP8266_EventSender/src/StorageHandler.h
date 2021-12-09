@@ -2,20 +2,21 @@
 #define StorageHandler_h
 #include "Arduino.h"
 #include "FS.h"
+#include "CommunicationsHandler.h"
 
 class StorageHandler {
 private:
 	
 	String _deckName;
 	File _deckYDK;
-
-	String _deckNames[10];
+	CommunicationsHandler* _communicationsHandler;
+	String _deckNames[5];
 
 public:
 	int DeckList[36];
 	bool IsDeckSet = false;
 
-	StorageHandler();
+	StorageHandler(CommunicationsHandler &communicatiosnHandler);
 	
 	void ChooseDeck(int buttonEvents[]);
 	String GetDeckName(int buttonEvents[]);

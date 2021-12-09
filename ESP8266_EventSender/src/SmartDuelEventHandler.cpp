@@ -9,6 +9,9 @@ SmartDuelEventHandler::SmartDuelEventHandler(CommunicationsHandler& communicatio
 
 void SmartDuelEventHandler::HandleLobby(int buttonEvents[], int deckList[])
 {
+	String text[] = { "" };
+	_communicationsHandler->Display(CommunicationsHandler::UI_Lobby, text);
+	
 	String data = _lobby.CheckLobbyForAction(buttonEvents, deckList);
 	if (data == "NoAction") return;
 
@@ -16,6 +19,9 @@ void SmartDuelEventHandler::HandleLobby(int buttonEvents[], int deckList[])
 }
 
 void SmartDuelEventHandler::HandleDuelRoom(int buttonEvents[]) {
+	String text[] = { _duelRoom.RoomName };
+	_communicationsHandler->Display(CommunicationsHandler::UI_Lobby, text);
+	
 	String data = _duelRoom.CheckDuelRoomForAction(buttonEvents);
 	if (data == "NoAction") return;
 
@@ -101,7 +107,6 @@ void SmartDuelEventHandler::ListenToServer() {
 	String socketID = _server.GetSocketId();
 	if (_server.isConnected && (SocketID == NULL || SocketID != socketID)) {
 		SocketID = socketID;
-		Serial.println("Socket ID: " + SocketID);
 	}
 	
 	_server.ListenToServer();
@@ -115,14 +120,12 @@ void SmartDuelEventHandler::HandleIncomingRoomEvents() {
 		SmartDuelServer::EventName == "room:join") {
 		_duelRoom.UpdateCurrentRoom(SmartDuelServer::RoomName);
 		IsInDuelRoom = true;
-		_communicationsHandler->Display(CommunicationsHandler::UI_Lobby, _duelRoom.RoomName);
 		SmartDuelServer::EventName = "Waiting";
 	}	
 	else if (SmartDuelServer::EventName == "room:close") {
 		IsInDuelRoom = false;
 		IsDueling = false;
 		_speedDuel.ClearDuelStates();
-		_communicationsHandler->Display(CommunicationsHandler::UI_Lobby, "");
 		SmartDuelServer::EventName = "Waiting";
 	}
 	else if (SmartDuelServer::EventName == "room:start") {
@@ -136,7 +139,7 @@ void SmartDuelEventHandler::HandleIncomingRoomEvents() {
 
 		bool isOpponentsTurn = SmartDuelServer::EventData != SocketID;
 		_speedDuel.UpdatePhase("drawPhase", isOpponentsTurn);
-		String currentPhase = _speedDuel.GetPhase();
+		String currentPhase[] = { _speedDuel.GetPhase() };
 		_communicationsHandler->Display(CommunicationsHandler::UI_SpeedDuel, currentPhase);
 		SmartDuelServer::EventName = "Waiting";
 	}
@@ -145,7 +148,7 @@ void SmartDuelEventHandler::HandleIncomingRoomEvents() {
 void SmartDuelEventHandler::HandleIncomingCardEvents() {
 	if (_uiEventActive && (millis() - _eventStartTime) > 4000) {
 		_uiEventActive = false;
-		String currentPhase = _speedDuel.GetPhase();
+		String currentPhase[] = { _speedDuel.GetPhase() };
 		_communicationsHandler->Display(CommunicationsHandler::UI_SpeedDuel, currentPhase);
 	}
 	
@@ -161,7 +164,7 @@ void SmartDuelEventHandler::HandleIncomingCardEvents() {
 		bool isOpponentsTurn = SmartDuelServer::DuelistID != SocketID;
 
 		_speedDuel.UpdatePhase(SmartDuelServer::EventData, isOpponentsTurn);
-		String currentPhase = _speedDuel.GetPhase();
+		String currentPhase[] = { _speedDuel.GetPhase() };
 		_communicationsHandler->Display(CommunicationsHandler::UI_SpeedDuel, currentPhase);
 		SmartDuelServer::EventName = "Waiting";
 	}
@@ -169,20 +172,20 @@ void SmartDuelEventHandler::HandleIncomingCardEvents() {
 		bool isOpponentsTurn = SmartDuelServer::DuelistID == SocketID;
 
 		_speedDuel.UpdatePhase("drawPhase", isOpponentsTurn);
-		String currentPhase = _speedDuel.GetPhase();
+		String currentPhase[] = { _speedDuel.GetPhase() };
 		_communicationsHandler->Display(CommunicationsHandler::UI_SpeedDuel, currentPhase);
 		SmartDuelServer::EventName = "Waiting";
 	}
 	else if (SmartDuelServer::EventName == "duelist:flip-coin") {
-		_communicationsHandler->Display(
-			CommunicationsHandler::UI_SpeedDuel, "Flip: " + SmartDuelServer::EventData);
+		String text[] = { "Flip: " + SmartDuelServer::EventData };
+		_communicationsHandler->Display(CommunicationsHandler::UI_SpeedDuel, text);
 		_uiEventActive = true;
 		_eventStartTime = millis();
 		SmartDuelServer::EventName = "Waiting";
 	}
 	else if (SmartDuelServer::EventName == "duelist:roll-dice") {
-		_communicationsHandler->Display(
-			CommunicationsHandler::UI_SpeedDuel, "Roll: " + SmartDuelServer::EventData);
+		String text[] = { "Roll: " + SmartDuelServer::EventData };
+		_communicationsHandler->Display(CommunicationsHandler::UI_SpeedDuel, text);
 		_uiEventActive = true;
 		_eventStartTime = millis();
 		SmartDuelServer::EventName = "Waiting";

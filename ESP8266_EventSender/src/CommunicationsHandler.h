@@ -14,13 +14,15 @@ private:
 	const byte _newDuelData = 11;
 
 	bool CheckForArduino();
-	void HandleBasicUI(String incomingMessage);
-	void HandleLobbyUI(String incomingMessage);
-	void HandleSpeedDuelUI(String incomingMessage);
+	void HandleBasicUI(String incomingMessage[]);
+	void HandleLobbyUI(String incomingMessage[]);
+	void HandleSpeedDuelUI(String incomingMessage[]);
+	void HandleDeckSelectorUI(String incomingMessage[]);
 
 public:
 	typedef enum {
 		UI_Init,
+		UI_DeckSelect,
 		UI_Lobby,
 		UI_DuelRoom,
 		UI_SpeedDuel
@@ -30,7 +32,7 @@ public:
 
 	void Initialize(const char * networkName, const char * networkPass);
 	String PollForNewEvent();
-	void Display(UI_Type type, String incomingMessage);
+	void Display(UI_Type type, String incomingMessage[]);
 };
 
 #endif
