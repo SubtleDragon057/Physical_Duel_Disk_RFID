@@ -3,15 +3,15 @@
 #include "Arduino.h"
 
 #ifdef ESP8266
-#include <ESP8266WiFi.h>
-#include <ESP8266WiFiMulti.h>
-#include <Hash.h>
+#include "ESP8266WiFi.h"
+#include "ESP8266WiFiMulti.h"
+#include "Hash.h"
 #endif
 
 #ifdef ESP32
-#include <Wifi.h>
-#include <WifiMulti.h>
-#include <WiFiClientSecure.h>
+#include "Wifi.h"
+#include "WifiMulti.h"
+#include "WiFiClientSecure.h"
 #endif
 
 class WifiManager {
