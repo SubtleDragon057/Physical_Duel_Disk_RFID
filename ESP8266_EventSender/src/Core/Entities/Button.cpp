@@ -1,6 +1,4 @@
 #include "Button.h"
-#include "Arduino.h"
-#include "Enums.h"
 
 Button::Button() 
 {

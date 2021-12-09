@@ -152,17 +152,19 @@
 
 class Adafruit_PN532 {
 public:
-  Adafruit_PN532(uint8_t clk, uint8_t miso, uint8_t mosi,
-                 uint8_t ss);                 // Software SPI
+    Adafruit_PN532();
+    //Adafruit_PN532(uint8_t clk, uint8_t miso, uint8_t mosi,
+    //             uint8_t ss);                 // Software SPI
   Adafruit_PN532(uint8_t irq, uint8_t reset); // Hardware I2C
   Adafruit_PN532(uint8_t ss);                 // Hardware SPI
-  void begin(void);
+  void beginSPI(byte ssPin);
+  void beginI2C(void);
 
   // Generic PN532 functions
   bool SAMConfig(void);
   uint32_t getFirmwareVersion(void);
   bool sendCommandCheckAck(uint8_t *cmd, uint8_t cmdlen,
-                           uint16_t timeout = 100);
+                           uint16_t timeout = 1000);
   bool writeGPIO(uint8_t pinstate);
   uint8_t readGPIO(void);
   bool setPassiveActivationRetries(uint8_t maxRetries);
@@ -170,7 +172,7 @@ public:
   // ISO14443A functions
   bool readPassiveTargetID(
       uint8_t cardbaudrate, uint8_t *uid, uint8_t *uidLength,
-      uint16_t timeout = 0); // timeout 0 means no timeout - will block forever.
+      uint16_t timeout = 200); // timeout 0 means no timeout - will block forever.
   bool startPassiveTargetIDDetection(uint8_t cardbaudrate);
   bool readDetectedPassiveTargetID(uint8_t *uid, uint8_t *uidLength);
   bool inDataExchange(uint8_t *send, uint8_t sendLength, uint8_t *response,
@@ -184,8 +186,7 @@ public:
   bool mifareclassic_IsFirstBlock(uint32_t uiBlock);
   bool mifareclassic_IsTrailerBlock(uint32_t uiBlock);
   uint8_t mifareclassic_AuthenticateBlock(uint8_t *uid, uint8_t uidLen,
-                                          uint32_t blockNumber,
-                                          uint8_t keyNumber, uint8_t *keyData);
+                                          uint32_t blockNumber, uint8_t *keyData);
   uint8_t mifareclassic_ReadDataBlock(uint8_t blockNumber, uint8_t *data);
   uint8_t mifareclassic_WriteDataBlock(uint8_t blockNumber, uint8_t *data);
   uint8_t mifareclassic_FormatNDEF(void);
@@ -206,11 +207,13 @@ public:
   static void PrintHex(const byte *data, const uint32_t numBytes);
   static void PrintHexChar(const byte *pbtData, const uint32_t numBytes);
 
+protected:
+    uint8_t _uid[7];      // ISO14443A uid
+    uint8_t _uidLength;  // uid len
+    uint8_t _key[6];      // Mifare Classic key
+
 private:
   int8_t _irq = -1, _reset = -1;
-  int8_t _uid[7];      // ISO14443A uid
-  int8_t _uidLen;      // uid len
-  int8_t _key[6];      // Mifare Classic key
   int8_t _inListedTag; // Tg number of inlisted tag.
 
   // Low level communication functions that handle both SPI and I2C.

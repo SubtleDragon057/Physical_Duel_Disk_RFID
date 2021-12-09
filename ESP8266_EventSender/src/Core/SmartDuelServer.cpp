@@ -1,20 +1,17 @@
 #include "SmartDuelServer.h"
-#include "Arduino.h"
-#include "WebSocketsClient.h"
-#include "SocketIOclient.h"
 #include "ArduinoJson.h"
 
 SmartDuelServer::SmartDuelServer() 
 {
 }
 bool SmartDuelServer::isConnected = false;
-String SmartDuelServer::ReturnEventName;
-String SmartDuelServer::ReturnData;
-String SmartDuelServer::DuelistID1;
-String SmartDuelServer::DuelistID2;
+
+String SmartDuelServer::EventName;
+String SmartDuelServer::EventData;
+String SmartDuelServer::RoomName;
+String SmartDuelServer::DuelistID;
 int SmartDuelServer::CardID;
 int SmartDuelServer::CopyNumber;
-String SmartDuelServer::ZoneName;
 
 void SmartDuelServer::socketIOEvent(socketIOmessageType_t type, uint8_t* payload, std::size_t length) {
     switch (type) {
@@ -27,8 +24,7 @@ void SmartDuelServer::socketIOEvent(socketIOmessageType_t type, uint8_t* payload
         SmartDuelServer::isConnected = true;
         break;
     case sIOtype_EVENT:
-        //Uncomment for debug
-        //Serial.printf("[IOc] Event: %s\n", payload);
+        Serial.printf("[IOc] Event: %s\n", payload);
         HandleRecievedEvent(payload);
         break;
     case sIOtype_ERROR:
@@ -63,6 +59,7 @@ void SmartDuelServer::HandleRecievedEvent(uint8_t* payload) {
     String eventName = doc[0];
 
     if (error) {
+#ifdef DEBUG
         Serial.print("Error: ");
         Serial.println(error.c_str());
         Serial.print("Memory: ");
@@ -71,7 +68,7 @@ void SmartDuelServer::HandleRecievedEvent(uint8_t* payload) {
         Serial.println(doc.capacity());
         Serial.print("Overflow: ");
         Serial.println(doc.overflowed());
-        delay(75);
+#endif // DEBUG
 
         doc.clear();
         doc.garbageCollect();
@@ -80,7 +77,7 @@ void SmartDuelServer::HandleRecievedEvent(uint8_t* payload) {
 
     String eventScope = eventName.substring(0, 4);
     if (eventScope == "room") {
-        String roomEventData = doc[1]["roomName"];
+        String roomName = doc[1]["roomName"];
 
         if (eventName == "room:join") {
             Serial.println("That room doesn't exist! Please try again");
@@ -90,14 +87,15 @@ void SmartDuelServer::HandleRecievedEvent(uint8_t* payload) {
         if (eventName == "room:start") {
             String socket1 = doc[1]["duelRoom"]["duelists"][0]["id"];
             String socket2 = doc[1]["duelRoom"]["duelists"][1]["id"];
+            String turnDuelist = doc[1]["duelRoom"]["duelPhase"]["duelistId"];
 
-            DuelistID1 = socket1;
-            DuelistID2 = socket2;
+            DuelistID = socket1;
+            EventData = socket2;
+            EventData = turnDuelist;
         }
 
-        ReturnEventName = eventName;
-        ReturnData = roomEventData;
-        return;
+        EventName = eventName;
+        RoomName = roomName;
     }
     else if (eventScope == "card") {
         String duelistID = doc[1]["duelistId"];
@@ -105,12 +103,30 @@ void SmartDuelServer::HandleRecievedEvent(uint8_t* payload) {
         String copyNum = doc[1]["copyNumber"];
         String zoneName = doc[1]["zoneName"];
 
-        ReturnEventName = eventName;
-        DuelistID1 = duelistID;
+        EventName = eventName;
+        DuelistID = duelistID;
         CardID = GetIntValue(cardID);
         CopyNumber = GetIntValue(copyNum);
-        ZoneName = zoneName;
-    }    
+        EventData = zoneName;
+    }
+    else if (eventScope == "duel") {
+        if (eventName == "duelist:declare-phase") {
+            String duelistID = doc[1]["duelistId"];
+            String phase = doc[1]["phase"];
+
+            EventName = eventName;
+            DuelistID = duelistID;
+            EventData = phase;
+            return;
+        }
+        
+        String duelistID = doc[1]["duelistId"];
+        String result = doc[1]["result"];
+
+        EventName = eventName;
+        DuelistID = duelistID;
+        EventData = result;
+    }
 }
 
 int SmartDuelServer::GetIntValue(String stringToChange) {

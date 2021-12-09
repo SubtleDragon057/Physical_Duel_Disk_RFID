@@ -6,7 +6,7 @@
    For use with: Project ATEM Duel Disk Proto
 */
 
-const bool debug = false;
+#define DEBUG
 
 #include <Arduino.h>
 #include <FS.h>
@@ -21,15 +21,13 @@ const bool debug = false;
 #include "src\Secrets.h"
 #include "src\Core\Entities\Button.h"
 
-ButtonHandler buttonHandler(debug);
-SmartDuelEventHandler smartDuelEventHandler(debug);
-CommunicationsHandler communicationsHandler(debug);
-StorageHandler storageHandler(debug);
+ButtonHandler buttonHandler;
+CommunicationsHandler communicationsHandler;
+SmartDuelEventHandler smartDuelEventHandler(communicationsHandler);
+StorageHandler storageHandler;
 SECRETS secrets;
 
 #ifdef ESP8266;
-byte sdaPin = 4;
-byte sclPin = 5;
 byte button1Pin = 0;
 byte button2Pin = 2;
 byte button3Pin = 14;
@@ -37,18 +35,15 @@ byte button4Pin = 12;
 byte button5Pin = 13;
 #endif
 #ifdef ESP32
-byte sdaPin = 21;
-byte sclPin = 22;
-byte button1Pin = 32;
-byte button2Pin = 33;
-byte button3Pin = 25;
-byte button4Pin = 26;
-byte button5Pin = 27;
+const byte button1Pin = 32;
+const byte button2Pin = 33;
+const byte button3Pin = 25;
+const byte button4Pin = 26;
+const byte button5Pin = 27;
 #endif
 
 const byte sdReaderPin = 5;
-const byte numButtons = 5;
-Button buttons[numButtons] = {
+Button buttons[5] = {
     Button("Button1", button1Pin),
     Button("Button2", button2Pin),
     Button("Button3", button3Pin),
@@ -85,14 +80,14 @@ int deckList[35] = {
 
 void setup() {    
 
-  Serial.begin(9600);
-  Wire.begin(sdaPin, sclPin);
+  Serial.begin(115200);
+  Wire.begin(SDA, SCL);
   while (!SD.begin(sdReaderPin)) {
 	  HandleRetry("[ERROR] SD Reader Failed To Connect");
   }
 
   communicationsHandler.Initialize(secrets.networkName, secrets.networkPass);
-  buttonHandler.Initialize(numButtons, buttons);
+  buttonHandler.Initialize(buttons);
   smartDuelEventHandler.Connect(secrets.socketIP, secrets.socketPort);
   Serial.println();
 }
@@ -103,10 +98,10 @@ void loop() {
 		smartDuelEventHandler.ListenToServer();
 	}
 
-	while (!smartDuelEventHandler.IsInDuelRoom) {	
+	while (!smartDuelEventHandler.IsInDuelRoom) {
 		smartDuelEventHandler.ListenToServer();
 		
-		if (!storageHandler.IsDeckSet) {
+		while (!storageHandler.IsDeckSet) {
 			buttonHandler.CheckButtons();
 			storageHandler.ChooseDeck(buttonHandler.ButtonEvents);
 		}

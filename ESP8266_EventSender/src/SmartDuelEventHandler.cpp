@@ -1,12 +1,10 @@
 #include "SmartDuelEventHandler.h"
-#include "Arduino.h"
-#include "Features\Lobby.h"
 #include "Core\Entities\Enums.h"
-#include "Core\Utils\JSONUtility.h"
 #include "Features\Entities\EventData.h"
 
-SmartDuelEventHandler::SmartDuelEventHandler(bool debug) {
-	_debug = debug;
+SmartDuelEventHandler::SmartDuelEventHandler(CommunicationsHandler& communicationsHandler)
+{
+	_communicationsHandler = &communicationsHandler;
 }
 
 void SmartDuelEventHandler::HandleLobby(int buttonEvents[], int deckList[])
@@ -27,7 +25,7 @@ void SmartDuelEventHandler::HandleDuelRoom(int buttonEvents[]) {
 void SmartDuelEventHandler::HandleButtonInteraction(int buttonEvents[], bool isInBattle) {
 	EventData newData;
 	
-	for (int i = 0; i < 6; i++) {
+	for (byte i = 0; i < _numButtonEvents; i++) {
 		if (buttonEvents[i] == Enums::ButtonClicks::NoChange) continue;
 
 		if (isInBattle) {
@@ -46,11 +44,14 @@ void SmartDuelEventHandler::HandleButtonInteraction(int buttonEvents[], bool isI
 			case Enums::ButtonClicks::Hold:
 				_speedDuel.HandleAttackEvent(SocketID, i);
 				continue;
-			case Enums::ButtonClicks::Multi12:
-			case Enums::ButtonClicks::Multi45:
-			case Enums::ButtonClicks::Multi15:
+			case Enums::ButtonClicks::Multi01:
+			case Enums::ButtonClicks::Multi34:
+			case Enums::ButtonClicks::Multi04:
 				HandleMultiButtonEvent(buttonEvents[i]);
-				continue;
+				return;
+			case Enums::ButtonClicks::Multi13:
+				HandlePhaseChange();
+				return;
 		}
 	}
 
@@ -63,10 +64,10 @@ void SmartDuelEventHandler::HandleMultiButtonEvent(int buttonEventType) {
 	String eventName;
 
 	switch (buttonEventType) {
-		case Enums::ButtonClicks::Multi12:
+		case Enums::ButtonClicks::Multi01:
 			eventName = "duelist:flip-coin";
 			break;
-		case Enums::ButtonClicks::Multi45:
+		case Enums::ButtonClicks::Multi34:
 			eventName = "duelist:roll-dice";
 			break;
 		default:
@@ -75,6 +76,20 @@ void SmartDuelEventHandler::HandleMultiButtonEvent(int buttonEventType) {
 	}
 	
 	String eventData = _jsonUtility.GetDuelistEventAsJSON(SocketID, eventName);
+	_server.SendEvent(eventData);
+}
+
+void SmartDuelEventHandler::HandlePhaseChange() {
+	String newData = _speedDuel.HandleChangePhase();
+	if (newData == String()) return;
+
+	if (newData == "passTurn") {
+		String eventData = _jsonUtility.GetPhaseEventAsJSON(SocketID, "duelist:end-turn");
+		_server.SendEvent(eventData);
+		return;
+	}
+
+	String eventData = _jsonUtility.GetPhaseEventAsJSON(SocketID, "duelist:declare-phase", newData);
 	_server.SendEvent(eventData);
 }
 
@@ -96,38 +111,81 @@ void SmartDuelEventHandler::ListenToServer() {
 
 void SmartDuelEventHandler::HandleIncomingRoomEvents() {		
 	
-	if (SmartDuelServer::ReturnEventName == "room:create" ||
-		SmartDuelServer::ReturnEventName == "room:join") {
-		_lobby.UpdateCurrentRoom(SmartDuelServer::ReturnData);
+	if (SmartDuelServer::EventName == "room:create" ||
+		SmartDuelServer::EventName == "room:join") {
+		_duelRoom.UpdateCurrentRoom(SmartDuelServer::RoomName);
 		IsInDuelRoom = true;
-		SmartDuelServer::ReturnEventName = "Waiting";
+		_communicationsHandler->Display(CommunicationsHandler::UI_Lobby, _duelRoom.RoomName);
+		SmartDuelServer::EventName = "Waiting";
 	}	
-	else if (SmartDuelServer::ReturnEventName == "room:close") {
+	else if (SmartDuelServer::EventName == "room:close") {
 		IsInDuelRoom = false;
 		IsDueling = false;
 		_speedDuel.ClearDuelStates();
-		SmartDuelServer::ReturnEventName = "Waiting";
+		_communicationsHandler->Display(CommunicationsHandler::UI_Lobby, "");
+		SmartDuelServer::EventName = "Waiting";
 	}
-	else if (SmartDuelServer::ReturnEventName == "room:start") {
-		_lobby.UpdateCurrentRoom(SmartDuelServer::ReturnData);
+	else if (SmartDuelServer::EventName == "room:start") {
+		_duelRoom.UpdateCurrentRoom(SmartDuelServer::RoomName);
 		IsInDuelRoom = true;
 		_speedDuel.UpdateDuelistIDs(
 			SocketID,
-			SmartDuelServer::DuelistID1,
-			SmartDuelServer::DuelistID2);
+			SmartDuelServer::DuelistID,
+			SmartDuelServer::EventData);
 		IsDueling = true;
-		SmartDuelServer::ReturnEventName = "Waiting";
+
+		bool isOpponentsTurn = SmartDuelServer::EventData != SocketID;
+		_speedDuel.UpdatePhase("drawPhase", isOpponentsTurn);
+		String currentPhase = _speedDuel.GetPhase();
+		_communicationsHandler->Display(CommunicationsHandler::UI_SpeedDuel, currentPhase);
+		SmartDuelServer::EventName = "Waiting";
 	}
 }
 
 void SmartDuelEventHandler::HandleIncomingCardEvents() {
-	if (SmartDuelServer::ReturnEventName == "card:play") {
+	if (_uiEventActive && (millis() - _eventStartTime) > 4000) {
+		_uiEventActive = false;
+		String currentPhase = _speedDuel.GetPhase();
+		_communicationsHandler->Display(CommunicationsHandler::UI_SpeedDuel, currentPhase);
+	}
+	
+	if (SmartDuelServer::EventName == "card:play") {
 		_speedDuel.UpdateDuelState(
-			SmartDuelServer::DuelistID1,
+			SmartDuelServer::DuelistID,
 			SmartDuelServer::CardID,
 			SmartDuelServer::CopyNumber,
-			SmartDuelServer::ZoneName);
-		SmartDuelServer::ReturnEventName = "Waiting";
+			SmartDuelServer::EventData);
+		SmartDuelServer::EventName = "Waiting";
+	}
+	else if (SmartDuelServer::EventName == "duelist:declare-phase") {
+		bool isOpponentsTurn = SmartDuelServer::DuelistID != SocketID;
+
+		_speedDuel.UpdatePhase(SmartDuelServer::EventData, isOpponentsTurn);
+		String currentPhase = _speedDuel.GetPhase();
+		_communicationsHandler->Display(CommunicationsHandler::UI_SpeedDuel, currentPhase);
+		SmartDuelServer::EventName = "Waiting";
+	}
+	else if (SmartDuelServer::EventName == "duelist:end-turn") {
+		bool isOpponentsTurn = SmartDuelServer::DuelistID == SocketID;
+
+		_speedDuel.UpdatePhase("drawPhase", isOpponentsTurn);
+		String currentPhase = _speedDuel.GetPhase();
+		_communicationsHandler->Display(CommunicationsHandler::UI_SpeedDuel, currentPhase);
+		SmartDuelServer::EventName = "Waiting";
+	}
+	else if (SmartDuelServer::EventName == "duelist:flip-coin") {
+		_communicationsHandler->Display(
+			CommunicationsHandler::UI_SpeedDuel, "Flip: " + SmartDuelServer::EventData);
+		_uiEventActive = true;
+		_eventStartTime = millis();
+		SmartDuelServer::EventName = "Waiting";
+	}
+	else if (SmartDuelServer::EventName == "duelist:roll-dice") {
+		_communicationsHandler->Display(
+			CommunicationsHandler::UI_SpeedDuel, "Roll: " + SmartDuelServer::EventData);
+		_uiEventActive = true;
+		_eventStartTime = millis();
+		SmartDuelServer::EventName = "Waiting";
 	}
 }
 
@@ -135,16 +193,17 @@ void SmartDuelEventHandler::HandleOutgoingEvent(String eventData)
 {
 	String output = _jsonUtility.GetCardEventFromArduino(SocketID, eventData);
 
-	if (_debug) {
-		Serial.println(output);
-	}
+#ifdef DEBUG
+	Serial.println(output);
+#endif // DEBUG
+
 
 	_server.SendEvent(output);
 	_speedDuel.UpdateDuelState(output);
 }
 
 String SmartDuelEventHandler::GetTargetZoneName(int multiButtonEvent, int zoneNumber) {
-	if (multiButtonEvent == Enums::ButtonClicks::Multi15) return "hand";
+	if (multiButtonEvent == Enums::ButtonClicks::Multi04) return "hand";
 	
 	String zoneName = "";
 	switch (zoneNumber) {

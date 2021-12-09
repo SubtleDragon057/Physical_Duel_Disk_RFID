@@ -1,10 +1,10 @@
 #include "CommunicationsHandler.h"
-#include "Arduino.h"
 #include "Wire.h"
 #include "Core\Entities\Enums.h"
+#include "CrownCorp.h"
 
-CommunicationsHandler::CommunicationsHandler(bool debug) {
-	_debug = debug;
+CommunicationsHandler::CommunicationsHandler()
+{
 }
 
 void CommunicationsHandler::Initialize(const char * networkName, const char * networkPass) {
@@ -22,8 +22,11 @@ void CommunicationsHandler::Initialize(const char * networkName, const char * ne
 	}
 
 	delay(1000);
-	Serial.println("[SETUP] Arduino Connected");
-	Serial.println();
+	Serial.printf("[SETUP] Arduino Connected\n");
+
+	_display.init();
+	_display.flipScreenVertically();
+	Display(UI_Init, "Display: Init");
 
 	_wifiManager.Connect(networkName, networkPass);
 }
@@ -62,8 +65,22 @@ String CommunicationsHandler::PollForNewEvent() {
 	return "No Events!!";
 }
 
+void CommunicationsHandler::Display(UI_Type type, String incomingMessage)
+{
+	switch (type)
+	{
+		case UI_Lobby:
+			HandleLobbyUI(incomingMessage);
+			break;
+		case UI_SpeedDuel:
+			HandleSpeedDuelUI(incomingMessage);
+			break;
+		default:
+			HandleBasicUI(incomingMessage);
+	}
+}
+
 bool CommunicationsHandler::CheckForArduino() {
-	bool arduinoConnected = false;
 	String response = "";
 
 	Wire.beginTransmission(_arduinoAddress);
@@ -78,4 +95,49 @@ bool CommunicationsHandler::CheckForArduino() {
 	}
 
 	return response == "057";
+}
+
+void CommunicationsHandler::HandleBasicUI(String incomingMessage) {
+	_display.clear();
+
+	_display.setFont(ArialMT_Plain_10);
+	_display.drawString(5, 0, "Initialize");
+	_display.drawHorizontalLine(0, 13, 128);
+	_display.drawHorizontalLine(0, 14, 128);
+	
+	_display.drawFastImage(32, 19, CC_Image_Width, CC_Image_Height, CC_Image_Bits);
+
+	_display.display();
+}
+
+void CommunicationsHandler::HandleLobbyUI(String incomingMessage) {
+	_display.clear();
+
+	_display.setFont(ArialMT_Plain_10);
+	_display.drawString(5, 0, "Lobby");
+	_display.drawHorizontalLine(0, 13, 128);
+	_display.drawHorizontalLine(0, 14, 128);
+
+	_display.setFont(ArialMT_Plain_16);
+	_display.drawString(5, 30, "Room: " + incomingMessage);
+
+	_display.display();
+}
+
+void CommunicationsHandler::HandleSpeedDuelUI(String incomingMessage) {
+	_display.clear();
+
+	_display.setFont(ArialMT_Plain_10);
+	_display.drawString(5, 0, "Opp: 4000");
+	_display.drawHorizontalLine(0, 13, 128);
+	_display.drawHorizontalLine(0, 14, 128);
+
+	_display.drawString(5, 52, "Player: 4000");
+	_display.drawHorizontalLine(0, 49, 128);
+	_display.drawHorizontalLine(0, 50, 128);
+
+	_display.setFont(ArialMT_Plain_16);
+	_display.drawString(5, 23, incomingMessage);
+
+	_display.display();
 }

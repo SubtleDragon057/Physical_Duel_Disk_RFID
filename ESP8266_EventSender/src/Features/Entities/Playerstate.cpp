@@ -1,5 +1,4 @@
 #include "Playerstate.h"
-#include "Arduino.h"
 
 PlayerState::PlayerState() 
 {
@@ -14,7 +13,7 @@ bool PlayerState::IsZoneEmpty(bool isMonsterZone, int zoneNumber) {
 }
 bool PlayerState::IsZoneEmpty(String zoneName) {
 	int currentCardID = 0;
-	for (int i = 0; i < _numSingleZones; i++) {
+	for (byte i = 0; i < 8; i++) {
 		if (_singleZones[i].Name != zoneName) continue;
 		currentCardID = _singleZones[i].CurrentCard();
 	}
@@ -31,7 +30,7 @@ int PlayerState::GetCardID(bool isMonsterZone, int zoneNumber) {
 }
 int PlayerState::GetCardID(String zoneName) {
 	int currentCardID = 0;
-	for (int i = 0; i < _numSingleZones; i++) {
+	for (byte i = 0; i < 8; i++) {
 		if (_singleZones[i].Name != zoneName) continue;
 		currentCardID = _singleZones[i].CurrentCard();
 	}
@@ -48,7 +47,7 @@ int PlayerState::GetCopyNumber(bool isMonsterZone, int zoneNumber) {
 }
 int PlayerState::GetCopyNumber(String zoneName) {
 	int currentCopyNumber = 0;
-	for (int i = 0; i < _numSingleZones; i++) {
+	for (byte i = 0; i < 8; i++) {
 		if (_singleZones[i].Name != zoneName) continue;
 		currentCopyNumber = _singleZones[i].CopyNumber();
 	}
@@ -61,37 +60,29 @@ void PlayerState::UpdateDuelistID(String duelistID, bool isOpponent)
 	_duelistID = duelistID;
 	_isOppnent = isOpponent;
 
-	Serial.print("Duelist: ");
-	Serial.println(_duelistID);
-	Serial.print("Is Opponent: ");
-	Serial.println(_isOppnent);
-	delay(50);
+	Serial.printf("Duelist: %s\n", _duelistID.c_str());
+	Serial.printf("Is Opponent: %i\n", _isOppnent);
 }
 
 void PlayerState::UpdatePlayerstate(int cardID, int copyNumber, String zoneName) {
-	for (int i = 0; i < _numSingleZones; i++) {
+	
+	for (byte i = 0; i < 8; i++) {
 		if (_singleZones[i].Name != zoneName) continue;
 		_singleZones[i].UpdateCurrentCard(cardID, copyNumber);
-		Serial.print("Duelist: ");
-		Serial.println(_duelistID);
-		Serial.print("SingleCard: ");
-		Serial.println(_singleZones[i].CurrentCard());
-		Serial.print("Copy Number: ");
-		Serial.println(_singleZones[i].CopyNumber());
-		Serial.print("Zone: ");
-		Serial.println(_singleZones[i].Name);
+		Serial.printf("Duelist: %s\n", _duelistID.c_str());
+		Serial.printf("SingleCard: %i\n", _singleZones[i].CurrentCard());
+		Serial.printf("Copy Number: %i\n", _singleZones[i].CopyNumber());
+		Serial.printf("Zone: %s\n", _singleZones[i].Name.c_str());
 		return;
 	}
 
-	for (int i = 0; i < _numMultiZones; i++) {
+	for (byte i = 0; i < 5; i++) {
 		if (_multiZones[i].Name != zoneName) continue;
 		
 		RemoveFromPreviousZone(cardID, copyNumber);
 
-		Serial.print("Duelist: ");
-		Serial.println(_duelistID);
-		Serial.print("MultiCard: ");
-		Serial.println(_multiZones[i].Name);
+		Serial.printf("Duelist: %s\n", _duelistID.c_str());
+		Serial.printf("MultiCard: %s\n", _multiZones[i].Name.c_str());
 		return;
 	}
 }
@@ -99,17 +90,17 @@ void PlayerState::UpdatePlayerstate(int cardID, int copyNumber, String zoneName)
 void PlayerState::Clear() {
 	UpdateDuelistID("", false);
 	
-	for (int i = 0; i < _numSingleZones; i++) {
+	for (byte i = 0; i < 8; i++) {
 		_singleZones[i].UpdateCurrentCard(0, 0);
 	}
 
-	for (int i = 0; i < _numMultiZones; i++) {
+	for (byte i = 0; i < 5; i++) {
 		
 	}
 }
 
 void PlayerState::RemoveFromPreviousZone(int cardID, int copyNumber) {
-	for (int i = 0; i < _numSingleZones; i++) {
+	for (byte i = 0; i < 8; i++) {
 		if (_singleZones[i].CurrentCard() != cardID &&
 			_singleZones[i].CopyNumber() != copyNumber) continue;
 		

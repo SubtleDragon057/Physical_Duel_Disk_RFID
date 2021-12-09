@@ -8,9 +8,6 @@ private:
 	bool _isOppnent;
 	String _duelistID;
 
-	const int _numSingleZones = 8;
-	const int _numMultiZones = 5;
-
 	SingleCardZone _singleZones[8] = {
 		SingleCardZone("mainMonster1"),
 		SingleCardZone("mainMonster2"),

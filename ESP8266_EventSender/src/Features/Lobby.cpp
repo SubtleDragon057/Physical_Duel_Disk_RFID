@@ -1,11 +1,9 @@
 #include "Lobby.h"
-#include "Arduino.h"
 #include "ArduinoJson.h"
 
 Lobby::Lobby() 
 {
 }
-String Lobby::CurrentRoom;
 
 String Lobby::CheckLobbyForAction(int buttonEvents[], int deckList[])
 {
@@ -24,18 +22,13 @@ String Lobby::CheckLobbyForAction(int buttonEvents[], int deckList[])
     return "NoAction";
 }
 
-void Lobby::UpdateCurrentRoom(String roomName) {
-    CurrentRoom = roomName;
-}
-
 String Lobby::HandleCreateRoomEvent(int deckList[]) {
     StaticJsonDocument<770> staticDoc;
     JsonArray deck = staticDoc.createNestedArray();
-    for (int i = 0; i < 36; i++) {
+    for (byte i = 0; i < 35; i++) {
         if (deckList[i] == 0) continue;
         deck.add(deckList[i]);
     }
-    Serial.println(deck);
 
     StaticJsonDocument<770> doc;
     JsonArray jsonArray = doc.to<JsonArray>();
@@ -48,12 +41,12 @@ String Lobby::HandleCreateRoomEvent(int deckList[]) {
 
     String output;
     serializeJson(doc, output);
-    serializeJsonPretty(doc, Serial);
+
     return output;
 }
 
 String Lobby::HandleJoinRoomEvent(int deckList[]) {
-    Serial.println("Which room would you like to join?");
+    Serial.printf("Which room would you like to join?\n");
 
     while (!Serial.available()) {}
 
@@ -61,7 +54,7 @@ String Lobby::HandleJoinRoomEvent(int deckList[]) {
 
     StaticJsonDocument<770> staticDoc;
     JsonArray deck = staticDoc.createNestedArray();
-    for (int i = 0; i < 35; i++) {
+    for (byte i = 0; i < 35; i++) {
         if (deckList[i] == 0) continue;
         deck.add(deckList[i]);
     }

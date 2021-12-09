@@ -1,25 +1,21 @@
-#include "Arduino.h"
 #include "ZoneHandler.h"
-#include "Core\Entities\Enums.h"
-#include "Core\Entities\YgoCard.h"
-#include "Core\Entities\Components.h"
-#include "Core\Zone.h"
 
 ZoneHandler::ZoneHandler(bool debug) 
 {
 	_debug = debug;
 }
 
-void ZoneHandler::Initialize(byte numZones, byte readerPins[], ProximitySensor attackSensors[], 
-	AnalogIR defenceSensors[], AnalogIR spellSensors[]) {
+void ZoneHandler::Initialize(byte numZones, byte readerPins[], byte attackSensorPins[], 
+	byte defenceSensorPins[], byte spellSensorPins[]) {
 	
 	for (int i = 0; i < numZones; i++) {
 		Zones[i].Initialize(i,
 			readerPins[i], 
-			readerPins[4],
-			attackSensors[i],
-			defenceSensors[i],
-			spellSensors[i]);
+			readerPins[3],
+			_block,
+			attackSensorPins[i],
+			defenceSensorPins[i],
+			spellSensorPins[i]);
 
 		delay(10);
 	}
@@ -28,14 +24,7 @@ void ZoneHandler::Initialize(byte numZones, byte readerPins[], ProximitySensor a
 Enums::SensorType ZoneHandler::CheckForTrippedSensor(int zoneNumber) {
 	
 	Enums::SensorType isNewCardPresent = Zones[zoneNumber].isNewCardPresent();
-	if (isNewCardPresent != Enums::None) {
-		if (_debug) {
-			Serial.print("[DEBUG] ");
-			Serial.print(zoneNumber);
-			Serial.print(": Tripped Sensor: ");
-			Serial.println(isNewCardPresent);
-		}
-		
+	if (isNewCardPresent != Enums::None) {		
 		delay(100); // delay to ensure card is fully placed
 		CheckRFIDReader(Zones[zoneNumber], isNewCardPresent);
 	}
@@ -46,8 +35,6 @@ Enums::SensorType ZoneHandler::CheckForTrippedSensor(int zoneNumber) {
 void ZoneHandler::CheckRFIDReader(DualCardZone &zone, Enums::SensorType sensor) {
 	bool isMonster = false;
 	Enums::Events eventType = Enums::NoEvent;
-
-	Serial.println("[DEBUG] ZoneHandler CheckRFIDReader Entered");
 	
 	bool hasNewCard = zone.ScanForNewCard();
 
@@ -74,7 +61,7 @@ void ZoneHandler::HandleUpdateCard(DualCardZone& zone, Enums::SensorType sensor,
 	Enums::CardPosition position;
 
 	if (sensor == Enums::SpellTrap) {
-		position = GetSpellPosition(zone.SpellSensor);
+		position = zone.ReadCurrentSpellPosition();
 		zone.UpdateCurrentSpell(cardSerialNumber, position);
 		return; // TODO: Handle Spell Removal
 	}
@@ -84,35 +71,6 @@ void ZoneHandler::HandleUpdateCard(DualCardZone& zone, Enums::SensorType sensor,
 		return;
 	}
 
-	position = GetMonsterPosition(zone.AttackSensor, zone.DefenceSensor);
+	position = zone.ReadCurrentMonsterPosition();
 	zone.UpdateCurrentMonster(cardSerialNumber, position);
-}
-
-Enums::CardPosition ZoneHandler::GetMonsterPosition(ProximitySensor attackSensor, AnalogIR defenceSensor) {	
-	int lightValue = defenceSensor.GetCurrentValue();
-
-	if (lightValue == Enums::Low) {
-		return Enums::FaceDownDefence;
-	}
-	else if (lightValue == Enums::Medium) {
-		return Enums::FaceUpDefence;
-	}
-	else if(attackSensor.GetCurrentValue() == Enums::Low) {
-		return Enums::FaceUp;
-	}
-
-	return Enums::NoCard;
-}
-
-Enums::CardPosition ZoneHandler::GetSpellPosition(AnalogIR spellSensor) {
-	int lightValue = spellSensor.GetCurrentValue();
-
-	if (lightValue == Enums::Low) {
-		return Enums::FaceUp;
-	}
-	else if (lightValue == Enums::Medium) {
-		return Enums::FaceDown;
-	}
-
-	return Enums::NoCard;
 }

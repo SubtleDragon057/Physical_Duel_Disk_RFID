@@ -21,6 +21,7 @@ private:
 public:	
 	bool IsCurrentlyPressed = false;
 	bool DoubleClickEnabled = false;
+	bool EnableMultiClick = false;
 	
 	Button();
 	Button(String name, byte pin);

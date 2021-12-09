@@ -1,13 +1,9 @@
 #include "StorageHandler.h"
-#include "Arduino.h"
-#include "FS.h"
 #include "SD.h"
-#include "SPI.h"
 #include "Core\Entities\Enums.h"
 
-StorageHandler::StorageHandler(bool debug)
+StorageHandler::StorageHandler()
 {
-	_debug = debug;
 }
 
 void StorageHandler::ChooseDeck(int buttonEvents[]) {
@@ -46,18 +42,17 @@ void StorageHandler::GetListOfDecks() {
     }
 
     Serial.printf("Your deck options are:\n");
-    for (int i = 0; i < _deckNames->length() - 1; i++) {
+    for (byte i = 0; i < _deckNames->length() - 1; i++) {
         Serial.printf("%i: %s\n", (i + 1), _deckNames[i].c_str());
     }
-    Serial.println();
-    Serial.printf("Please Choose Your Deck Using The Buttons!\n");
+    Serial.printf("\nPlease Choose Your Deck Using The Buttons!\n");
 }
 
 void StorageHandler::ReadYDK(String deckName) {
     _deckYDK = SD.open("/decks/" + deckName);
 
     if (!_deckYDK) {
-        Serial.println("Couldn't open file!");
+        Serial.printf("Couldn't open file!\n");
         return;
     }
 
@@ -71,7 +66,7 @@ void StorageHandler::ReadYDK(String deckName) {
         i++;
     }
 
-    for (int i = 0; i < 36; i++) {
+    for (byte i = 0; i < 36; i++) {
         String filteredData = deckData[i].substring(0, 9);        
         char charArray[9];
         filteredData.toCharArray(charArray, 9);

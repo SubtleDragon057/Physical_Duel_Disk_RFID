@@ -1,4 +1,3 @@
-#include "Arduino.h"
 #include "JSONUtility.h"
 #include "ArduinoJson.h"
 
@@ -61,6 +60,33 @@ String JSONUtility::GetDuelistEventAsJSON(String socketID, String eventName) {
 	return output;
 }
 
+String JSONUtility::GetPhaseEventAsJSON(String socketId, String eventName, String newPhase) {
+	
+	const std::size_t CAPACITY = JSON_ARRAY_SIZE(2) + 2 * JSON_OBJECT_SIZE(3);
+	StaticJsonDocument<CAPACITY> doc;
+	JsonArray jsonArray = doc.to<JsonArray>();
+
+	jsonArray.add(eventName);
+
+	if (newPhase == "") {
+		JsonObject params = jsonArray.createNestedObject();
+		params["duelistId"] = socketId;
+		params["phase"] = nullptr;
+		params["result"] = nullptr;
+	}
+	else {
+		JsonObject params = jsonArray.createNestedObject();
+		params["duelistId"] = socketId;
+		params["phase"] = newPhase;
+		params["result"] = nullptr;
+	}
+
+	String output;
+	serializeJson(doc, output);
+
+	return output;
+}
+
 String JSONUtility::GetZoneName(String zone, String eventType) {
 	if (eventType == "2") {
 		return "graveyard";
@@ -94,16 +120,23 @@ String JSONUtility::GetZoneName(String zone, String eventType) {
 }
 
 String JSONUtility::GetCardPosition(String positionNumber) {
-	String cardPosition = "faceUp";
+	String cardPosition;
+	int positionNum = positionNumber.toInt();
 
-	if (positionNumber == "2") {
-		return cardPosition = "faceDown";
-	}
-	else if (positionNumber == "3") {
-		return cardPosition = "faceUpDefence";
-	}
-	else if (positionNumber == "4") {
-		return cardPosition = "faceDownDefence";
+	switch (positionNum)
+	{
+		case 2:
+			cardPosition = "faceDown";
+			break;
+		case 3:
+			cardPosition = "faceUpDefence";
+			break;
+		case 4:
+			cardPosition = "faceDownDefence";
+			break;
+		default:
+			cardPosition = "faceUp";
+			break;
 	}
 
 	return cardPosition;

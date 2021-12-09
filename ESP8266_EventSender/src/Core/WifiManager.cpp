@@ -1,17 +1,4 @@
 #include "WifiManager.h"
-#include "Arduino.h"
-
-#ifdef esp8266
-#include <ESP8266WiFi.h>
-#include <ESP8266WiFiMulti.h>
-#include <Hash.h>
-#endif
-
-#ifdef esp32
-#include <Wifi.h>
-#include <WifiMulti.h>
-#include <WiFiClientSecure.h>
-#endif
 
 WifiManager::WifiManager()
 {

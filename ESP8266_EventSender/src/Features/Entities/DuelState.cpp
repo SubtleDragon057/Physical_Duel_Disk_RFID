@@ -1,7 +1,5 @@
 #include "DuelState.h"
-#include "Arduino.h"
 #include "ArduinoJson.h"
-#include "Playerstate.h"
 
 DuelState::DuelState()
 {
@@ -57,20 +55,35 @@ void DuelState::UpdateDuelState(String eventData) {
 	String copyNum = doc[1]["copyNumber"];
 	String zoneName = doc[1]["zoneName"];
 
-	for (int i = 0; i < 2; i++) {
+	for (byte i = 0; i < 2; i++) {
 		if (_playerStates[i].DuelistID() != duelistID) continue;
 		_playerStates[i].UpdatePlayerstate(GetIntValue(cardID), GetIntValue(copyNum), zoneName);
 	}
 }
 void DuelState::UpdateDuelState(String duelistID, int cardID, int copyNumber, String zoneName) {
-	for (int i = 0; i < 2; i++) {
+	
+	for (byte i = 0; i < 2; i++) {
 		if (_playerStates[i].DuelistID() != duelistID) continue;
 		_playerStates[i].UpdatePlayerstate(cardID, copyNumber, zoneName);
 	}
 }
 
+void DuelState::UpdatePhase(String newPhase, bool isOpponentsTurn) {
+	CurrentPhase = newPhase;
+	IsOpponentsTurn = isOpponentsTurn;
+
+	Serial.printf("Current Phase: %s\n", CurrentPhase.c_str());
+}
+
+String DuelState::GetPhase() {
+	String turnPlayer = IsOpponentsTurn ? "Opp: " : "Player: ";
+	String currentPhase = GetShortenedPhaseName(CurrentPhase);
+
+	return (turnPlayer + currentPhase);
+}
+
 void DuelState::ClearPlayerStates() {
-	for (int i = 0; i < 2; i++) {
+	for (byte i = 0; i < 2; i++) {
 		_playerStates[i].Clear();
 	}
 }
@@ -80,4 +93,15 @@ int DuelState::GetIntValue(String stringToChange) {
 	stringToChange.toCharArray(charArray, 9);
 
 	return atoi(&charArray[0]);
+}
+
+String DuelState::GetShortenedPhaseName(String phase) {
+	String phaseName = "DP";
+
+	if (CurrentPhase == "standbyPhase") phaseName = "SP";
+	else if (CurrentPhase == "mainPhase1") phaseName = "MP1";
+	else if (CurrentPhase == "battlePhase") phaseName = "BP";
+	else if (CurrentPhase == "endPhase") phaseName = "EP";
+
+	return phaseName;
 }

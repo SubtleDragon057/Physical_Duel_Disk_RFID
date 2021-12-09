@@ -3,7 +3,7 @@
 #include "Arduino.h"
 #include "MFRC522.h"
 
-static class Write {
+class Write {
 private:
 	byte _block;
 	MFRC522::MIFARE_Key _key;
@@ -19,6 +19,6 @@ public:
 	void Initialize(byte block, int cardsToRead);
 	void Initialize(byte block, int cardsToRead, byte customKey[]);
 	void ActivateWriteMode(MFRC522 reader, int cardNames[][9]);
-} writeStatic;
+};
 
 #endif

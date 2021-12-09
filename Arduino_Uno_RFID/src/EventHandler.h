@@ -3,6 +3,7 @@
 #include "Arduino.h"
 #include "Core\Zone.h"
 #include "Core\Entities\Enums.h"
+#include "Core\Entities\YgoCard.h"
 
 class EventHandler {
 private:
@@ -13,7 +14,7 @@ public:
 
 	EventHandler(bool debug);
 
-	String GetFormattedEventData(DualCardZone zone, Enums::SensorType sensor);
+	String GetFormattedEventData(DualCardZone &zone, Enums::SensorType sensor);
 };
 
 #endif

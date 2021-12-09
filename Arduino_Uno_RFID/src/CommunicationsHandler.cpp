@@ -25,7 +25,6 @@ void CommunicationsHandler::HandleRequest() {
 	else if (_recievedData == Enums::Communication::GetEventInfo) {
 		Wire.write(_newEventData);
 		_hasNewEvent = false;
-		Serial.println(_newEventData);
 	}
 }
 

@@ -25,6 +25,9 @@ public:
 	void UpdateDuelState(String newDuelState);
 	void UpdateDuelState(String duelistID, int cardID, int copyNumber, String zoneName);
 	void ClearDuelStates();
+	void UpdatePhase(String newPhase, bool isOpponentsTurn);
+	String GetPhase();
+	String HandleChangePhase();
 };
 
 #endif

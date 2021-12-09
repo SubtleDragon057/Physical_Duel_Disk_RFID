@@ -1,11 +1,8 @@
 #ifndef ZoneHandler_h
 #define ZoneHandler_h
 #include "Arduino.h"
-#include "Core\Entities\Enums.h"
-#include "Core\Entities\YgoCard.h"
 #include "Core\Zone.h"
-#include "EventHandler.h"
-#include "Core\Entities\Components.h"
+#include "Core\Entities\Enums.h"
 
 class ZoneHandler {
 private:
@@ -36,17 +33,18 @@ private:
 
 	void CheckRFIDReader(DualCardZone &zone, Enums::SensorType);
 
-	Enums::CardPosition GetMonsterPosition(ProximitySensor attackSensor, AnalogIR defenceSensor);
-	Enums::CardPosition GetSpellPosition(AnalogIR spellSensor);
-
 public:
 		
-	DualCardZone Zones[3];
+	DualCardZone Zones[3] = {
+		DualCardZone(true),
+		DualCardZone(true),
+		DualCardZone(false)
+	};
 	
 	ZoneHandler(bool debug = false);
 
-	void Initialize(byte numZones, byte readerPins[], ProximitySensor attackSensors[], 
-		AnalogIR defenceSnesors[], AnalogIR spellSensors[]);
+	void Initialize(byte numZones, byte readerPins[], byte attackSensorPins[], 
+		byte defenceSnesorPins[], byte spellSensorPins[]);
 	Enums::SensorType CheckForTrippedSensor(int zoneNumber);
 	void HandleUpdateCard(DualCardZone& zone, Enums::SensorType sensor, bool isRemoval = false);
 };

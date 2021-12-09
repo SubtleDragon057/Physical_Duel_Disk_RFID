@@ -1,7 +1,4 @@
 #include "SpeedDuel.h"
-#include "Arduino.h"
-#include "Entities\DuelState.h"
-#include "Entities\EventData.h"
 
 SpeedDuel::SpeedDuel()
 {
@@ -47,7 +44,7 @@ void SpeedDuel::HandleAttackEvent(String socketID, int zoneNumber) {
 EventData SpeedDuel::HandleMonsterAttack(String socketID, String zoneName) {
 	if (!CheckForValidTarget(zoneName)) {
 		Serial.printf("No Targets on Zone: %i\n", zoneName);
-		Serial.println("Hint: Hold Buttons 1 & 5 for a Direct Attack!");
+		Serial.printf("Hint: Hold Buttons 1 & 5 for a Direct Attack!\n");
 		return EventData();
 	}
 
@@ -76,9 +73,39 @@ void SpeedDuel::ClearDuelStates() {
 	_duelState.ClearPlayerStates();
 }
 
+void SpeedDuel::UpdatePhase(String newPhase, bool isOpponentsTurn) {
+	_duelState.UpdatePhase(newPhase, isOpponentsTurn);
+}
+
+String SpeedDuel::GetPhase() {
+	return _duelState.GetPhase();
+}
+
 bool SpeedDuel::CheckForValidTarget(String targetZoneName) {
 	if (targetZoneName == "hand") return true;
 	
 	int targetID = _duelState.GetCardID("", targetZoneName);
 	return targetID != 0;
+}
+
+String SpeedDuel::HandleChangePhase() {
+	if (_duelState.IsOpponentsTurn) return String();
+
+	if (_duelState.CurrentPhase == "drawPhase") {
+		_duelState.UpdatePhase("standbyPhase");
+	}
+	else if (_duelState.CurrentPhase == "standbyPhase") {
+		_duelState.UpdatePhase("mainPhase1");
+	}
+	else if (_duelState.CurrentPhase == "mainPhase1") {
+		_duelState.UpdatePhase("battlePhase");
+	}
+	else if (_duelState.CurrentPhase == "battlePhase") {
+		_duelState.UpdatePhase("endPhase");
+	}
+	else if (_duelState.CurrentPhase == "endPhase") {
+		_duelState.UpdatePhase("passTurn", true);
+	}
+
+	return _duelState.CurrentPhase;
 }

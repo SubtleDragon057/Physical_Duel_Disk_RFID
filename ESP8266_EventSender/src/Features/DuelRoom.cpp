@@ -1,7 +1,5 @@
 #include "DuelRoom.h"
-#include "Arduino.h"
 #include "ArduinoJson.h"
-#include "Lobby.h"
 
 DuelRoom::DuelRoom() 
 {
@@ -28,9 +26,13 @@ String DuelRoom::HandleCloseRoomEvent() {
     jsonArray.add("room:close");
 
     JsonObject params = jsonArray.createNestedObject();
-    params["roomName"] = Lobby::CurrentRoom;
+    params["roomName"] = RoomName;
 
     String output;
     serializeJson(doc, output);
     return output;
+}
+
+void DuelRoom::UpdateCurrentRoom(String roomName) {
+    RoomName = roomName;
 }

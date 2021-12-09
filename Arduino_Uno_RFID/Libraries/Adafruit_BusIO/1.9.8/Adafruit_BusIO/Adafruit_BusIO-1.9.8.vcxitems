@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding ="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" >
+  <PropertyGroup Label="Globals" >
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{c66cbf9f-75df-4cd8-8907-e0fddc28e580}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Adafruit_BusIO_Register.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)Adafruit_I2CDevice.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)Adafruit_SPIDevice.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Adafruit_BusIO_Register.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)Adafruit_I2CDevice.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)Adafruit_I2CRegister.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)Adafruit_SPIDevice.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="$(MSBuildThisFileDirectory)library.properties" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)LICENSE" />
+<None Include="$(MSBuildThisFileDirectory)README.md" />
+  </ItemGroup>
+</Project>

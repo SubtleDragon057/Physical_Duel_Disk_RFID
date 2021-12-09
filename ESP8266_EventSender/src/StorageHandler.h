@@ -2,8 +2,6 @@
 #define StorageHandler_h
 #include "Arduino.h"
 #include "FS.h"
-#include "SD.h"
-#include "SPI.h"
 
 class StorageHandler {
 private:
@@ -12,14 +10,12 @@ private:
 	File _deckYDK;
 
 	String _deckNames[10];
-	
-	bool _debug;
 
 public:
 	int DeckList[36];
 	bool IsDeckSet = false;
 
-	StorageHandler(bool debug);
+	StorageHandler();
 	
 	void ChooseDeck(int buttonEvents[]);
 	String GetDeckName(int buttonEvents[]);
