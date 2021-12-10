@@ -1,4 +1,5 @@
 #include "ZoneHandler.h"
+#include "Core\Entities\YgoCard.h"
 
 ZoneHandler::ZoneHandler(bool debug) 
 {
@@ -54,7 +55,7 @@ void ZoneHandler::CheckRFIDReader(DualCardZone &zone, Enums::SensorType sensor) 
 }
 
 void ZoneHandler::HandleUpdateCard(DualCardZone& zone, Enums::SensorType sensor, bool isRemoval = false) {
-	String cardSerialNumber = zone.GetCardSerialNumber(_readBackBlock);
+	String cardSerialNumber = zone.GetCardSerialNumber();
 	Enums::CardPosition position;
 
 	if (sensor == Enums::SpellTrap) {
@@ -64,7 +65,12 @@ void ZoneHandler::HandleUpdateCard(DualCardZone& zone, Enums::SensorType sensor,
 	}
 
 	if (isRemoval) {
-		zone.UpdateCurrentMonster(zone.GetCurrentMonster().GetSerialNumber(), Enums::NoCard);
+		Monster zoneMonster = zone.GetCurrentMonster();
+		String monsterSerial = zoneMonster.GetSerialNumber();
+		Serial.print("Removing: ");
+		Serial.println(monsterSerial);
+
+		zone.UpdateCurrentMonster(monsterSerial, Enums::NoCard);
 		return;
 	}
 

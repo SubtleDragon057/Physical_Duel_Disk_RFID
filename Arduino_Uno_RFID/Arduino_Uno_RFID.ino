@@ -34,13 +34,14 @@ void setup() {
 
 	Serial.begin(9600); 
 	SPI.begin();
-	
-	/*Wire.begin(11);
-	Wire.onReceive(HandleRecieve);
-	Wire.onRequest(HandleRequest);*/
 
 	reader.begin();
 	reader.SAMConfig();
+	reader.setPassiveActivationRetries(5);
+
+	Wire.begin(11);
+	Wire.onReceive(HandleRecieve);
+	Wire.onRequest(HandleRequest);
 
 	zoneHandler.Initialize(numZones, readerPins, attackSensorPins, reader,
 		defenceSensorPins, spellSensorPins);
@@ -61,6 +62,11 @@ void loop() {
 		
 		if (eventData == "") return;
 		communicationsHandler.HandleNewEvent(eventData);
+		
+		Serial.println();
+		Serial.print("Event Info: ");
+		Serial.println(eventData);
+		Serial.println();
 	}
 }
 

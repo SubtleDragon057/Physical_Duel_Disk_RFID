@@ -36,7 +36,7 @@ String EventHandler::GetFormattedEventData(DualCardZone &zone, Enums::SensorType
 	}
 
 	// Handle Error
-	if (eventData.length() == 3) {
+	if (eventData.length() < 11) {
 		Serial.print(F("[ERROR] Zone: "));
 		Serial.print(eventData[1]);
 		Serial.println(F(" had a malfunction!"));

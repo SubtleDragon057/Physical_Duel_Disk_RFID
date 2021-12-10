@@ -11,8 +11,8 @@
 
 class DualCardZone {
 private:
-	Monster _currentMonster;
-	Spell _currentSpell;
+	Monster * _currentMonster;
+	Spell * _currentSpell;
 
 	PN532 _pn532;
 
@@ -24,7 +24,7 @@ private:
 
 	bool _debug = true;
 
-	int PN532ReadBlock(byte readBackBlock[]);
+	String PN532ReadBlock();
 
 public:
 	int ZoneNumber;
@@ -36,8 +36,8 @@ public:
 	void Initialize(int zoneNum, PN532 reader, byte blockNumber, byte attackSensorPin,
 		byte defenceSensorPin, byte spellSensorPin);
 
-	Monster GetCurrentMonster() { return _currentMonster; }
-	Spell GetCurrentSpell() { return _currentSpell; }
+	Monster GetCurrentMonster() { return *_currentMonster; }
+	Spell GetCurrentSpell() { return *_currentSpell; }
 	Enums::CardPosition ReadCurrentMonsterPosition();
 	Enums::CardPosition ReadCurrentSpellPosition();
 	void UpdateCurrentMonster(String monsterID, Enums::CardPosition position);
@@ -48,7 +48,7 @@ public:
 	bool ScanForNewCard();
 	bool ReadAvailableCard();
 	void StopScanning();
-	String GetCardSerialNumber(byte readBackBlock[]);
+	String GetCardSerialNumber();
 };
 
 #endif

@@ -8,7 +8,6 @@
 class ZoneHandler {
 private:
 	byte _block = 4;
-	byte _readBackBlock[16];
 	
 	bool _debug;
 

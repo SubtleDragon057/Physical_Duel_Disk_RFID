@@ -25,8 +25,8 @@ void DualCardZone::Initialize(int zoneNum, PN532 reader, byte blockNumber, byte 
 			_pn532.DebugReader();
 	}*/
 
-	_currentMonster = Monster("", Enums::NoCard);
-	_currentSpell = Spell("", Enums::NoCard);
+	_currentMonster = &Monster("", Enums::NoCard);
+	_currentSpell = &Spell("", Enums::NoCard);
 }
 
 Enums::CardPosition DualCardZone::ReadCurrentMonsterPosition()
@@ -61,11 +61,11 @@ Enums::CardPosition DualCardZone::ReadCurrentSpellPosition()
 }
 
 void DualCardZone::UpdateCurrentMonster(String monsterID, Enums::CardPosition position) {
-	_currentMonster.UpdateCard(monsterID, position);
+	_currentMonster->UpdateCard(monsterID, position);
 }
 
 void DualCardZone::UpdateCurrentSpell(String spellID, Enums::CardPosition position) {
-	_currentSpell.UpdateCard(spellID, position);
+	_currentSpell->UpdateCard(spellID, position);
 }
 
 Enums::SensorType DualCardZone::isNewCardPresent() {
@@ -101,39 +101,31 @@ void DualCardZone::StopScanning()
 	
 }
 
-String DualCardZone::GetCardSerialNumber(byte readBackBlock[]) {
-
-	// Clear Previous Card Value
-	// memset(readBackBlock, 0, sizeof(readBackBlock));
-	
-	PN532ReadBlock(readBackBlock);
-
-	String cardSerial = (String((char*)readBackBlock)).substring(1, 16);
-	return cardSerial;
+String DualCardZone::GetCardSerialNumber() {	
+	String cardSerial = PN532ReadBlock();
+	return cardSerial.substring(1);
 }
 
-int DualCardZone::PN532ReadBlock(byte readBackBlock[])
+String DualCardZone::PN532ReadBlock()
 {
+	uint8_t readBackBlock[16];
 	int trailerBlock = (_block / 4 * 4) + 3;
 	byte buffersize = 18;
 
 	uint8_t keya[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
-	uint8_t status = _pn532.mifareclassic_AuthenticateBlock(_uid, _uidLength, 4, 0, keya);
-	Serial.println("Athenticated");
+	uint8_t status = _pn532.mifareclassic_AuthenticateBlock(_uid, _uidLength, _block, 0, keya);
 	if (!status) {
-		return 3;
+		return "3";
 	}
 
 	status = _pn532.mifareclassic_ReadDataBlock(_block, readBackBlock);
 	if (!status) {
 		Serial.print("[WARN] Could not read block!\n");
-		return 4;
+		return "4";
 	}
 
-	Serial.println("Reading Block 4:");
-	_pn532.PrintHexChar(readBackBlock, 16);
-	Serial.println("");
+	Serial.print("Reading Block 4:");
+	Serial.println((char*)&readBackBlock);
 
-	// Wait a bit before reading the card again
-	delay(1000);
+	return (char*)&readBackBlock;
 }

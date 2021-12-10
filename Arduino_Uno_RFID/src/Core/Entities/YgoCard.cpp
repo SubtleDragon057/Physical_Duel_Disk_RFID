@@ -2,9 +2,7 @@
 #include "YgoCard.h"
 #include "Enums.h"
 
-Monster::Monster() 
-{
-}
+
 Monster::Monster(String serialNumber, Enums::CardPosition position)
 {
 	_serialNumber = serialNumber;
@@ -17,9 +15,6 @@ void Monster::UpdateCard(String serialNumber, Enums::CardPosition newPosition)
 	_position = newPosition;
 }
 
-Spell::Spell() 
-{
-}
 Spell::Spell(String serialNumber, Enums::CardPosition position)
 {
 	_serialNumber = serialNumber;
