@@ -5,20 +5,17 @@ ZoneHandler::ZoneHandler(bool debug)
 	_debug = debug;
 }
 
-void ZoneHandler::Initialize(byte numZones, byte readerPins[], byte attackSensorPins[], 
+void ZoneHandler::Initialize(byte numZones, byte readerPins[], byte attackSensorPins[], PN532 reader,
 	byte defenceSensorPins[], byte spellSensorPins[]) {
 	
-	for (int i = 0; i < numZones; i++) {
-		Zones[i].Initialize(i,
-			readerPins[i], 
-			readerPins[3],
-			_block,
-			attackSensorPins[i],
-			defenceSensorPins[i],
-			spellSensorPins[i]);
+	Zones[2].Initialize(2,
+		reader,
+		_block,
+		attackSensorPins[2],
+		defenceSensorPins[2],
+		spellSensorPins[2]);
 
-		delay(10);
-	}
+	delay(10);
 }
 
 Enums::SensorType ZoneHandler::CheckForTrippedSensor(int zoneNumber) {

@@ -3,6 +3,7 @@
 #include "Arduino.h"
 #include "Core\Zone.h"
 #include "Core\Entities\Enums.h"
+#include "PN532.h"
 
 class ZoneHandler {
 private:
@@ -36,14 +37,14 @@ private:
 public:
 		
 	DualCardZone Zones[3] = {
-		DualCardZone(true),
-		DualCardZone(true),
-		DualCardZone(false)
+		DualCardZone(),
+		DualCardZone(),
+		DualCardZone()
 	};
 	
 	ZoneHandler(bool debug = false);
 
-	void Initialize(byte numZones, byte readerPins[], byte attackSensorPins[], 
+	void Initialize(byte numZones, byte readerPins[], byte attackSensorPins[], PN532 reader,
 		byte defenceSnesorPins[], byte spellSensorPins[]);
 	Enums::SensorType CheckForTrippedSensor(int zoneNumber);
 	void HandleUpdateCard(DualCardZone& zone, Enums::SensorType sensor, bool isRemoval = false);

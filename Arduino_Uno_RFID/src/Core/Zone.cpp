@@ -2,31 +2,28 @@
 //#include "Entities\Components\AnalogIR.h"
 //#include "Entities\Components\DigitalIR.h"
 
-DualCardZone::DualCardZone(bool isMFRC)
+DualCardZone::DualCardZone()
 {
-	_isMFRC = isMFRC;
 }
 
-void DualCardZone::Initialize(int zoneNum, byte readerPin, byte resetPin, byte blockNumber, byte attackSensorPin,
+void DualCardZone::Initialize(int zoneNum, PN532 reader, byte blockNumber, byte attackSensorPin,
 	byte defenceSensorPin, byte spellSensorPin)
 {
-	if (_isMFRC)
-		_mfrc = mfrcReader(readerPin, resetPin, blockNumber);
-	else
-		_pn532 = PN532Reader(readerPin, blockNumber);
+	_pn532 = reader;
 	
+	_block = blockNumber;
 	ZoneNumber = zoneNum;
 	AttackSensor = DigitalIR(attackSensorPin);
 	DefenceSensor = AnalogIR(defenceSensorPin, false);
 	SpellSensor = AnalogIR(spellSensorPin, false);
 
-	if (_debug) {
+	/*if (_debug) {
 		Serial.print(F("[DEBUG] "));
 		if (_isMFRC)
 			_mfrc.DebugReader();
 		else
 			_pn532.DebugReader();
-	}
+	}*/
 
 	_currentMonster = Monster("", Enums::NoCard);
 	_currentSpell = Spell("", Enums::NoCard);
@@ -91,26 +88,52 @@ Enums::SensorType DualCardZone::isNewCardPresent() {
 
 bool DualCardZone::ScanForNewCard()
 {
-	return _isMFRC ? _mfrc.ScanForNewCard() : _pn532.ScanForNewCard();
+	return _pn532.readPassiveTargetID(PN532_MIFARE_ISO14443A, _uid, &_uidLength);
 }
 
 bool DualCardZone::ReadAvailableCard()
 {
-	return _isMFRC ? _mfrc.ReadAvailableCard() : _pn532.ReadAvailableCard();
+	return true;
 }
 
 void DualCardZone::StopScanning()
 {
-	_isMFRC ? _mfrc.StopScanning() : _pn532.StopScanning();
+	
 }
 
 String DualCardZone::GetCardSerialNumber(byte readBackBlock[]) {
 
 	// Clear Previous Card Value
-	memset(readBackBlock, 0, sizeof(readBackBlock));
+	// memset(readBackBlock, 0, sizeof(readBackBlock));
 	
-	_isMFRC ? _mfrc.ReadBlock(readBackBlock) : _pn532.ReadBlock(readBackBlock);
+	PN532ReadBlock(readBackBlock);
 
 	String cardSerial = (String((char*)readBackBlock)).substring(1, 16);
 	return cardSerial;
+}
+
+int DualCardZone::PN532ReadBlock(byte readBackBlock[])
+{
+	int trailerBlock = (_block / 4 * 4) + 3;
+	byte buffersize = 18;
+
+	uint8_t keya[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+	uint8_t status = _pn532.mifareclassic_AuthenticateBlock(_uid, _uidLength, 4, 0, keya);
+	Serial.println("Athenticated");
+	if (!status) {
+		return 3;
+	}
+
+	status = _pn532.mifareclassic_ReadDataBlock(_block, readBackBlock);
+	if (!status) {
+		Serial.print("[WARN] Could not read block!\n");
+		return 4;
+	}
+
+	Serial.println("Reading Block 4:");
+	_pn532.PrintHexChar(readBackBlock, 16);
+	Serial.println("");
+
+	// Wait a bit before reading the card again
+	delay(1000);
 }
