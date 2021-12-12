@@ -4,37 +4,42 @@
   Author:  SubtleDragon057
 */
 
-bool handlerDebug = true;
+const bool handlerDebug = true;
 
-#include <SPI.h>
 #include <Wire.h>
+#include <PN532.h>
+#include <PN532_I2C.h>
 
 #include "src\ZoneHandler.h"
 #include "src\EventHandler.h"
 #include "src\CommunicationsHandler.h"
 #include "src\Core\Entities\Enums.h"
 
-ZoneHandler zoneHandler(handlerDebug);
 EventHandler eventHandler(handlerDebug);
 CommunicationsHandler communicationsHandler(handlerDebug);
+ZoneHandler zoneHandler(communicationsHandler, handlerDebug);
 
 const byte numZones = 3;
 
-byte readerPins[numZones + 1] = { 2, 3, 4, 8 }; // Last pin is Reset
+PN532_I2C pnI2C(Wire);
+PN532 reader(pnI2C);
+
 byte attackSensorPins[numZones] = {	5, 6, 7 };
 byte defenceSensorPins[numZones] = { A0, A1, A2 };
 byte spellSensorPins[numZones] = { A4, A5, A6 };
 
 void setup() {
 
-	Serial.begin(9600); 
-	SPI.begin();
-	
+	Serial.begin(115200);
+	Wire.begin();
+
+	communicationsHandler.InitializeNFCReaders(numZones, reader);
+
 	Wire.begin(11);
 	Wire.onReceive(HandleRecieve);
 	Wire.onRequest(HandleRequest);
 
-	zoneHandler.Initialize(numZones, readerPins, attackSensorPins, 
+	zoneHandler.Initialize(numZones, attackSensorPins, reader,
 		defenceSensorPins, spellSensorPins);
 
 	Serial.println("Initialization Complete");
@@ -53,6 +58,11 @@ void loop() {
 		
 		if (eventData == "") return;
 		communicationsHandler.HandleNewEvent(eventData);
+		
+		Serial.println();
+		Serial.print("Event Info: ");
+		Serial.println(eventData);
+		Serial.println();
 	}
 }
 

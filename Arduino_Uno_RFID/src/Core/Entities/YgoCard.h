@@ -9,7 +9,6 @@ private:
 	Enums::CardPosition _position;
 
 public:
-	Monster();
 	Monster(String serialNum, Enums::CardPosition position);
 
 	String GetSerialNumber() { return _serialNumber; }
@@ -23,7 +22,6 @@ private:
 	Enums::CardPosition _position;
 
 public:
-	Spell();
 	Spell(String serialNum, Enums::CardPosition position);
 
 	String GetSerialNumber() { return _serialNumber; }
