@@ -4,7 +4,6 @@
 #include "Entities\Enums.h"
 #include "Entities\YgoCard.h"
 #include "Entities\Components\PN532Reader.h"
-//#include "Entities\Components\Models\ProximitySensor.h"
 #include "Entities\Components\AnalogIR.h"
 #include "Entities\Components\DigitalIR.h"
 #include "PN532.h"
@@ -33,7 +32,7 @@ public:
 	AnalogIR SpellSensor;
 
 	DualCardZone();
-	void Initialize(int zoneNum, PN532 reader, byte blockNumber, byte attackSensorPin,
+	void Initialize(int zoneNum, PN532 &reader, byte blockNumber, byte attackSensorPin,
 		byte defenceSensorPin, byte spellSensorPin);
 
 	Monster GetCurrentMonster() { return *_currentMonster; }

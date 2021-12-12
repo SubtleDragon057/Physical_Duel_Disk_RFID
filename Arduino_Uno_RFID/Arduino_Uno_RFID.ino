@@ -4,9 +4,8 @@
   Author:  SubtleDragon057
 */
 
-bool handlerDebug = true;
+const bool handlerDebug = true;
 
-#include <SPI.h>
 #include <Wire.h>
 #include <PN532.h>
 #include <PN532_I2C.h>
@@ -16,34 +15,31 @@ bool handlerDebug = true;
 #include "src\CommunicationsHandler.h"
 #include "src\Core\Entities\Enums.h"
 
-ZoneHandler zoneHandler(handlerDebug);
 EventHandler eventHandler(handlerDebug);
 CommunicationsHandler communicationsHandler(handlerDebug);
+ZoneHandler zoneHandler(communicationsHandler, handlerDebug);
 
 const byte numZones = 3;
 
 PN532_I2C pnI2C(Wire);
 PN532 reader(pnI2C);
 
-byte readerPins[numZones + 1] = { 2, 3, 4, 8 }; // Last pin is Reset
 byte attackSensorPins[numZones] = {	5, 6, 7 };
 byte defenceSensorPins[numZones] = { A0, A1, A2 };
 byte spellSensorPins[numZones] = { A4, A5, A6 };
 
 void setup() {
 
-	Serial.begin(9600); 
-	SPI.begin();
+	Serial.begin(115200);
+	Wire.begin();
 
-	reader.begin();
-	reader.SAMConfig();
-	reader.setPassiveActivationRetries(5);
+	communicationsHandler.InitializeNFCReaders(numZones, reader);
 
 	Wire.begin(11);
 	Wire.onReceive(HandleRecieve);
 	Wire.onRequest(HandleRequest);
 
-	zoneHandler.Initialize(numZones, readerPins, attackSensorPins, reader,
+	zoneHandler.Initialize(numZones, attackSensorPins, reader,
 		defenceSensorPins, spellSensorPins);
 
 	Serial.println("Initialization Complete");
@@ -54,11 +50,11 @@ void loop() {
 
 	// Cycle through each zone on the Duel Disk to check for any changes
 	for (int i = 0; i < numZones; i++) {
-		Enums::SensorType trippedSensor = zoneHandler.CheckForTrippedSensor(2);
+		Enums::SensorType trippedSensor = zoneHandler.CheckForTrippedSensor(i);
 
 		if (trippedSensor == Enums::None) continue;
 
-		String eventData = eventHandler.GetFormattedEventData(zoneHandler.Zones[2], trippedSensor);
+		String eventData = eventHandler.GetFormattedEventData(zoneHandler.Zones[i], trippedSensor);
 		
 		if (eventData == "") return;
 		communicationsHandler.HandleNewEvent(eventData);

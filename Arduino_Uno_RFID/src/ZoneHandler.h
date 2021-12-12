@@ -4,9 +4,11 @@
 #include "Core\Zone.h"
 #include "Core\Entities\Enums.h"
 #include "PN532.h"
+#include "CommunicationsHandler.h"
 
 class ZoneHandler {
 private:
+	CommunicationsHandler _communicationsHandler;
 	byte _block = 4;
 	
 	bool _debug;
@@ -41,9 +43,9 @@ public:
 		DualCardZone()
 	};
 	
-	ZoneHandler(bool debug = false);
+	ZoneHandler(CommunicationsHandler& communicationsHandler, bool debug = false);
 
-	void Initialize(byte numZones, byte readerPins[], byte attackSensorPins[], PN532 reader,
+	void Initialize(byte numZones, byte attackSensorPins[], PN532 &reader,
 		byte defenceSnesorPins[], byte spellSensorPins[]);
 	Enums::SensorType CheckForTrippedSensor(int zoneNumber);
 	void HandleUpdateCard(DualCardZone& zone, Enums::SensorType sensor, bool isRemoval = false);

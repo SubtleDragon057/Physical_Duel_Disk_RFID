@@ -1,14 +1,14 @@
 #include "Zone.h"
-//#include "Entities\Components\AnalogIR.h"
-//#include "Entities\Components\DigitalIR.h"
 
 DualCardZone::DualCardZone()
 {
 }
 
-void DualCardZone::Initialize(int zoneNum, PN532 reader, byte blockNumber, byte attackSensorPin,
-	byte defenceSensorPin, byte spellSensorPin)
-{
+void DualCardZone::Initialize(int zoneNum, PN532 &reader, byte blockNumber, byte attackSensorPin,
+	byte defenceSensorPin, byte spellSensorPin) {
+	Serial.print("[BOOT] Initialize Zone ");
+	Serial.println(zoneNum);
+	
 	_pn532 = reader;
 	
 	_block = blockNumber;
@@ -16,14 +16,6 @@ void DualCardZone::Initialize(int zoneNum, PN532 reader, byte blockNumber, byte 
 	AttackSensor = DigitalIR(attackSensorPin);
 	DefenceSensor = AnalogIR(defenceSensorPin, false);
 	SpellSensor = AnalogIR(spellSensorPin, false);
-
-	/*if (_debug) {
-		Serial.print(F("[DEBUG] "));
-		if (_isMFRC)
-			_mfrc.DebugReader();
-		else
-			_pn532.DebugReader();
-	}*/
 
 	_currentMonster = &Monster("", Enums::NoCard);
 	_currentSpell = &Spell("", Enums::NoCard);

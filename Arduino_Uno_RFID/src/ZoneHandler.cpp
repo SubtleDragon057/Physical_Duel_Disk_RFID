@@ -1,20 +1,25 @@
 #include "ZoneHandler.h"
 #include "Core\Entities\YgoCard.h"
 
-ZoneHandler::ZoneHandler(bool debug) 
+ZoneHandler::ZoneHandler(CommunicationsHandler& communicationsHandler, bool debug)
 {
+	_communicationsHandler = communicationsHandler;
 	_debug = debug;
 }
 
-void ZoneHandler::Initialize(byte numZones, byte readerPins[], byte attackSensorPins[], PN532 reader,
+void ZoneHandler::Initialize(byte numZones, byte attackSensorPins[], PN532 &reader,
 	byte defenceSensorPins[], byte spellSensorPins[]) {
-	
-	Zones[2].Initialize(2,
-		reader,
-		_block,
-		attackSensorPins[2],
-		defenceSensorPins[2],
-		spellSensorPins[2]);
+	Serial.println("[BOOT] Initialize Zone Hanlder");
+
+	for (byte i = 0; i < numZones; i++) {
+		_communicationsHandler.SelectMultiplexerAddress(i);
+		Zones[i].Initialize(i,
+			reader,
+			_block,
+			attackSensorPins[i],
+			defenceSensorPins[i],
+			spellSensorPins[i]);
+	}
 
 	delay(10);
 }
@@ -24,6 +29,7 @@ Enums::SensorType ZoneHandler::CheckForTrippedSensor(int zoneNumber) {
 	Enums::SensorType isNewCardPresent = Zones[zoneNumber].isNewCardPresent();
 	if (isNewCardPresent != Enums::None) {		
 		delay(100); // delay to ensure card is fully placed
+		_communicationsHandler.SelectMultiplexerAddress(zoneNumber);
 		CheckRFIDReader(Zones[zoneNumber], isNewCardPresent);
 	}
 
