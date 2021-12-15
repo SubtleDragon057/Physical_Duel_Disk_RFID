@@ -3,15 +3,14 @@
 DigitalIR::DigitalIR()
 {
 }
-DigitalIR::DigitalIR(uint8_t pin) {
-	_pin = pin;
+DigitalIR::DigitalIR(byte address[]) {
+	_address = address;
 	_currentValue = HIGH;
-
-	pinMode(_pin, INPUT);
 }
 
 bool DigitalIR::isNewCardPresent() {
-	int read = digitalRead(_pin);
+	SetMultiplexerAddress();
+	int read = digitalRead(A0);
 
 	if (read == _currentValue) {
 		return false;
@@ -22,6 +21,15 @@ bool DigitalIR::isNewCardPresent() {
 }
 
 int DigitalIR::GetCurrentValue() {
-	_currentValue = digitalRead(_pin);
+	SetMultiplexerAddress();
+
+	_currentValue = digitalRead(A0);
 	return _currentValue;
+}
+
+void DigitalIR::SetMultiplexerAddress()
+{
+	for (byte i = 0; i < 4; i++) {
+		digitalWrite(2 + i, _address[i]);
+	}
 }

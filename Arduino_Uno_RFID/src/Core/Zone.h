@@ -2,47 +2,39 @@
 #define _ZONE_h
 #include "Arduino.h"
 #include "Entities\Enums.h"
-#include "Entities\YgoCard.h"
-#include "Entities\Components\PN532Reader.h"
 #include "Entities\Components\AnalogIR.h"
-#include "Entities\Components\DigitalIR.h"
 #include "PN532.h"
 
 class DualCardZone {
 private:
-	Monster * _currentMonster;
-	Spell * _currentSpell;
-
-	PN532 _pn532;
-
-	byte _block;
-
+	PN532 _reader;
+	byte _block = 4;
 	byte _uid[7];
 	byte _uidLength;
-	uint8_t _key[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
-	bool _debug = true;
+	AnalogIR _sensors[3] = {};
 
-	String PN532ReadBlock();
+	bool _debug = false;
 
 public:
 	int ZoneNumber;
-	DigitalIR AttackSensor;
-	AnalogIR DefenceSensor;
-	AnalogIR SpellSensor;
+
+	String MonsterSerial = "";
+	Enums::CardPosition MonsterPosition = Enums::NoCard;
+
+	String SpellSerial = "";
+	Enums::CardPosition SpellPosition = Enums::NoCard;
 
 	DualCardZone();
-	void Initialize(int zoneNum, PN532 &reader, byte blockNumber, byte attackSensorPin,
-		byte defenceSensorPin, byte spellSensorPin);
+	void Initialize(byte zoneNum, PN532 &reader, byte attackSensorAddress[],
+		byte defenceSensorAddress[], byte spellSensorAddress[]);
 
-	Monster GetCurrentMonster() { return *_currentMonster; }
-	Spell GetCurrentSpell() { return *_currentSpell; }
 	Enums::CardPosition ReadCurrentMonsterPosition();
 	Enums::CardPosition ReadCurrentSpellPosition();
 	void UpdateCurrentMonster(String monsterID, Enums::CardPosition position);
 	void UpdateCurrentSpell(String spellID, Enums::CardPosition position);
 
-	Enums::SensorType isNewCardPresent();
+	int isNewCardPresent();
 
 	bool ScanForNewCard();
 	bool ReadAvailableCard();

@@ -4,36 +4,32 @@
 #include "Core\Zone.h"
 #include "Core\Entities\Enums.h"
 #include "PN532.h"
-#include "CommunicationsHandler.h"
 
 class ZoneHandler {
 private:
-	CommunicationsHandler _communicationsHandler;
-	byte _block = 4;
+	uint8_t multiplexerAddress = 0x70;
+	byte _muxChannels[16][4] = {
+	{0,0,0,0}, //channel 0
+	{1,0,0,0}, //channel 1
+	{0,1,0,0}, //channel 2
+	{1,1,0,0}, //channel 3
+	{0,0,1,0}, //channel 4
+	{1,0,1,0}, //channel 5
+	{0,1,1,0}, //channel 6
+	{1,1,1,0}, //channel 7
+	{0,0,0,1}, //channel 8
+	{1,0,0,1}, //channel 9
+	{0,1,0,1}, //channel 10
+	{1,1,0,1}, //channel 11
+	{0,0,1,1}, //channel 12
+	{1,0,1,1}, //channel 13
+	{0,1,1,1}, //channel 14
+	{1,1,1,1}  //channel 15
+	};
 	
 	bool _debug;
 
-	// This is where you put the cards to write to the NFC chips. See NOTE for details
-	const byte _cardsToRead = 1;
-	int cardNames[1][9] = {
-		{1, 6, 6, 6, 7, 2, 5, 6, 9}  //Dragon Zombie
-	};
-
-	/*------------------------------------------------------NOTE---------------------------------------------------------------//
-	  // Start by changing '_cardsToRead' to the number of cards you plan to add. If you're writing 6 cards, it needs to be 6.
-	  // Next, add the card using the 9 digit format inside {curly brackets}, <-- and make sure to end with the comma.
-	  // Cards can be obtained from the CARD_INDEX.txt or entered manually. See below.
-	  //
-	  // To enter cards manually, you will need the serial number from the bottom left of the Yu-gi-oh card. We will use
-	  // Silver Fang for this example. It's serial number is 90357090
-	  // To start we need to add the first digit depending on the card type: Monser => 1, Spell => 2, Trap => 3 and separate
-	  // each number with a comma.
-	  //
-	  // That means it would look like this 1,9,0,3,5,7,0,9,0  //
-	  // Then, we need to put those numbers into the {} so it should look like this: {1,9,0,3,5,7,0,9,0},
-	  //----------------------------------------------------END NOTE-------------------------------------------------------------*/
-
-	void CheckRFIDReader(DualCardZone &zone, Enums::SensorType);
+	void CheckRFIDReader(DualCardZone &zone, int sensor);
 
 public:
 		
@@ -43,12 +39,13 @@ public:
 		DualCardZone()
 	};
 	
-	ZoneHandler(CommunicationsHandler& communicationsHandler, bool debug = false);
+	ZoneHandler(bool debug = false);
 
-	void Initialize(byte numZones, byte attackSensorPins[], PN532 &reader,
-		byte defenceSnesorPins[], byte spellSensorPins[]);
-	Enums::SensorType CheckForTrippedSensor(int zoneNumber);
-	void HandleUpdateCard(DualCardZone& zone, Enums::SensorType sensor, bool isRemoval = false);
+	void Initialize(byte numZones, byte attackSensorAddresses[], PN532 &reader,
+		byte defenceSnesorPins[], byte spellSensorAddresses[]);
+	int CheckForTrippedSensor(int zoneNumber);
+	void HandleUpdateCard(DualCardZone& zone, int sensor, bool isRemoval = false);
+	void SelectMultiplexerAddress(uint8_t address);
 };
 
 #endif

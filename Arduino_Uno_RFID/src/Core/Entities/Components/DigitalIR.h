@@ -1,20 +1,21 @@
 #ifndef DigitalIR_h
 #define DigitalIR_h
 #include "Arduino.h"
-#include "Models\ProximitySensor.h"
 
-class DigitalIR : public ProximitySensor {
+class DigitalIR {
 private:
-	byte _pin;
+	byte* _address;
 	int _currentValue;
+
+	void SetMultiplexerAddress();
 
 public:
 
 	DigitalIR();
-	DigitalIR(uint8_t pin);
+	DigitalIR(byte address[]);
 
-	virtual bool isNewCardPresent();
-	virtual int GetCurrentValue();
+	bool isNewCardPresent();
+	int GetCurrentValue();
 };
 
 #endif

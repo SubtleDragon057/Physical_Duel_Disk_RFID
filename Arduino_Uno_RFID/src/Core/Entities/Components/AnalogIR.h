@@ -1,23 +1,26 @@
 #ifndef AnalogIR_h
 #define Analog_h
 #include "Arduino.h"
-#include "Models\ProximitySensor.h"
 
-class AnalogIR : public ProximitySensor {
+class AnalogIR {
 private:
-	byte _pin;
-	int _currentValue;
+
+	byte* _address;
+	byte _currentValue;
+	bool _isDigital = false;
 	bool _debug;
 
-	int GetSensorReading();
+	byte GetDigitalReading();
+	byte GetAnalogReading();
+	void SetMultiplexerAddress();
 
 public:
 
 	AnalogIR();
-	AnalogIR(uint8_t pin, bool debug);
+	AnalogIR(byte address[], bool isDigital = false, bool debug = false);
 
-	virtual int GetCurrentValue();
-	virtual bool isNewCardPresent();
+	byte GetCurrentValue();
+	bool isNewCardPresent();
 };
 
 #endif

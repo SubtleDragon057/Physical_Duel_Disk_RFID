@@ -1,27 +1,12 @@
-#include "Arduino.h"
 #include "YgoCard.h"
-#include "Enums.h"
 
-
-Monster::Monster(String serialNumber, Enums::CardPosition position)
+YgoCard::YgoCard(String serialNumber, Enums::CardPosition position)
 {
 	_serialNumber = serialNumber;
 	_position = position;
 }
 
-void Monster::UpdateCard(String serialNumber, Enums::CardPosition newPosition)
-{
-	_serialNumber = serialNumber;
-	_position = newPosition;
-}
-
-Spell::Spell(String serialNumber, Enums::CardPosition position)
-{
-	_serialNumber = serialNumber;
-	_position = position;
-}
-
-void Spell::UpdateCard(String serialNumber, Enums::CardPosition newPosition)
+void YgoCard::UpdateCard(String serialNumber, Enums::CardPosition newPosition)
 {
 	_serialNumber = serialNumber;
 	_position = newPosition;

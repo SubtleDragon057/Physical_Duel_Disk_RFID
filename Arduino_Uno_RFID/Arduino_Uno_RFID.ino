@@ -17,30 +17,28 @@ const bool handlerDebug = true;
 
 EventHandler eventHandler(handlerDebug);
 CommunicationsHandler communicationsHandler(handlerDebug);
-ZoneHandler zoneHandler(communicationsHandler, handlerDebug);
+ZoneHandler zoneHandler(handlerDebug);
 
 const byte numZones = 3;
 
 PN532_I2C pnI2C(Wire);
 PN532 reader(pnI2C);
 
-byte attackSensorPins[numZones] = {	5, 6, 7 };
-byte defenceSensorPins[numZones] = { A0, A1, A2 };
-byte spellSensorPins[numZones] = { A4, A5, A6 };
+byte attackSensorAddresses[numZones] = { 13, 14, 15 };
+byte defenceSensorAddresses[numZones] = { 7, 8, 9 };
+byte spellSensorAddresses[numZones] = { 10, 11, 12 };
 
 void setup() {
 
 	Serial.begin(115200);
 	Wire.begin();
 
-	communicationsHandler.InitializeNFCReaders(numZones, reader);
+	zoneHandler.Initialize(numZones, attackSensorAddresses, reader,
+		defenceSensorAddresses, spellSensorAddresses);
 
 	Wire.begin(11);
 	Wire.onReceive(HandleRecieve);
 	Wire.onRequest(HandleRequest);
-
-	zoneHandler.Initialize(numZones, attackSensorPins, reader,
-		defenceSensorPins, spellSensorPins);
 
 	Serial.println("Initialization Complete");
 	Serial.println();
@@ -50,7 +48,7 @@ void loop() {
 
 	// Cycle through each zone on the Duel Disk to check for any changes
 	for (int i = 0; i < numZones; i++) {
-		Enums::SensorType trippedSensor = zoneHandler.CheckForTrippedSensor(i);
+		int trippedSensor = zoneHandler.CheckForTrippedSensor(i);
 
 		if (trippedSensor == Enums::None) continue;
 
@@ -64,6 +62,8 @@ void loop() {
 		Serial.println(eventData);
 		Serial.println();
 	}
+
+	//Serial.println();
 }
 
 void HandleRecieve(int numBytes) {
