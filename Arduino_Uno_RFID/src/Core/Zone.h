@@ -14,10 +14,11 @@ private:
 
 	AnalogIR _sensors[3] = {};
 
-	bool _debug = false;
+	bool _debug = true;
 
 public:
 	int ZoneNumber;
+	bool TrippedSensors[3] = { false, false, false };
 
 	String MonsterSerial = "";
 	Enums::CardPosition MonsterPosition = Enums::NoCard;
@@ -34,7 +35,7 @@ public:
 	void UpdateCurrentMonster(String monsterID, Enums::CardPosition position);
 	void UpdateCurrentSpell(String spellID, Enums::CardPosition position);
 
-	int isNewCardPresent();
+	void CheckForTrippedSensors();
 
 	bool ScanForNewCard();
 	bool ReadAvailableCard();

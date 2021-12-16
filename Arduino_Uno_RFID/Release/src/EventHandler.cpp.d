@@ -14,18 +14,7 @@ C:\Users\Counter2\AppData\Local\Temp\VMBuilds\Arduino_Uno_RFID\uno\Release\src\E
  C:\Users\Counter2\AppData\Local\Temp\VMBuilds\Arduino_Uno_RFID\uno\Release\src\EventHandler.h \
  C:\Users\Counter2\AppData\Local\Temp\VMBuilds\Arduino_Uno_RFID\uno\Release\src\Core\Zone.h \
  C:\Users\Counter2\AppData\Local\Temp\VMBuilds\Arduino_Uno_RFID\uno\Release\src\Core\Entities\Enums.h \
- C:\Users\Counter2\AppData\Local\Temp\VMBuilds\Arduino_Uno_RFID\uno\Release\src\Core\Entities\YgoCard.h \
- C:\Users\Counter2\AppData\Local\Temp\VMBuilds\Arduino_Uno_RFID\uno\Release\src\Core\Entities\Enums.h \
- C:\Users\Counter2\AppData\Local\Temp\VMBuilds\Arduino_Uno_RFID\uno\Release\src\Core\Entities\Components\PN532Reader.h \
- C:\Users\Counter2\AppData\Local\Temp\VMBuilds\Arduino_Uno_RFID\uno\Release\src\Core\Entities\Components\Models\NFCReader.h \
+ C:\Users\Counter2\AppData\Local\Temp\VMBuilds\Arduino_Uno_RFID\uno\Release\src\Core\Entities\Components\AnalogIR.h \
  C:\Users\Counter2\Documents\Arduino\libraries\PN532/PN532.h \
  C:\Users\Counter2\Documents\Arduino\libraries\PN532/PN532Interface.h \
- C:\Users\Counter2\Documents\Arduino\libraries\PN532_I2C/PN532_I2C.h \
- C:\Program\ Files\ (x86)\Arduino\hardware\arduino\avr\libraries\Wire\src/Wire.h \
- C:\Program\ Files\ (x86)\Arduino\hardware\arduino\avr\cores\arduino/Stream.h \
- C:\Users\Counter2\Documents\Arduino\libraries\PN532/PN532Interface.h \
- C:\Users\Counter2\AppData\Local\Temp\VMBuilds\Arduino_Uno_RFID\uno\Release\src\Core\Entities\Components\AnalogIR.h \
- C:\Users\Counter2\AppData\Local\Temp\VMBuilds\Arduino_Uno_RFID\uno\Release\src\Core\Entities\Components\Models\ProximitySensor.h \
- C:\Users\Counter2\AppData\Local\Temp\VMBuilds\Arduino_Uno_RFID\uno\Release\src\Core\Entities\Components\DigitalIR.h \
- C:\Users\Counter2\AppData\Local\Temp\VMBuilds\Arduino_Uno_RFID\uno\Release\src\Core\Entities\Enums.h \
- C:\Users\Counter2\AppData\Local\Temp\VMBuilds\Arduino_Uno_RFID\uno\Release\src\Core\Entities\YgoCard.h
+ C:\Users\Counter2\AppData\Local\Temp\VMBuilds\Arduino_Uno_RFID\uno\Release\src\Core\Entities\Enums.h

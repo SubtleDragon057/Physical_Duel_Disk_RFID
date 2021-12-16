@@ -11,40 +11,45 @@ void DualCardZone::Initialize(byte zoneNum, PN532 &reader, byte attackSensorAddr
 	
 	_reader = reader;
 	ZoneNumber = zoneNum;
-	_sensors[0] = AnalogIR(attackSensorAddress, true, _debug);
-	_sensors[1] = AnalogIR(defenceSensorAddress, false, _debug);
-	_sensors[2] = AnalogIR(spellSensorAddress, false, _debug);
+	_sensors[0] = AnalogIR(attackSensorAddress, 1, _debug);
+	_sensors[1] = AnalogIR(defenceSensorAddress, 2, _debug);
+	_sensors[2] = AnalogIR(spellSensorAddress, 3, _debug);
 }
 
-Enums::CardPosition DualCardZone::ReadCurrentMonsterPosition()
-{
-	int lightValue = _sensors[1].GetCurrentValue();
+Enums::CardPosition DualCardZone::ReadCurrentMonsterPosition() {
+	Enums::CardPosition position = Enums::NoCard;
+	int lightValue = _sensors[1].CurrentValue;
 
-	if (lightValue == Enums::Low) {
-		return Enums::FaceDownDefence;
+	switch (lightValue) {
+		case Enums::Low:
+			position = Enums::FaceDownDefence;
+			break;
+		case Enums::Medium:
+			position = Enums::FaceUpDefence;
+			break;
 	}
-	else if (lightValue == Enums::Medium) {
-		return Enums::FaceUpDefence;
-	}
-	else if (_sensors[0].GetCurrentValue() == Enums::Low) {
-		return Enums::FaceUp;
+	
+	if (_sensors[0].CurrentValue == Enums::Low) {
+		position = Enums::FaceUp;
 	}
 
-	return Enums::NoCard;
+	return position;
 }
 
-Enums::CardPosition DualCardZone::ReadCurrentSpellPosition()
-{
-	int lightValue = _sensors[2].GetCurrentValue();
+Enums::CardPosition DualCardZone::ReadCurrentSpellPosition() {
+	Enums::CardPosition position = Enums::NoCard;
+	int lightValue = _sensors[2].CurrentValue;
 
-	if (lightValue == Enums::Low) {
-		return Enums::FaceUp;
-	}
-	else if (lightValue == Enums::Medium) {
-		return Enums::FaceDown;
+	switch (lightValue) {
+		case Enums::Low:
+			position = Enums::FaceDownDefence;
+			break;
+		case Enums::Medium:
+			position = Enums::FaceUpDefence;
+			break;
 	}
 
-	return Enums::NoCard;
+	return position;
 }
 
 void DualCardZone::UpdateCurrentMonster(String monsterID, Enums::CardPosition position) {
@@ -57,20 +62,21 @@ void DualCardZone::UpdateCurrentSpell(String spellID, Enums::CardPosition positi
 	SpellPosition = position;
 }
 
-int DualCardZone::isNewCardPresent() {
+void DualCardZone::CheckForTrippedSensors() {
 
 	// TODO: Is this delay needed?
 	delay(250);
 	
-	byte sensor = Enums::None;
 	for (byte i = 0; i < 3; i++) {
 		//Serial.print("Sensor "); Serial.print(i); Serial.print(" at ");
 		if (!_sensors[i].isNewCardPresent()) continue;
 
-		sensor = i;
+		if (_debug) {
+			Serial.print("Sensor Tripped: "); Serial.println(i);
+		}
+		
+		TrippedSensors[i] = true;
 	}
-
-	return sensor;
 }
 
 bool DualCardZone::ScanForNewCard()
@@ -78,6 +84,7 @@ bool DualCardZone::ScanForNewCard()
 	return _reader.readPassiveTargetID(PN532_MIFARE_ISO14443A, _uid, &_uidLength);
 }
 
+// TODO: Add UID scan feature like MFRC library
 bool DualCardZone::ReadAvailableCard()
 {
 	return true;

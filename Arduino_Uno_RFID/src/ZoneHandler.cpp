@@ -11,7 +11,7 @@ void ZoneHandler::Initialize(byte numZones, byte attackSensorAddresses[], PN532 
 
 	byte error;
 	do {
-		Wire.beginTransmission(multiplexerAddress);
+		Wire.beginTransmission(_multiplexerAddress);
 		error = Wire.endTransmission();
 
 		if (_debug) {
@@ -21,7 +21,7 @@ void ZoneHandler::Initialize(byte numZones, byte attackSensorAddresses[], PN532 
 			else if (error == 4) {
 				Serial.print("Unknow error at address 0x");
 			}
-			Serial.println(multiplexerAddress, HEX);
+			Serial.println(_multiplexerAddress, HEX);
 		}
 
 		delay(50);
@@ -69,44 +69,39 @@ void ZoneHandler::Initialize(byte numZones, byte attackSensorAddresses[], PN532 
 	delay(10);
 }
 
-int ZoneHandler::CheckForTrippedSensor(int zoneNumber) {
+void ZoneHandler::CheckForTrippedSensor(int zoneNumber) {
 	
-	//Serial.print("Checking Zone: "); Serial.println(zoneNumber);
-	
-	int isNewCardPresent = Zones[zoneNumber].isNewCardPresent();
-	if (isNewCardPresent != Enums::None) {		
-		delay(100); // delay to ensure card is fully placed
-		SelectMultiplexerAddress(zoneNumber);
-		CheckRFIDReader(Zones[zoneNumber], isNewCardPresent);
+	if (_debug) {
+		Serial.print("Checking Zone: "); Serial.println(zoneNumber);
 	}
+	
+	Zones[zoneNumber].CheckForTrippedSensors();
+	for (byte i = 0; i < 3; i++) {
+		if (!Zones[zoneNumber].TrippedSensors[i]) continue;
+		
+		delay(100); // delay to ensure card is fully placed
 
-	return isNewCardPresent;
+		SelectMultiplexerAddress(zoneNumber);
+		CheckRFIDReader(Zones[zoneNumber], i);
+
+		TrippedSensors[i] = true;
+	}
 }
 
-void ZoneHandler::CheckRFIDReader(DualCardZone &zone, int sensor) {
-	bool isMonster = false;
-	Enums::Events eventType = Enums::NoEvent;
+void ZoneHandler::CheckRFIDReader(DualCardZone &zone, int sensorType) {
 	
 	bool hasNewCard = zone.ScanForNewCard();
 	if (!hasNewCard) {
-		HandleUpdateCard(zone, sensor, true);		
+		HandleUpdateCard(zone, sensorType, true);		
 		zone.StopScanning();
 		return;
 	}
 
-	// Scan Readers twice in case of collision (ie. Two cards)
-	for (int i = 0; i < 2; i++) {
-
-		bool hasAvailableCard = zone.ReadAvailableCard();
-		if (!hasAvailableCard) continue;
-
-		HandleUpdateCard(zone, sensor);
-	}
-
+	HandleUpdateCard(zone, sensorType);
 	zone.StopScanning();
 }
 
-void ZoneHandler::HandleUpdateCard(DualCardZone& zone, int sensor, bool isRemoval = false) {
+void ZoneHandler::HandleUpdateCard(DualCardZone& zone, int sensorType, bool isRemoval) {
 	// TODO: This is currently broken
 	if (isRemoval) {
 		zone.UpdateCurrentMonster(zone.MonsterSerial, Enums::NoCard);
@@ -114,10 +109,14 @@ void ZoneHandler::HandleUpdateCard(DualCardZone& zone, int sensor, bool isRemova
 	}
 	
 	String cardSerialNumber = zone.GetCardSerialNumber();
-	Enums::CardPosition position;
+	Enums::CardPosition position = Enums::NoCard;
+
+	if (_debug) {
+		Serial.print("Card Serial: "); Serial.println(cardSerialNumber);
+	}
 
 	// TODO: Handle Spell Placement/Removal
-	if (sensor == Enums::SpellTrap) {
+	if (sensorType == Enums::SpellTrap) {
 		position = zone.ReadCurrentSpellPosition();
 		zone.UpdateCurrentSpell(cardSerialNumber, position);
 		return;
@@ -130,7 +129,7 @@ void ZoneHandler::HandleUpdateCard(DualCardZone& zone, int sensor, bool isRemova
 void ZoneHandler::SelectMultiplexerAddress(uint8_t address) {
 	if (address > 7) return;
 
-	Wire.beginTransmission(multiplexerAddress);
+	Wire.beginTransmission(_multiplexerAddress);
 	Wire.write(1 << address);
 	Wire.endTransmission();
 }

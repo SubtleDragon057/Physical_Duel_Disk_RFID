@@ -7,7 +7,7 @@
 
 class ZoneHandler {
 private:
-	uint8_t multiplexerAddress = 0x70;
+	uint8_t _multiplexerAddress = 0x70;
 	byte _muxChannels[16][4] = {
 	{0,0,0,0}, //channel 0
 	{1,0,0,0}, //channel 1
@@ -38,12 +38,13 @@ public:
 		DualCardZone(),
 		DualCardZone()
 	};
+	bool TrippedSensors[3] = { false, false, false };
 	
 	ZoneHandler(bool debug = false);
 
 	void Initialize(byte numZones, byte attackSensorAddresses[], PN532 &reader,
 		byte defenceSnesorPins[], byte spellSensorAddresses[]);
-	int CheckForTrippedSensor(int zoneNumber);
+	void CheckForTrippedSensor(int zoneNumber);
 	void HandleUpdateCard(DualCardZone& zone, int sensor, bool isRemoval = false);
 	void SelectMultiplexerAddress(uint8_t address);
 };

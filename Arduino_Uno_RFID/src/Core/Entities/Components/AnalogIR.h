@@ -6,20 +6,22 @@ class AnalogIR {
 private:
 
 	byte* _address;
-	byte _currentValue;
-	bool _isDigital = false;
+	byte _sensorType;
+
 	bool _debug;
 
 	byte GetDigitalReading();
-	byte GetAnalogReading();
+	byte GetDefenceSensorReading();
+	byte GetSpellSensorReading();
 	void SetMultiplexerAddress();
 
 public:
 
+	byte CurrentValue;
+	
 	AnalogIR();
-	AnalogIR(byte address[], bool isDigital = false, bool debug = false);
+	AnalogIR(byte address[], byte sensorType, bool debug = false);
 
-	byte GetCurrentValue();
 	bool isNewCardPresent();
 };
 

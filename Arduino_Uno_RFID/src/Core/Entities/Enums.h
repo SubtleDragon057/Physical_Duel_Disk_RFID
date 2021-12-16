@@ -20,12 +20,11 @@ public:
 		MonsterAttack,
 		MonsterDefence,
 		SpellTrap,
-		None,
 	};
 	enum SensorReading {
-		Low,
-		Medium,
-		High
+		Low = 0,
+		Medium = 2,
+		High = 1
 	};
 	enum CardPosition {
 		FaceUp = 1,

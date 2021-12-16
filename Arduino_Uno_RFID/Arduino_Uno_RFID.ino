@@ -48,19 +48,30 @@ void loop() {
 
 	// Cycle through each zone on the Duel Disk to check for any changes
 	for (int i = 0; i < numZones; i++) {
-		int trippedSensor = zoneHandler.CheckForTrippedSensor(i);
+		zoneHandler.CheckForTrippedSensor(i);
 
-		if (trippedSensor == Enums::None) continue;
+		for (byte i = 0; i < 3; i++) {
+			if (!zoneHandler.TrippedSensors[i]) continue;
+			
+			for (byte j = 0; j < 3; j++) {
+				if(!zoneHandler.Zones[i].TrippedSensors[j]) continue;
+				
+				String eventData = eventHandler.GetFormattedEventData(zoneHandler.Zones[i], j);
 
-		String eventData = eventHandler.GetFormattedEventData(zoneHandler.Zones[i], trippedSensor);
-		
-		if (eventData == "") return;
-		communicationsHandler.HandleNewEvent(eventData);
-		
-		Serial.println();
-		Serial.print("Event Info: ");
-		Serial.println(eventData);
-		Serial.println();
+				if (eventData == "") continue;
+				communicationsHandler.HandleNewEvent(eventData);
+
+				if (handlerDebug) {
+					Serial.println();
+					Serial.print("Event Info: ");
+					Serial.println(eventData);
+					Serial.println();
+				}
+
+				zoneHandler.TrippedSensors[i] = false;
+				zoneHandler.Zones[i].TrippedSensors[j] = false;
+			}
+		}
 	}
 
 	//Serial.println();
