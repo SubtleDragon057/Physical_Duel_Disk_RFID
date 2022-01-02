@@ -83,47 +83,58 @@ void ZoneHandler::CheckForTrippedSensor(int zoneNumber) {
 
 		SelectMultiplexerAddress(zoneNumber);
 		CheckRFIDReader(Zones[zoneNumber], i);
-
-		TrippedSensors[i] = true;
 	}
 }
 
 void ZoneHandler::CheckRFIDReader(DualCardZone &zone, int sensorType) {
 	
 	bool hasNewCard = zone.ScanForNewCard();
-	if (!hasNewCard) {
-		HandleUpdateCard(zone, sensorType, true);		
+	Enums::CardPosition position = Enums::NoCard;
+	if (sensorType == Enums::SpellTrap) {
+		position = zone.ReadCurrentSpellPosition();
+	}
+	else {
+		position = zone.ReadCurrentMonsterPosition();
+	}
+
+	if (!hasNewCard || position == Enums::NoCard) {
+		HandleRemoveCard(zone, sensorType);
 		zone.StopScanning();
 		return;
 	}
 
-	HandleUpdateCard(zone, sensorType);
+	HandleUpdateCard(zone, sensorType, position);
 	zone.StopScanning();
 }
 
-void ZoneHandler::HandleUpdateCard(DualCardZone& zone, int sensorType, bool isRemoval) {
-	// TODO: This is currently broken
-	if (isRemoval) {
-		zone.UpdateCurrentMonster(zone.MonsterSerial, Enums::NoCard);
-		return;
-	}
+void ZoneHandler::HandleUpdateCard(DualCardZone& zone, int sensorType, Enums::CardPosition position) {
 	
 	String cardSerialNumber = zone.GetCardSerialNumber();
-	Enums::CardPosition position = Enums::NoCard;
 
 	if (_debug) {
 		Serial.print("Card Serial: "); Serial.println(cardSerialNumber);
 	}
 
-	// TODO: Handle Spell Placement/Removal
+	if (cardSerialNumber == zone.MonsterSerial || cardSerialNumber == zone.SpellSerial) {
+		cardSerialNumber = zone.GetCardSerialNumber();
+	}
+
 	if (sensorType == Enums::SpellTrap) {
-		position = zone.ReadCurrentSpellPosition();
 		zone.UpdateCurrentSpell(cardSerialNumber, position);
 		return;
 	}
 
-	position = zone.ReadCurrentMonsterPosition();
 	zone.UpdateCurrentMonster(cardSerialNumber, position);
+}
+
+void ZoneHandler::HandleRemoveCard(DualCardZone& zone, int sensorType) {
+
+	if (sensorType == Enums::SpellTrap) {
+		zone.UpdateCurrentSpell(zone.SpellSerial, Enums::NoCard);
+		return;
+	}
+
+	zone.UpdateCurrentMonster(zone.MonsterSerial, Enums::NoCard);
 }
 
 void ZoneHandler::SelectMultiplexerAddress(uint8_t address) {

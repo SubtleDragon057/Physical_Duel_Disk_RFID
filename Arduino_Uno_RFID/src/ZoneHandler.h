@@ -38,14 +38,14 @@ public:
 		DualCardZone(),
 		DualCardZone()
 	};
-	bool TrippedSensors[3] = { false, false, false };
 	
 	ZoneHandler(bool debug = false);
 
 	void Initialize(byte numZones, byte attackSensorAddresses[], PN532 &reader,
 		byte defenceSnesorPins[], byte spellSensorAddresses[]);
 	void CheckForTrippedSensor(int zoneNumber);
-	void HandleUpdateCard(DualCardZone& zone, int sensor, bool isRemoval = false);
+	void HandleUpdateCard(DualCardZone& zone, int sensorType, Enums::CardPosition position);
+	void HandleRemoveCard(DualCardZone& zone, int sensorType);
 	void SelectMultiplexerAddress(uint8_t address);
 };
 

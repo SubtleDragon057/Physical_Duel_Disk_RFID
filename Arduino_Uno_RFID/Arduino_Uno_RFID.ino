@@ -50,26 +50,20 @@ void loop() {
 	for (int i = 0; i < numZones; i++) {
 		zoneHandler.CheckForTrippedSensor(i);
 
-		for (byte i = 0; i < 3; i++) {
-			if (!zoneHandler.TrippedSensors[i]) continue;
-			
-			for (byte j = 0; j < 3; j++) {
-				if(!zoneHandler.Zones[i].TrippedSensors[j]) continue;
-				
-				String eventData = eventHandler.GetFormattedEventData(zoneHandler.Zones[i], j);
+		for (byte j = 0; j < 3; j++) {			
+			if (!zoneHandler.Zones[i].TrippedSensors[j]) continue;
 
-				if (eventData == "") continue;
-				communicationsHandler.HandleNewEvent(eventData);
+			zoneHandler.Zones[i].TrippedSensors[j] = false;
+			String eventData = eventHandler.GetFormattedEventData(zoneHandler.Zones[i], j);
 
-				if (handlerDebug) {
-					Serial.println();
-					Serial.print("Event Info: ");
-					Serial.println(eventData);
-					Serial.println();
-				}
+			if (eventData == "") continue;
+			communicationsHandler.HandleNewEvent(eventData);
 
-				zoneHandler.TrippedSensors[i] = false;
-				zoneHandler.Zones[i].TrippedSensors[j] = false;
+			if (handlerDebug) {
+				Serial.println();
+				Serial.print("Event Info: ");
+				Serial.println(eventData);
+				Serial.println();
 			}
 		}
 	}
