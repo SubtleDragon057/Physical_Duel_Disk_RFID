@@ -6,14 +6,13 @@ DualCardZone::DualCardZone()
 
 void DualCardZone::Initialize(byte zoneNum, PN532 &reader, byte attackSensorAddress[],
 	byte defenceSensorAddress[], byte spellSensorAddress[]) {
-	Serial.print("[BOOT] Initialize Zone ");
-	Serial.println(zoneNum);
+	Serial.print(F("[BOOT] Initialize Zone "));	Serial.println(zoneNum);
 	
 	_reader = reader;
 	ZoneNumber = zoneNum;
-	_sensors[0] = AnalogIR(attackSensorAddress, 1, _debug);
-	_sensors[1] = AnalogIR(defenceSensorAddress, 2, _debug);
-	_sensors[2] = AnalogIR(spellSensorAddress, 3, _debug);
+	_sensors[0] = AnalogIR(attackSensorAddress, 1);
+	_sensors[1] = AnalogIR(defenceSensorAddress, 2);
+	_sensors[2] = AnalogIR(spellSensorAddress, 3);
 }
 
 Enums::CardPosition DualCardZone::ReadCurrentMonsterPosition() {
@@ -71,9 +70,9 @@ void DualCardZone::CheckForTrippedSensors() {
 		//Serial.print("Sensor "); Serial.print(i); Serial.print(" at ");
 		if (!_sensors[i].isNewCardPresent()) continue;
 
-		if (_debug) {
-			Serial.print("Sensor Tripped: "); Serial.println(i);
-		}
+#ifdef DEBUG_DCZ
+		Serial.print("Sensor Tripped: "); Serial.println(i);
+#endif // DEBUG
 		
 		TrippedSensors[i] = true;
 	}
@@ -81,7 +80,7 @@ void DualCardZone::CheckForTrippedSensors() {
 
 bool DualCardZone::ScanForNewCard()
 {
-	return _reader.readPassiveTargetID(PN532_MIFARE_ISO14443A, _uid, &_uidLength);
+	return _reader.readPassiveTargetID(PN532_MIFARE_ISO14443A, _uid, &_uidLength);;
 }
 
 // TODO: Add UID scan feature like MFRC library
@@ -102,20 +101,43 @@ String DualCardZone::GetCardSerialNumber() {
 
 	uint8_t status = _reader.mifareclassic_AuthenticateBlock(_uid, _uidLength, _block, 0, keya);
 	if (!status) {
-		return "3";
+		return "Auth Failed";
 	}
 
 	status = _reader.mifareclassic_ReadDataBlock(_block, readBackBlock);
 	if (!status) {
 		Serial.print("[WARN] Could not read block!\n");
-		return "4";
+		return "Read Failed";
 	}
 
-	if (_debug) {
-		Serial.print("Reading Block 4:");
-		Serial.println((char*)&readBackBlock);
-	}
+#ifdef DEBUG_DCZ
+	Serial.print("Reading Block 4:");
+	Serial.println((char*)&readBackBlock);
+#endif // DEBUG
+
 	
 	String cardSerial = (char*)&readBackBlock;
-	return cardSerial.substring(1);
+	return cardSerial;
+}
+
+bool DualCardZone::WriteRFIDTag(String cardID) {
+	Serial.print("Writing ID: "); Serial.println(cardID);
+	
+	uint8_t readBackBlock[16];
+	uint8_t keya[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+
+	uint8_t status = _reader.mifareclassic_AuthenticateBlock(_uid, _uidLength, _block, 0, keya);
+	Serial.print("Authenticate Write: "); Serial.println(status);
+	if (!status) return false;
+
+	uint8_t serial;
+	for (byte i = 0; i < 9; i++) {
+		serial += cardID[i];
+	}
+
+	Serial.print("Atempting ID: "); Serial.println(serial);
+	
+	status = _reader.mifareclassic_WriteDataBlock(_block, &serial);
+	Serial.print("Write Success: "); Serial.println(status);
+	return status;
 }

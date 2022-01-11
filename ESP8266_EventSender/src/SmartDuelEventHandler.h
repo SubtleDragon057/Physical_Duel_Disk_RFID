@@ -32,6 +32,7 @@ public:
 
 	// Lobby Functions
 	void HandleLobby(int buttonEvents[], int deckList[]);
+	void EnterWriteMode(int deckList[]);
 
 	// Duel Room Functions
 	void HandleDuelRoom(int buttonEvents[]);
@@ -40,12 +41,12 @@ public:
 	bool HasAttackTarget() { return _speedDuel.HasAttackTarget; }
 	void HandleButtonInteraction(int buttonEvents[], bool isInBattle = false);
 	void HandleMultiButtonEvent(int buttonEventType);
-
 	void HandlePhaseChange();
 
 	// Server Functions
 	bool IsConnected() { return _server.isConnected; }
 	void Connect(String socketIP, int socketPort);
+	void ConnectSecure(String socketIP, int socketPort);
 	void ListenToServer();
 	void HandleIncomingRoomEvents();
 	void HandleIncomingCardEvents();

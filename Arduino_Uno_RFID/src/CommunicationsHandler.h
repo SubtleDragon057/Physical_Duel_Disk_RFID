@@ -4,19 +4,24 @@
 #include "Wire.h"
 #include "Core\Entities\Enums.h"
 
+//#define DEBUG_CH
+
 class CommunicationsHandler {
 private:
 	byte _recievedData;
 	bool _hasNewEvent = false;
-	char _newEventData[12];
-
-	bool _debug;
+	char* _newEventData;
 
 public:
-	CommunicationsHandler(bool debug = true);
+	bool IsInDuel = false;
+	bool EnableWriteMode = false;
+	String IncomingCardID;
+	
+	CommunicationsHandler();
 
 	void HandleRecieve();
-	void HandleNewEvent(String eventData);
+	void HandleNewEvent(char* eventData);
+	void GetNextCard();
 	void HandleRequest();
 };
 

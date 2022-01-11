@@ -1,6 +1,5 @@
 #include "CommunicationsHandler.h"
 #include "Wire.h"
-#include "Core\Entities\Enums.h"
 #include "CrownCorp.h"
 
 CommunicationsHandler::CommunicationsHandler()
@@ -19,19 +18,30 @@ void CommunicationsHandler::Initialize(const char * networkName, const char * ne
 		delay(1000);
 	}
 
+	text[0] = "[SETUP] Syncing RFIDs";
+	Display(UI_Init, text);
+	
 	bool isArduinoConnected = false;
 	do {
-		isArduinoConnected = CheckForArduino();
+		isArduinoConnected = CheckForArduino(Enums::Communication::Connection, "057");
 		delay(50);
 	} while (!isArduinoConnected);
 
-	text[0] = "[SETUP] Arduino Connected";
-	Display(UI_Init, text);
 	delay(1000);
 
 	text[0] = "[SETUP] Connecting Wifi";
 	Display(UI_Init, text);
 	_wifiManager.Connect(networkName, networkPass);
+}
+
+void CommunicationsHandler::StartDuelDisk(String currentPhase) {
+	bool isArduinoConnected = false;
+	do {
+		isArduinoConnected = CheckForArduino(Enums::Communication::StartDuel, "Dra");
+		delay(50);
+	} while (!isArduinoConnected);
+
+	Display(UI_Type::UI_SpeedDuel, { &currentPhase });
 }
 
 String CommunicationsHandler::PollForNewEvent() {
@@ -68,29 +78,63 @@ String CommunicationsHandler::PollForNewEvent() {
 	return "No Events!!";
 }
 
-void CommunicationsHandler::Display(UI_Type type, String incomingMessage[])
-{
-	switch (type)
-	{
-		case UI_Lobby:
-			HandleLobbyUI(incomingMessage);
-			break;
-		case UI_DeckSelect:
-			HandleDeckSelectorUI(incomingMessage);
-			break;
-		case UI_SpeedDuel:
-			HandleSpeedDuelUI(incomingMessage);
-			break;
-		default:
-			HandleBasicUI(incomingMessage);
-	}
+void CommunicationsHandler::EnableWriteMode() {
+	String text[] = { "Configuring Deck" };
+	Display(UI_WriteMode, text);
+
+	bool isArduinoConnected = false;
+	do {		
+		isArduinoConnected = CheckForArduino(Enums::Communication::EnterWriteMode, "Sub");
+		delay(100);
+	} while (!isArduinoConnected);
 }
 
-bool CommunicationsHandler::CheckForArduino() {
+void CommunicationsHandler::TransmitCard(String cardNumber) {
+	char cardNumAsChar[9];
+	cardNumber.toCharArray(cardNumAsChar, 9);
+	
+	Wire.beginTransmission(_arduinoAddress);
+	Wire.write(cardNumAsChar);
+	Wire.endTransmission();
+
+	String acknowledge = "";
+	do {
+		const byte acknowledgeByte = 3;
+		Wire.requestFrom(_arduinoAddress, acknowledgeByte);
+
+		while (Wire.available()) {
+			char message = Wire.read();
+			acknowledge += message;
+		}
+
+		if (acknowledge == "Sub") break;
+		delay(5000);
+	} while (1);
+
+	// TODO: Add check from UI rather than Serial
+	/*String text[] = { "Success! Please Remove Card" };
+	Display(UI_WriteMode, text);
+
+	String acknowledge = "";
+	do {
+		const byte acknowledgeByte = 3;
+		Wire.requestFrom(_arduinoAddress, acknowledgeByte);
+
+		while (Wire.available()) {
+			char message = Wire.read();
+			acknowledge += message;
+		}
+
+		if (acknowledge == "Sub") break;
+		delay(100);
+	} while (1);*/
+}
+
+bool CommunicationsHandler::CheckForArduino(Enums::Communication command, String successCode) {
 	String response = "";
 
 	Wire.beginTransmission(_arduinoAddress);
-	Wire.write(Enums::Communication::Connection);
+	Wire.write(command);
 	Wire.endTransmission();
 
 	Wire.requestFrom(_arduinoAddress, _connectionResponseLength);
@@ -100,7 +144,24 @@ bool CommunicationsHandler::CheckForArduino() {
 		response += message;
 	}
 
-	return response == "057";
+	return response == successCode;
+}
+
+void CommunicationsHandler::Display(UI_Type type, String incomingMessage[])
+{
+	switch (type) {
+	case UI_Lobby:
+		HandleLobbyUI(incomingMessage);
+		break;
+	case UI_DeckSelect:
+		HandleDeckSelectorUI(incomingMessage);
+		break;
+	case UI_SpeedDuel:
+		HandleSpeedDuelUI(incomingMessage);
+		break;
+	default:
+		HandleBasicUI(incomingMessage);
+	}
 }
 
 void CommunicationsHandler::HandleBasicUI(String incomingMessage[]) {

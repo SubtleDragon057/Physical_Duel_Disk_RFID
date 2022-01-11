@@ -130,6 +130,26 @@ uint32_t PN532::getFirmwareVersion(void)
     return response;
 }
 
+/**************************************************************************/
+/*!
+    @brief  SubtleDragon057 - Performs an RF Test
+
+    @returns  Not sure yet
+*/
+/**************************************************************************/
+bool PN532::performRFTest(void)
+{
+    pn532_packetbuffer[0] = PN532_COMMAND_RFREGULATIONTEST;
+    pn532_packetbuffer[1] = 0x00;
+
+    if (HAL(writeCommand)(pn532_packetbuffer, 2)) {
+        DMSG("Write failed with no ACK");
+        return 0;
+    }
+
+    return 1;
+}
+
 
 /**************************************************************************/
 /*!

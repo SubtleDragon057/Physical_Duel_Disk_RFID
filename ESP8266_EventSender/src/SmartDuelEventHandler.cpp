@@ -15,7 +15,49 @@ void SmartDuelEventHandler::HandleLobby(int buttonEvents[], int deckList[])
 	String data = _lobby.CheckLobbyForAction(buttonEvents, deckList);
 	if (data == "NoAction") return;
 
+	if (data == "writeMode") {
+		EnterWriteMode(deckList);
+		return;
+	}
+
 	_server.SendEvent(data);
+}
+
+// TODO: This function will lock up the system for its duration
+void SmartDuelEventHandler::EnterWriteMode(int deckList[]) {
+	String text[] = { "Write Mode" };
+	_communicationsHandler->Display(CommunicationsHandler::UI_WriteMode, text);
+
+	Serial.println("Decklist With Copy Num:");
+	String deckListWithCopyNum[35];
+	for (byte i = 0; i < 35; i++) {
+		if (deckList[i] == 0) continue;
+		int copyNum = 0;
+
+		for (byte j = 0; j < 35; j++) {
+			if (deckList[i] != deckList[j]) continue;
+			copyNum++;
+		}
+
+		deckListWithCopyNum[i] = String(copyNum) + String(deckList[i]);
+		deckList[i] = 0;
+		Serial.println(deckListWithCopyNum[i]);
+	}
+
+	_communicationsHandler->EnableWriteMode();
+	Serial.printf("Sending Deck\n");
+
+	for (byte i = 0; i < 35; i++) {
+		if (deckListWithCopyNum[i] == 0) continue;
+		
+		String cardNumber[] = { deckListWithCopyNum[i].substring(1) };
+		_communicationsHandler->Display(CommunicationsHandler::UI_WriteMode, cardNumber);
+		_communicationsHandler->TransmitCard(deckListWithCopyNum[i]);
+	}
+
+	text[1] = "Done! Returning to Lobby";
+	_communicationsHandler->Display(CommunicationsHandler::UI_WriteMode, text);
+	delay(1000);
 }
 
 void SmartDuelEventHandler::HandleDuelRoom(int buttonEvents[]) {
@@ -100,7 +142,18 @@ void SmartDuelEventHandler::HandlePhaseChange() {
 }
 
 void SmartDuelEventHandler::Connect(String socketIP, int socketPort) {
+	String text[] = { "Locating Local Server" };
+	_communicationsHandler->Display(CommunicationsHandler::UI_Init, text);
+	
 	_server.Initialize(socketIP, socketPort);
+}
+
+// TODO: Gives 404 code and disconnects
+void SmartDuelEventHandler::ConnectSecure(String socketIP, int socketPort) {
+	String text[] = { "Locating Duel Servers" };
+	_communicationsHandler->Display(CommunicationsHandler::UI_Init, text);
+
+	_server.InitializeSSL(socketIP, socketPort);
 }
 
 void SmartDuelEventHandler::ListenToServer() {
@@ -139,8 +192,7 @@ void SmartDuelEventHandler::HandleIncomingRoomEvents() {
 
 		bool isOpponentsTurn = SmartDuelServer::EventData != SocketID;
 		_speedDuel.UpdatePhase("drawPhase", isOpponentsTurn);
-		String currentPhase[] = { _speedDuel.GetPhase() };
-		_communicationsHandler->Display(CommunicationsHandler::UI_SpeedDuel, currentPhase);
+		_communicationsHandler->StartDuelDisk(_speedDuel.GetPhase());
 		SmartDuelServer::EventName = "Waiting";
 	}
 }

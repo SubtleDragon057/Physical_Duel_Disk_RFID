@@ -31,11 +31,7 @@ void ButtonHandler::CheckButtons() {
 	}
 
     ButtonEvents[5] = GetMultiButtonEvent();
-
-#ifdef DEBUG
     PrintEvents(ButtonEvents);
-#endif // DEBUG
-
 }
 
 int ButtonHandler::GetButtonEvent(int buttonNum) {
@@ -107,7 +103,6 @@ Enums::ButtonClicks ButtonHandler::HandleMultiButtonEvent() {
     else if (multiEvents[3] && multiEvents[4]) {
         _buttons[3].EnableMultiClick = false;
         _buttons[4].EnableMultiClick = false;
-        return Enums::ButtonClicks::Multi34;
         return Enums::ButtonClicks::Multi34;
     }
 

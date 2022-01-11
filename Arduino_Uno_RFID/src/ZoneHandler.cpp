@@ -1,29 +1,17 @@
 #include "ZoneHandler.h"
 #include "Wire.h"
 
-ZoneHandler::ZoneHandler(bool debug)
+ZoneHandler::ZoneHandler()
 {
-	_debug = debug;
 }
 
-void ZoneHandler::Initialize(byte numZones, byte attackSensorAddresses[], PN532 &reader,
-	byte defenceSensorAddresses[], byte spellSensorAddresses[]) {
+void ZoneHandler::Initialize(byte numZones, PN532& reader, const byte attackSensorAddresses[],
+	const byte defenceSensorAddresses[], const byte spellSensorAddresses[]) {
 
 	byte error;
 	do {
 		Wire.beginTransmission(_multiplexerAddress);
 		error = Wire.endTransmission();
-
-		if (_debug) {
-			if (error == 0) {
-				Serial.print("I2C device found at address 0x");
-			}
-			else if (error == 4) {
-				Serial.print("Unknow error at address 0x");
-			}
-			Serial.println(_multiplexerAddress, HEX);
-		}
-
 		delay(50);
 	} while (error != 0);
 
@@ -36,28 +24,22 @@ void ZoneHandler::Initialize(byte numZones, byte attackSensorAddresses[], PN532 
 	for (byte i = 0; i < numZones; i++) {
 		SelectMultiplexerAddress(i);
 		reader.begin();
+		reader.performRFTest();
 
-		/*if (_debug) {
-			Serial.print(F("[DEBUG] "));
-			uint32_t versiondata = reader.getFirmwareVersion();
-			if (!versiondata) {
-				Serial.print("Didn't find PN53x board on Zone ");
-				Serial.println(i);
-				continue;
-			}
-			Serial.print("Found chip PN5"); Serial.println((versiondata >> 24) & 0xFF, HEX);
-			Serial.print("Firmware ver. "); Serial.print((versiondata >> 16) & 0xFF, DEC);
-			Serial.print('.'); Serial.println((versiondata >> 8) & 0xFF, DEC);
-		}*/
-
-		// TODO: This always fails, but doesn't seem necessary
-		/*uint8_t success = reader.SAMConfig();
-		if (!success) {
-			Serial.print("[DEBUG] SAMConfig failed on Zone ");
+#ifdef DEBUG_ZH
+		Serial.print(F("[DEBUG] "));
+		uint32_t versiondata = reader.getFirmwareVersion();
+		if (!versiondata) {
+			Serial.print("Didn't find PN53x board on Zone ");
 			Serial.println(i);
-		}*/
+			continue;
+		}
+		Serial.print("Found chip PN5"); Serial.println((versiondata >> 24) & 0xFF, HEX);
+		Serial.print("Firmware ver. "); Serial.print((versiondata >> 16) & 0xFF, DEC);
+		Serial.print('.'); Serial.println((versiondata >> 8) & 0xFF, DEC);
+#endif // DEBUG
 
-		reader.setPassiveActivationRetries(5);
+		reader.setPassiveActivationRetries(10);
 
 		Zones[i].Initialize(i, reader,
 			_muxChannels[attackSensorAddresses[i]],
@@ -71,9 +53,10 @@ void ZoneHandler::Initialize(byte numZones, byte attackSensorAddresses[], PN532 
 
 void ZoneHandler::CheckForTrippedSensor(int zoneNumber) {
 	
-	if (_debug) {
-		Serial.print("Checking Zone: "); Serial.println(zoneNumber);
-	}
+#ifdef DEBUG_ZH
+	Serial.print("Checking Zone: "); Serial.println(zoneNumber);
+#endif
+
 	
 	Zones[zoneNumber].CheckForTrippedSensors();
 	for (byte i = 0; i < 3; i++) {
@@ -99,21 +82,22 @@ void ZoneHandler::CheckRFIDReader(DualCardZone &zone, int sensorType) {
 
 	if (!hasNewCard || position == Enums::NoCard) {
 		HandleRemoveCard(zone, sensorType);
-		zone.StopScanning();
+		//zone.StopScanning();
 		return;
 	}
 
 	HandleUpdateCard(zone, sensorType, position);
-	zone.StopScanning();
+	//zone.StopScanning();
 }
 
 void ZoneHandler::HandleUpdateCard(DualCardZone& zone, int sensorType, Enums::CardPosition position) {
 	
 	String cardSerialNumber = zone.GetCardSerialNumber();
 
-	if (_debug) {
-		Serial.print("Card Serial: "); Serial.println(cardSerialNumber);
-	}
+#ifdef DEBUG_ZH
+	Serial.print("Card Serial: "); Serial.println(cardSerialNumber);
+#endif // DEBUG
+
 
 	if (cardSerialNumber == zone.MonsterSerial || cardSerialNumber == zone.SpellSerial) {
 		cardSerialNumber = zone.GetCardSerialNumber();
@@ -135,6 +119,35 @@ void ZoneHandler::HandleRemoveCard(DualCardZone& zone, int sensorType) {
 	}
 
 	zone.UpdateCurrentMonster(zone.MonsterSerial, Enums::NoCard);
+}
+
+bool ZoneHandler::EnableWriteMode(String cardID) {
+	if (cardID == "") return false;
+	byte useZone = 0;
+	
+	SelectMultiplexerAddress(useZone);
+	while(!Zones[useZone].ScanForNewCard()) {
+		Serial.println("Waiting For Card");
+		delay(2000);
+	}
+
+	delay(2000); // Ensure Card is fully placed
+
+	bool success = Zones[useZone].WriteRFIDTag(cardID);
+	
+	Serial.print("Written ID: ");
+	if (success) Serial.println(Zones[useZone].GetCardSerialNumber());
+	else {
+		Serial.println("Write Failed");
+		return false;
+	}
+
+	while(Zones[useZone].ScanForNewCard()) {
+		Serial.println("Please Remove Card");
+		delay(2000);
+	}
+
+	return true;
 }
 
 void ZoneHandler::SelectMultiplexerAddress(uint8_t address) {

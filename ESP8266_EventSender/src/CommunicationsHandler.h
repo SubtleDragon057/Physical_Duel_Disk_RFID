@@ -3,6 +3,7 @@
 #include "arduino.h"
 #include "Core\WifiManager.h"
 #include "SSD1306Wire.h"
+#include "Core\Entities\Enums.h"
 
 class CommunicationsHandler {
 private:
@@ -13,7 +14,7 @@ private:
 	const byte _connectionResponseLength = 3;
 	const byte _newDuelData = 11;
 
-	bool CheckForArduino();
+	bool CheckForArduino(Enums::Communication command, String successCode);
 	void HandleBasicUI(String incomingMessage[]);
 	void HandleLobbyUI(String incomingMessage[]);
 	void HandleSpeedDuelUI(String incomingMessage[]);
@@ -23,6 +24,7 @@ public:
 	typedef enum {
 		UI_Init,
 		UI_DeckSelect,
+		UI_WriteMode,
 		UI_Lobby,
 		UI_DuelRoom,
 		UI_SpeedDuel
@@ -31,7 +33,10 @@ public:
 	CommunicationsHandler();
 
 	void Initialize(const char * networkName, const char * networkPass);
+	void StartDuelDisk(String currentPhase);
 	String PollForNewEvent();
+	void EnableWriteMode();
+	void TransmitCard(String cardNumber);
 	void Display(UI_Type type, String incomingMessage[]);
 };
 

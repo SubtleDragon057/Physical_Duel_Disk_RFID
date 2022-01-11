@@ -4,14 +4,15 @@
 #include "Core\Zone.h"
 #include "Core\Entities\Enums.h"
 
+#define DEBUG_EH
+
 class EventHandler {
 private:
-	bool _debug;
 	Enums::Events SetEventType(DualCardZone zone, int sensor);
 
 public:
 
-	EventHandler(bool debug);
+	EventHandler();
 
 	String GetFormattedEventData(DualCardZone &zone, int sensor);
 };

@@ -136,6 +136,7 @@ public:
     // Generic PN532 functions
     bool SAMConfig(void);
     uint32_t getFirmwareVersion(void);
+    bool performRFTest(void);
     bool writeGPIO(uint8_t pinstate);
     uint8_t readGPIO(void);
     bool setPassiveActivationRetries(uint8_t maxRetries);

@@ -4,7 +4,7 @@
   Author:  SubtleDragon057
 */
 
-const bool handlerDebug = true;
+#define DEBUG_Main
 
 #include <Wire.h>
 #include <PN532.h>
@@ -13,39 +13,47 @@ const bool handlerDebug = true;
 #include "src\ZoneHandler.h"
 #include "src\EventHandler.h"
 #include "src\CommunicationsHandler.h"
-#include "src\Core\Entities\Enums.h"
 
-EventHandler eventHandler(handlerDebug);
-CommunicationsHandler communicationsHandler(handlerDebug);
-ZoneHandler zoneHandler(handlerDebug);
+EventHandler eventHandler;
+CommunicationsHandler communicationsHandler;
+ZoneHandler zoneHandler;
 
 const byte numZones = 3;
 
 PN532_I2C pnI2C(Wire);
 PN532 reader(pnI2C);
 
-byte attackSensorAddresses[numZones] = { 13, 14, 15 };
-byte defenceSensorAddresses[numZones] = { 7, 8, 9 };
-byte spellSensorAddresses[numZones] = { 10, 11, 12 };
+const byte attackSensorAddresses[numZones] = { 13, 14, 15 };
+const byte defenceSensorAddresses[numZones] = { 7, 8, 9 };
+const byte spellSensorAddresses[numZones] = { 10, 11, 12 };
 
 void setup() {
 
 	Serial.begin(115200);
 	Wire.begin();
 
-	zoneHandler.Initialize(numZones, attackSensorAddresses, reader,
+	zoneHandler.Initialize(numZones, reader, attackSensorAddresses,
 		defenceSensorAddresses, spellSensorAddresses);
 
 	Wire.begin(11);
 	Wire.onReceive(HandleRecieve);
 	Wire.onRequest(HandleRequest);
 
-	Serial.println("Initialization Complete");
-	Serial.println();
+	Serial.println(F("Initialization Complete\n"));
 }
 
 void loop() {
 
+	while (communicationsHandler.EnableWriteMode) {
+		bool success = zoneHandler.EnableWriteMode(communicationsHandler.IncomingCardID);
+		if (success) {
+			communicationsHandler.IncomingCardID = "";
+			communicationsHandler.GetNextCard();
+		}
+	}
+
+	if (!communicationsHandler.IsInDuel) return;
+	
 	// Cycle through each zone on the Duel Disk to check for any changes
 	for (int i = 0; i < numZones; i++) {
 		zoneHandler.CheckForTrippedSensor(i);
@@ -57,18 +65,18 @@ void loop() {
 			String eventData = eventHandler.GetFormattedEventData(zoneHandler.Zones[i], j);
 
 			if (eventData == "") continue;
-			communicationsHandler.HandleNewEvent(eventData);
+			
+			char* buffer;
+			eventData.toCharArray(buffer, 13);
+			communicationsHandler.HandleNewEvent(buffer);
 
-			if (handlerDebug) {
-				Serial.println();
-				Serial.print("Event Info: ");
-				Serial.println(eventData);
-				Serial.println();
-			}
+#ifdef DEBUG_Main
+			Serial.print("\nEvent Info: ");
+			Serial.println(buffer);
+#endif // DEBUG
+
 		}
 	}
-
-	//Serial.println();
 }
 
 void HandleRecieve(int numBytes) {

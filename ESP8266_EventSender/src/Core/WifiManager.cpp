@@ -12,13 +12,13 @@ void WifiManager::Connect(const char* networkName, const char* networkPass) {
 
 	wiFiMulti.addAP(networkName, networkPass);
 
-	//WiFi.disconnect();
+	WiFi.disconnect();
 	while (wiFiMulti.run() != WL_CONNECTED) {
 		HandleRetry("[ERROR] Wifi Not Connected");
 	}
 
-	/*String networkID = WiFi.SSID();
-	Serial.printf("\n[SETUP] Wifi Connected: %s\n", networkID.c_str());*/
+	String networkID = WiFi.SSID();
+	Serial.printf("\n[SETUP] Wifi Connected: %s\n", networkID.c_str());
 }
 
 void WifiManager::HandleRetry(String errorMessage) {

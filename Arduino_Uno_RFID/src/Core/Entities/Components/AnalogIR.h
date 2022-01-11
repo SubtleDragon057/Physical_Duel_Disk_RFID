@@ -2,13 +2,13 @@
 #define Analog_h
 #include "Arduino.h"
 
+//#define DEBUG_AIR
+
 class AnalogIR {
 private:
 
 	byte* _address;
 	byte _sensorType;
-
-	bool _debug;
 
 	byte GetDigitalReading();
 	byte GetDefenceSensorReading();
@@ -20,7 +20,7 @@ public:
 	byte CurrentValue;
 	
 	AnalogIR();
-	AnalogIR(byte address[], byte sensorType, bool debug = false);
+	AnalogIR(byte address[], byte sensorType);
 
 	bool isNewCardPresent();
 };

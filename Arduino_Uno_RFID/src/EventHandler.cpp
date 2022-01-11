@@ -3,9 +3,8 @@
 #include "Core\Zone.h"
 #include "Core\Entities\Enums.h"
 
-EventHandler::EventHandler(bool debug) 
+EventHandler::EventHandler() 
 {
-	_debug = debug;
 }
 
 String EventHandler::GetFormattedEventData(DualCardZone &zone, int sensor)
@@ -33,9 +32,12 @@ String EventHandler::GetFormattedEventData(DualCardZone &zone, int sensor)
 
 	// Handle Error
 	if (eventData.length() < 11) {
+#ifdef DEBUG_EH
 		Serial.print(F("[ERROR] Zone: "));
 		Serial.print(eventData[1]);
 		Serial.println(F(" had a malfunction!"));
+#endif // DEBUG_EH
+
 		eventData = "";
 	}
 

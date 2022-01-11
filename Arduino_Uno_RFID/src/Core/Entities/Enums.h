@@ -34,9 +34,12 @@ public:
 		NoCard = 5
 	};
 	enum Communication {
-		Connection = 0x05,
-		HasNewEvent = 0x04,
-		GetEventInfo = 0x03
+		Connection = 5,
+		HasNewEvent = 4,
+		GetEventInfo = 3,
+		StartDuel = 6,
+		EnterWriteMode = 7,
+		AcknowledgeSuccess = 9
 	};
 };
 

@@ -16,11 +16,11 @@ int SmartDuelServer::CopyNumber;
 void SmartDuelServer::socketIOEvent(socketIOmessageType_t type, uint8_t* payload, std::size_t length) {
     switch (type) {
     case sIOtype_DISCONNECT:
-        //Serial.printf("[IOc] Disconnected!\n");
+        Serial.printf("[IOc] Disconnected!\n");
         SmartDuelServer::isConnected = false;
         break;
     case sIOtype_CONNECT:
-        //Serial.printf("[IOc] Connected to url: %s\n", payload);
+        Serial.printf("[IOc] Connected to url: %s\n", payload);
         SmartDuelServer::isConnected = true;
         break;
     case sIOtype_EVENT:
@@ -35,6 +35,11 @@ void SmartDuelServer::socketIOEvent(socketIOmessageType_t type, uint8_t* payload
 
 void SmartDuelServer::Initialize(String socketIP, int socketPort) {
     socketIO.begin(socketIP, socketPort);
+    socketIO.onEvent(socketIOEvent);
+}
+
+void SmartDuelServer::InitializeSSL(String socketIP, int socketPort) {
+    socketIO.beginSSL(socketIP, socketPort);
     socketIO.onEvent(socketIOEvent);
 }
 
@@ -54,7 +59,7 @@ String SmartDuelServer::GetSocketId()
 
 void SmartDuelServer::HandleRecievedEvent(uint8_t* payload) {
     
-    DynamicJsonDocument doc(35000);
+    DynamicJsonDocument doc(38000);
     DeserializationError error = deserializeJson(doc, payload);
     String eventName = doc[0];
 

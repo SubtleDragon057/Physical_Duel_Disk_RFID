@@ -3,11 +3,10 @@
 AnalogIR::AnalogIR() 
 {
 }
-AnalogIR::AnalogIR(byte address[], byte sensorType, bool debug) {	
+AnalogIR::AnalogIR(byte address[], byte sensorType) {	
 	_address = address;
 	_sensorType = sensorType;
 	CurrentValue = 1; // Enums::HIGH
-	_debug = debug;
 }
 
 bool AnalogIR::isNewCardPresent() {
@@ -26,9 +25,7 @@ bool AnalogIR::isNewCardPresent() {
 			break;
 	}
 
-	if (read == CurrentValue) {
-		return false;
-	}
+	if (read == CurrentValue) return false;
 
 	CurrentValue = read;
 	return true;
@@ -37,11 +34,10 @@ bool AnalogIR::isNewCardPresent() {
 byte AnalogIR::GetDigitalReading() {
 	int read = digitalRead(A0);
 
-	if (_debug) {
-		Serial.print(": ");
-		Serial.println(read);
-		delay(25);
-	}
+#ifdef DEBUG_AIR
+	Serial.print(": ");
+	Serial.println(read);
+#endif // DEBUG_AIR
 
 	return read;
 }
@@ -55,11 +51,10 @@ byte AnalogIR::GetDefenceSensorReading() {
 	}
 	read = (read / 10);
 
-	if (_debug) {
-		Serial.print(": ");
-		Serial.println(read);
-		delay(25);
-	}	
+#ifdef DEBUG_AIR
+	Serial.print(": ");
+	Serial.println(read);
+#endif // DEBUG_AIR	
 
 	if (read < 130) {
 		return 0; // Enums::LOW
@@ -80,11 +75,10 @@ byte AnalogIR::GetSpellSensorReading() {
 	}
 	read = (read / 10);
 
-	if (_debug) {
-		Serial.print(": ");
-		Serial.println(read);
-		delay(25);
-	}
+#ifdef DEBUG_AIR
+	Serial.print(": ");
+	Serial.println(read);
+#endif // DEBUG_AIR
 
 	if (read < 130) {
 		return 0; // Enums::LOW
@@ -100,9 +94,9 @@ void AnalogIR::SetMultiplexerAddress() {
 	for (byte i = 0; i < 4; i++) {
 		digitalWrite(2 + i, _address[i]);
 		
-		if (_debug) {
-			Serial.print(_address[i]);
-			delay(25);
-		}
+#ifdef DEBUG_AIR
+		Serial.print(_address[i]);
+#endif // DEBUG_AIR
+
 	}
 }

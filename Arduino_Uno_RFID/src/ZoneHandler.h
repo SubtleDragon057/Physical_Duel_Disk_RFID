@@ -5,9 +5,11 @@
 #include "Core\Entities\Enums.h"
 #include "PN532.h"
 
+//#define DEBUG_ZH
+
 class ZoneHandler {
 private:
-	uint8_t _multiplexerAddress = 0x70;
+	const uint8_t _multiplexerAddress = 0x70;
 	byte _muxChannels[16][4] = {
 	{0,0,0,0}, //channel 0
 	{1,0,0,0}, //channel 1
@@ -26,9 +28,8 @@ private:
 	{0,1,1,1}, //channel 14
 	{1,1,1,1}  //channel 15
 	};
-	
-	bool _debug;
 
+	void SelectMultiplexerAddress(uint8_t address);
 	void CheckRFIDReader(DualCardZone &zone, int sensor);
 
 public:
@@ -39,14 +40,14 @@ public:
 		DualCardZone()
 	};
 	
-	ZoneHandler(bool debug = false);
+	ZoneHandler();
 
-	void Initialize(byte numZones, byte attackSensorAddresses[], PN532 &reader,
-		byte defenceSnesorPins[], byte spellSensorAddresses[]);
+	void Initialize(byte numZones, PN532& reader, const byte attackSensorAddresses[],
+		const byte defenceSnesorPins[], const byte spellSensorAddresses[]);
 	void CheckForTrippedSensor(int zoneNumber);
 	void HandleUpdateCard(DualCardZone& zone, int sensorType, Enums::CardPosition position);
 	void HandleRemoveCard(DualCardZone& zone, int sensorType);
-	void SelectMultiplexerAddress(uint8_t address);
+	bool EnableWriteMode(String cardID);
 };
 
 #endif

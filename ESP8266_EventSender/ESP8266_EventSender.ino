@@ -6,8 +6,6 @@
    For use with: Project ATEM Duel Disk Proto
 */
 
-#define DEBUG
-
 #include <Arduino.h>
 #include <SD.h>
 #include <SPI.h>
@@ -50,7 +48,8 @@ Button buttons[5] = {
     Button("Button5", button5Pin)
 };
 
-int deckList[35] = {
+int DeckList[35] = {
+  25652259,
   25652259,
   11549357,
   90876561,
@@ -81,13 +80,14 @@ void setup() {
 
   Serial.begin(115200);
   Wire.begin(SDA, SCL);
-  while (!SD.begin(sdReaderPin)) {
+  /*while (!SD.begin(sdReaderPin)) {
 	  HandleRetry("[ERROR] SD Reader Failed To Connect");
-  }
+  }*/
 
   communicationsHandler.Initialize(secrets.networkName, secrets.networkPass);
   buttonHandler.Initialize(buttons);
   smartDuelEventHandler.Connect(secrets.socketIP, secrets.socketPort);
+  //smartDuelEventHandler.Connect(secrets.secureOnlineAddress, secrets.secureOnlinePort);
   Serial.println();
 }
 
@@ -97,17 +97,17 @@ void loop() {
 		smartDuelEventHandler.ListenToServer();
 	}
 
-	while (!storageHandler.IsDeckSet) {
+	/*while (!storageHandler.IsDeckSet) {
 		smartDuelEventHandler.ListenToServer();
 		buttonHandler.CheckButtons();
 		storageHandler.ChooseDeck(buttonHandler.ButtonEvents);
-	}
+	}*/
 
 	while (!smartDuelEventHandler.IsInDuelRoom) {
 		smartDuelEventHandler.ListenToServer();
 
 		buttonHandler.CheckButtons();
-		smartDuelEventHandler.HandleLobby(buttonHandler.ButtonEvents, storageHandler.DeckList);
+		smartDuelEventHandler.HandleLobby(buttonHandler.ButtonEvents, DeckList);
 	}
 
 	// Set to false to allow user to choose new deck when entering lobby again

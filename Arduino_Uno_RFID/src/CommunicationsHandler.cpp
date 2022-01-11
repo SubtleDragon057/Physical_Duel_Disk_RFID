@@ -3,32 +3,60 @@
 #include "Wire.h"
 #include "Core\Entities\Enums.h"
 
-CommunicationsHandler::CommunicationsHandler(bool debug)
+CommunicationsHandler::CommunicationsHandler()
 {
-	_debug = true;
 }
 
-void CommunicationsHandler::HandleRecieve() {
+void CommunicationsHandler::HandleRecieve() {	
+	if (EnableWriteMode) {
+		IncomingCardID = "";
+		while (Wire.available()) {
+			char message = Wire.read();
+			IncomingCardID += message;
+		}
+
+#ifdef DEBUG_CH
+		Serial.print("Incoming ID: "); Serial.println(IncomingCardID);
+#endif // DEBUG
+
+		return;
+	}
+	
 	while (Wire.available()) {
 		_recievedData = Wire.read();
 	}
 }
 
-void CommunicationsHandler::HandleRequest() {
-	if (_recievedData == Enums::Communication::Connection) {
-		Wire.write("057");
-	}
-	else if (_recievedData == Enums::Communication::HasNewEvent) {
-		byte hasChange = _hasNewEvent ? 0x01 : 0x00;
-		Wire.write(hasChange);
-	}
-	else if (_recievedData == Enums::Communication::GetEventInfo) {
-		Wire.write(_newEventData);
-		_hasNewEvent = false;
+void CommunicationsHandler::HandleRequest() {		
+	switch (_recievedData) {
+		case Enums::Communication::EnterWriteMode:
+			Wire.write("Sub");
+			EnableWriteMode = true;
+			_recievedData = 0;
+			break;
+		case Enums::Communication::Connection:
+			Wire.write("057");
+			_recievedData = 0;
+			break;
+		case Enums::Communication::StartDuel:
+			Wire.write("Dra");
+			IsInDuel = true;
+			break;
+		case Enums::Communication::HasNewEvent:
+			Wire.write(_hasNewEvent);
+			break;
+		case Enums::Communication::GetEventInfo:
+			Wire.write(_newEventData);
+			_hasNewEvent = false;
+			break;
 	}
 }
 
-void CommunicationsHandler::HandleNewEvent(String eventData) {
+void CommunicationsHandler::HandleNewEvent(char* eventData) {
 	_hasNewEvent = true;
-	eventData.toCharArray(_newEventData, 12);
+	_newEventData = eventData;
+}
+
+void CommunicationsHandler::GetNextCard() {
+	_recievedData = 7;
 }

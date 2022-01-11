@@ -23,7 +23,9 @@ public:
 	
 	SmartDuelServer();
 
-	void Initialize(String socketIP, int socketPort);	
+	void Initialize(String socketIP, int socketPort);
+	void InitializeSSL(String socketIP, int socketPort);
+
 	void ListenToServer();
 	void SendEvent(String eventData);
 	String GetSocketId();

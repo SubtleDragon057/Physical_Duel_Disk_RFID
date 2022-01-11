@@ -5,6 +5,8 @@
 #include "Entities\Components\AnalogIR.h"
 #include "PN532.h"
 
+//#define DEBUG_DCZ
+
 class DualCardZone {
 private:
 	PN532 _reader;
@@ -13,8 +15,6 @@ private:
 	byte _uidLength;
 
 	AnalogIR _sensors[3] = {};
-
-	bool _debug = true;
 
 public:
 	int ZoneNumber;
@@ -41,6 +41,7 @@ public:
 	bool ReadAvailableCard();
 	void StopScanning();
 	String GetCardSerialNumber();
+	bool WriteRFIDTag(String cardID);
 };
 
 #endif
