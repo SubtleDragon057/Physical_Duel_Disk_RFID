@@ -10,15 +10,13 @@
 
 ButtonHandler::ButtonHandler() 
 {
-}
-
-void ButtonHandler::Initialize(Button buttons[], int debouceTime, int doubleClickTime, int holdTime)
-{
-    for (int i = 0; i < 5; i++) {
-        _buttons[i] = buttons[i];
+    for (byte i = 0; i < 5; i++) {
         _buttons[i].Initialize();
     }
-    
+}
+
+void ButtonHandler::Initialize(int debouceTime, int doubleClickTime, int holdTime)
+{
     _debounce = debouceTime;
     _doubleClickTime = doubleClickTime;
     _holdTime = holdTime;
@@ -31,7 +29,10 @@ void ButtonHandler::CheckButtons() {
 	}
 
     ButtonEvents[5] = GetMultiButtonEvent();
+    
+#ifdef DEBUG_BH
     PrintEvents(ButtonEvents);
+#endif // DEBUG_BH
 }
 
 int ButtonHandler::GetButtonEvent(int buttonNum) {

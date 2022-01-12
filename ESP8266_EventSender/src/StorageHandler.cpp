@@ -7,11 +7,37 @@ StorageHandler::StorageHandler(CommunicationsHandler &communicationsHandler)
     _communicationsHandler = &communicationsHandler;
 }
 
+void StorageHandler::Initialize(bool isSDReaderConnected) {    
+    _isSDConnected = isSDReaderConnected;
+
+    if (!_isSDConnected) {
+        String text[] = { "Using Default Deck" };
+        _communicationsHandler->Display(CommunicationsHandler::UI_Init, text);
+    }
+    else {
+        String text[] = { "Decks Configured!" };
+        _communicationsHandler->Display(CommunicationsHandler::UI_Init, text);
+    }
+    delay(2000);
+}
+
 void StorageHandler::ChooseDeck(int buttonEvents[]) {
+    if (!_isSDConnected) {
+        UseDefaultDeck();
+        return;
+    }
+    
     _deckName = GetDeckName(buttonEvents);
     if (_deckName == String()) return;
     
     ReadYDK(_deckName);
+}
+
+void StorageHandler::UseDefaultDeck() {
+    for (byte i = 0; i < 35; i++) {
+        DeckList[i] = _defaultDeckList[i];
+    }
+    IsDeckSet = true;
 }
 
 String StorageHandler::GetDeckName(int buttonEvents[]) {

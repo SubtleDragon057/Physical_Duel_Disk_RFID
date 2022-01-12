@@ -6,19 +6,51 @@
 
 class StorageHandler {
 private:
-	
+
+	bool _isSDConnected;
 	String _deckName;
 	File _deckYDK;
 	CommunicationsHandler* _communicationsHandler;
 	String _deckNames[5];
+
+	int _defaultDeckList[35] = {
+		25652259,
+		25652259,
+		11549357,
+		90876561,
+		62651957,
+		84636823,
+		65622692,
+		98502113,
+		5818798,
+		11321183,
+		14898066,
+		71413901,
+		64500000,
+		99785935,
+		46986414,
+		76909279,
+		4796100,
+		78193831,
+		89631139,
+		46363422,
+		31553716,
+		39256679,
+		91998119,
+		75347539,
+		77207191
+		};
 
 public:
 	int DeckList[36];
 	bool IsDeckSet = false;
 
 	StorageHandler(CommunicationsHandler &communicatiosnHandler);
+
+	void Initialize(bool isSDReaderConnected);
 	
 	void ChooseDeck(int buttonEvents[]);
+	void UseDefaultDeck();
 	String GetDeckName(int buttonEvents[]);
 	void GetListOfDecks();
 	void ReadYDK(String deckName);

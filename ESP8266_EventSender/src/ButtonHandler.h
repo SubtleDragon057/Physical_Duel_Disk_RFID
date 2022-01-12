@@ -4,6 +4,8 @@
 #include "Core\Entities\Button.h"
 #include "Core\Entities\Enums.h"
 
+//#define DEBUG_BH
+
 //==============================================//
 // MULTI-CLICK: One Button, Multiple EventsStatic
 // By Jeff Saltzman Oct. 13, 2009
@@ -14,7 +16,28 @@
 
 class ButtonHandler {
 private:
-	Button _buttons[5];
+#ifdef ESP8266;
+    byte button1Pin = 0;
+    byte button2Pin = 2;
+    byte button3Pin = 14;
+    byte button4Pin = 12;
+    byte button5Pin = 13;
+#endif
+#ifdef ESP32
+    const byte button1Pin = 32;
+    const byte button2Pin = 33;
+    const byte button3Pin = 25;
+    const byte button4Pin = 26;
+    const byte button5Pin = 27;
+#endif
+
+    Button _buttons[5] = {
+        Button("Button1", button1Pin),
+        Button("Button2", button2Pin),
+        Button("Button3", button3Pin),
+        Button("Button4", button4Pin),
+        Button("Button5", button5Pin)
+    };
 
     int _debounce;
     int _doubleClickTime;
@@ -35,7 +58,7 @@ public:
     
     ButtonHandler();
 
-    void Initialize(Button buttons[], int debouceTime = 20, int doubleClickTime = 275, int holdTime = 1000);
+    void Initialize(int debouceTime = 20, int doubleClickTime = 275, int holdTime = 1000);
     void CheckButtons();
 };
 
