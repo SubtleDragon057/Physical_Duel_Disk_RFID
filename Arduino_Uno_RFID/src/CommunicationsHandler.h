@@ -9,7 +9,7 @@
 class CommunicationsHandler {
 private:
 	byte _recievedData;
-	bool _hasNewEvent = false;
+	const byte _espInterrupt = 8;
 	char* _newEventData;
 
 public:
@@ -20,7 +20,7 @@ public:
 	CommunicationsHandler();
 
 	void HandleRecieve();
-	void HandleNewEvent(char* eventData);
+	void HandleNewEvent(String eventData);
 	void GetNextCard();
 	void HandleRequest();
 };

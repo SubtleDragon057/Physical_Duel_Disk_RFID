@@ -12,7 +12,7 @@ private:
 
 	const byte _arduinoAddress = 11;
 	const byte _connectionResponseLength = 3;
-	const byte _newDuelData = 11;
+	const byte _newDuelData = 12;
 
 	bool CheckForArduino(Enums::Communication command, String successCode);
 	void HandleBasicUI(String incomingMessage[]);
@@ -34,7 +34,7 @@ public:
 
 	void Initialize(const char * networkName, const char * networkPass);
 	void StartDuelDisk(String currentPhase);
-	String PollForNewEvent();
+	String GetNewEventData();
 	void EnableWriteMode();
 	void TransmitCard(String cardNumber);
 	void Display(UI_Type type, String incomingMessage[]);

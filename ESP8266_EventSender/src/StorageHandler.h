@@ -13,7 +13,7 @@ private:
 	CommunicationsHandler* _communicationsHandler;
 	String _deckNames[5];
 
-	int _defaultDeckList[35] = {
+	uint8_t _defaultDeckList[35] = {
 		25652259,
 		25652259,
 		11549357,

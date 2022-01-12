@@ -21,6 +21,7 @@ void CommunicationsHandler::Initialize(const char * networkName, const char * ne
 	text[0] = "[SETUP] Syncing RFIDs";
 	Display(UI_Init, text);
 	
+	// TODO: Add test for interrupt pin
 	bool isArduinoConnected = false;
 	do {
 		isArduinoConnected = CheckForArduino(Enums::Communication::Connection, "057");
@@ -44,38 +45,16 @@ void CommunicationsHandler::StartDuelDisk(String currentPhase) {
 	Display(UI_Type::UI_SpeedDuel, { &currentPhase });
 }
 
-String CommunicationsHandler::PollForNewEvent() {
+String CommunicationsHandler::GetNewEventData() {
+	Wire.requestFrom(_arduinoAddress, _newDuelData);
 
-	Wire.beginTransmission(_arduinoAddress);
-	Wire.write(Enums::Communication::HasNewEvent);
-	Wire.endTransmission();
-	
-	const byte constByte = 1;
-	Wire.requestFrom(_arduinoAddress, constByte);
-
-	bool hasEvent = false;
+	String eventData = "";
 	while (Wire.available()) {
-		hasEvent = Wire.read();
+		char message = Wire.read();
+		eventData += message;
 	}
 
-	if (hasEvent) {		
-		Wire.beginTransmission(_arduinoAddress);
-		Wire.write(Enums::Communication::GetEventInfo);
-		Wire.endTransmission();
-
-		Wire.requestFrom(_arduinoAddress, _newDuelData);
-
-		String eventData = "";
-
-		while (Wire.available()) {			
-			char message = Wire.read();
-			eventData += message;
-		}
-
-		return eventData;
-	}
-	
-	return "No Events!!";
+	return eventData;
 }
 
 void CommunicationsHandler::EnableWriteMode() {

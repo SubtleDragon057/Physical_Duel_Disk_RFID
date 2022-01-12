@@ -35,7 +35,6 @@ public:
 	};
 	enum Communication {
 		Connection = 5,
-		HasNewEvent = 4,
 		GetEventInfo = 3,
 		StartDuel = 6,
 		EnterWriteMode = 7,

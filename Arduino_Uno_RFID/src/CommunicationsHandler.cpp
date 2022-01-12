@@ -5,6 +5,8 @@
 
 CommunicationsHandler::CommunicationsHandler()
 {
+	pinMode(_espInterrupt, OUTPUT);
+	digitalWrite(_espInterrupt, HIGH);
 }
 
 void CommunicationsHandler::HandleRecieve() {	
@@ -28,6 +30,11 @@ void CommunicationsHandler::HandleRecieve() {
 }
 
 void CommunicationsHandler::HandleRequest() {		
+	if (IsInDuel) {
+		Wire.write(_newEventData);
+		return;
+	}
+	
 	switch (_recievedData) {
 		case Enums::Communication::EnterWriteMode:
 			Wire.write("Sub");
@@ -41,20 +48,20 @@ void CommunicationsHandler::HandleRequest() {
 		case Enums::Communication::StartDuel:
 			Wire.write("Dra");
 			IsInDuel = true;
-			break;
-		case Enums::Communication::HasNewEvent:
-			Wire.write(_hasNewEvent);
-			break;
-		case Enums::Communication::GetEventInfo:
-			Wire.write(_newEventData);
-			_hasNewEvent = false;
+			Serial.println(F("Starting Duel!"));
+			_recievedData = 0;
 			break;
 	}
 }
 
-void CommunicationsHandler::HandleNewEvent(char* eventData) {
-	_hasNewEvent = true;
-	_newEventData = eventData;
+void CommunicationsHandler::HandleNewEvent(String eventData) {
+	char buffer[13];
+	eventData.toCharArray(buffer, 13);
+	_newEventData = buffer;
+
+	digitalWrite(_espInterrupt, LOW);
+	delay(10);
+	digitalWrite(_espInterrupt, HIGH);
 }
 
 void CommunicationsHandler::GetNextCard() {

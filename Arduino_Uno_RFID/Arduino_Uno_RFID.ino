@@ -65,16 +65,12 @@ void loop() {
 			String eventData = eventHandler.GetFormattedEventData(zoneHandler.Zones[i], j);
 
 			if (eventData == "") continue;
-			
-			char* buffer;
-			eventData.toCharArray(buffer, 13);
-			communicationsHandler.HandleNewEvent(buffer);
+			communicationsHandler.HandleNewEvent(eventData);
 
 #ifdef DEBUG_Main
 			Serial.print("\nEvent Info: ");
-			Serial.println(buffer);
+			Serial.println(eventData);
 #endif // DEBUG
-
 		}
 	}
 }

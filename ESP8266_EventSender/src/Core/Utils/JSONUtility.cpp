@@ -9,9 +9,9 @@ String JSONUtility::GetCardEventFromArduino(String socketID, String data)
 {
 	String eventName = data.substring(0, 1); // Event #
 	String zoneName = GetZoneName(data.substring(1, 2), eventName); // Zone Name
-	int cardID = GetCardID(data.substring(2, 10)); // Serial #
-	int copyNumber = 1; // TODO: Implement copy number from deck builder
-	String cardPosition = GetCardPosition(data.substring(10, 11)); // Position
+	int cardID = GetCardID(data.substring(3, 11)); // Serial #
+	int copyNumber = data.substring(2, 3).toInt(); // Copy Number
+	String cardPosition = GetCardPosition(data.substring(11, 12)); // Position
 
 	return GetCardEventAsJSON(socketID, "card:play", cardID, copyNumber, zoneName, cardPosition);
 }
