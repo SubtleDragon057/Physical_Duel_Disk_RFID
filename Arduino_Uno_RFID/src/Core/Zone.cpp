@@ -41,10 +41,10 @@ Enums::CardPosition DualCardZone::ReadCurrentSpellPosition() {
 
 	switch (lightValue) {
 		case Enums::Low:
-			position = Enums::FaceDownDefence;
+			position = Enums::FaceDown;
 			break;
 		case Enums::Medium:
-			position = Enums::FaceUpDefence;
+			position = Enums::FaceUp;
 			break;
 	}
 
@@ -123,12 +123,10 @@ String DualCardZone::GetCardSerialNumber() {
 bool DualCardZone::WriteRFIDTag(String cardID) {
 	Serial.print("Writing ID: "); Serial.println(cardID);
 	
-	uint8_t readBackBlock[16];
 	uint8_t keya[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
-
 	uint8_t status = _reader.mifareclassic_AuthenticateBlock(_uid, _uidLength, _block, 0, keya);
 	Serial.print("Authenticate Write: "); Serial.println(status);
-	if (!status) return false;
+	if (status != 1) return false;
 
 	uint8_t serial;
 	for (byte i = 0; i < 9; i++) {

@@ -28,13 +28,15 @@ void SmartDuelEventHandler::EnterWriteMode(int deckList[]) {
 	String text[] = { "Write Mode" };
 	_communicationsHandler->Display(CommunicationsHandler::UI_WriteMode, text);
 
+	delay(1000);
+
 	Serial.println("Decklist With Copy Num:");
-	String deckListWithCopyNum[35];
-	for (byte i = 0; i < 35; i++) {
+	String deckListWithCopyNum[36];
+	for (byte i = 0; i < 36; i++) {
 		if (deckList[i] == 0) continue;
 		int copyNum = 0;
 
-		for (byte j = 0; j < 35; j++) {
+		for (byte j = 0; j < 36; j++) {
 			if (deckList[i] != deckList[j]) continue;
 			copyNum++;
 		}
@@ -47,7 +49,7 @@ void SmartDuelEventHandler::EnterWriteMode(int deckList[]) {
 	_communicationsHandler->EnableWriteMode();
 	Serial.printf("Sending Deck\n");
 
-	for (byte i = 0; i < 35; i++) {
+	for (byte i = 0; i < 36; i++) {
 		if (deckListWithCopyNum[i] == 0) continue;
 		
 		String cardNumber[] = { deckListWithCopyNum[i].substring(1) };
@@ -179,20 +181,23 @@ void SmartDuelEventHandler::HandleIncomingRoomEvents() {
 		IsInDuelRoom = false;
 		IsDueling = false;
 		_speedDuel.ClearDuelStates();
+		_communicationsHandler->EndDuel();
 		SmartDuelServer::EventName = "Waiting";
 	}
 	else if (SmartDuelServer::EventName == "room:start") {
-		_duelRoom.UpdateCurrentRoom(SmartDuelServer::RoomName);
-		IsInDuelRoom = true;
+		_duelRoom.UpdateCurrentRoom(SmartDuelServer::RoomName);		
 		_speedDuel.UpdateDuelistIDs(
 			SocketID,
 			SmartDuelServer::DuelistID,
 			SmartDuelServer::EventData);
+		IsInDuelRoom = true;
 		IsDueling = true;
 
 		bool isOpponentsTurn = SmartDuelServer::EventData != SocketID;
+		String text[] = { _speedDuel.GetPhase() };
 		_speedDuel.UpdatePhase("drawPhase", isOpponentsTurn);
-		_communicationsHandler->StartDuelDisk(_speedDuel.GetPhase());
+		_communicationsHandler->StartDuelDisk();
+		_communicationsHandler->Display(CommunicationsHandler::UI_SpeedDuel, text);
 		SmartDuelServer::EventName = "Waiting";
 	}
 }
@@ -244,14 +249,12 @@ void SmartDuelEventHandler::HandleIncomingCardEvents() {
 	}
 }
 
-void SmartDuelEventHandler::HandleOutgoingEvent(String eventData)
-{
+void SmartDuelEventHandler::HandleOutgoingEvent(String eventData) {
 	String output = _jsonUtility.GetCardEventFromArduino(SocketID, eventData);
 
 #ifdef DEBUG
 	Serial.println(output);
 #endif // DEBUG
-
 
 	_server.SendEvent(output);
 	_speedDuel.UpdateDuelState(output);

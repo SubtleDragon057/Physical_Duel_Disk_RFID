@@ -10,6 +10,10 @@ CommunicationsHandler::CommunicationsHandler()
 }
 
 void CommunicationsHandler::HandleRecieve() {	
+#ifdef DEBUG_CH
+	Serial.println("Handle Receive");
+#endif // DEBUG_CH
+	
 	if (EnableWriteMode) {
 		IncomingCardID = "";
 		while (Wire.available()) {
@@ -18,7 +22,8 @@ void CommunicationsHandler::HandleRecieve() {
 		}
 
 #ifdef DEBUG_CH
-		Serial.print("Incoming ID: "); Serial.println(IncomingCardID);
+		Serial.print("Incoming ID: "); Serial.print(IncomingCardID);
+		Serial.println("~");
 #endif // DEBUG
 
 		return;
@@ -27,9 +32,20 @@ void CommunicationsHandler::HandleRecieve() {
 	while (Wire.available()) {
 		_recievedData = Wire.read();
 	}
+
+	if (_recievedData == Enums::Communication::EndDuel) {
+		IsInDuel = false;
+#ifdef DEBUG_CH
+		Serial.println("The Duel Has Ended!");
+#endif // DEBUG_CH
+	}
 }
 
 void CommunicationsHandler::HandleRequest() {		
+#ifdef DEBUG_CH
+	Serial.println("Handle Request");
+#endif // DEBUG_CH
+	
 	if (IsInDuel) {
 		Wire.write(_newEventData);
 		return;
@@ -51,6 +67,10 @@ void CommunicationsHandler::HandleRequest() {
 			Serial.println(F("Starting Duel!"));
 			_recievedData = 0;
 			break;
+		case Enums::Communication::EndDuel:
+			Wire.write("gon");
+			_recievedData = 0;
+			break;
 	}
 }
 
@@ -66,4 +86,5 @@ void CommunicationsHandler::HandleNewEvent(String eventData) {
 
 void CommunicationsHandler::GetNextCard() {
 	_recievedData = 7;
+	EnableWriteMode = false;
 }

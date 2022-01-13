@@ -35,14 +35,20 @@ void CommunicationsHandler::Initialize(const char * networkName, const char * ne
 	_wifiManager.Connect(networkName, networkPass);
 }
 
-void CommunicationsHandler::StartDuelDisk(String currentPhase) {
+void CommunicationsHandler::StartDuelDisk() {
 	bool isArduinoConnected = false;
 	do {
 		isArduinoConnected = CheckForArduino(Enums::Communication::StartDuel, "Dra");
 		delay(50);
 	} while (!isArduinoConnected);
+}
 
-	Display(UI_Type::UI_SpeedDuel, { &currentPhase });
+void CommunicationsHandler::EndDuel() {
+	bool isArduinoConnected = false;
+	do {		
+		isArduinoConnected = CheckForArduino(Enums::Communication::EndDuel, "gon");
+		delay(50);
+	} while (!isArduinoConnected);
 }
 
 String CommunicationsHandler::GetNewEventData() {
@@ -69,44 +75,17 @@ void CommunicationsHandler::EnableWriteMode() {
 }
 
 void CommunicationsHandler::TransmitCard(String cardNumber) {
-	char cardNumAsChar[9];
-	cardNumber.toCharArray(cardNumAsChar, 9);
+	char cardNumAsChar[10];
+	cardNumber.toCharArray(cardNumAsChar, 10);
 	
+	// Send Card
 	Wire.beginTransmission(_arduinoAddress);
 	Wire.write(cardNumAsChar);
 	Wire.endTransmission();
 
-	String acknowledge = "";
-	do {
-		const byte acknowledgeByte = 3;
-		Wire.requestFrom(_arduinoAddress, acknowledgeByte);
-
-		while (Wire.available()) {
-			char message = Wire.read();
-			acknowledge += message;
-		}
-
-		if (acknowledge == "Sub") break;
-		delay(5000);
-	} while (1);
-
 	// TODO: Add check from UI rather than Serial
-	/*String text[] = { "Success! Please Remove Card" };
-	Display(UI_WriteMode, text);
-
-	String acknowledge = "";
-	do {
-		const byte acknowledgeByte = 3;
-		Wire.requestFrom(_arduinoAddress, acknowledgeByte);
-
-		while (Wire.available()) {
-			char message = Wire.read();
-			acknowledge += message;
-		}
-
-		if (acknowledge == "Sub") break;
-		delay(100);
-	} while (1);*/
+	// Wait for card to be written - Temp disabled to clear I2C line
+	while (1) {}
 }
 
 bool CommunicationsHandler::CheckForArduino(Enums::Communication command, String successCode) {

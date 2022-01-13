@@ -44,7 +44,7 @@ void setup() {
 
 void loop() {
 
-	while (communicationsHandler.EnableWriteMode) {
+	if (communicationsHandler.EnableWriteMode) {
 		bool success = zoneHandler.EnableWriteMode(communicationsHandler.IncomingCardID);
 		if (success) {
 			communicationsHandler.IncomingCardID = "";
@@ -73,6 +73,9 @@ void loop() {
 #endif // DEBUG
 		}
 	}
+
+	Wire.begin(11);
+	delay(100);
 }
 
 void HandleRecieve(int numBytes) {

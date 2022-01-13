@@ -134,13 +134,13 @@ uint32_t PN532::getFirmwareVersion(void)
 /*!
     @brief  SubtleDragon057 - Performs an RF Test
 
-    @returns  Not sure yet
+    @returns  Successful write command
 */
 /**************************************************************************/
 bool PN532::performRFTest(void)
 {
     pn532_packetbuffer[0] = PN532_COMMAND_RFREGULATIONTEST;
-    pn532_packetbuffer[1] = 0x00;
+    pn532_packetbuffer[1] = PN532_MIFARE_ISO14443A;
 
     if (HAL(writeCommand)(pn532_packetbuffer, 2)) {
         DMSG("Write failed with no ACK");
@@ -149,7 +149,6 @@ bool PN532::performRFTest(void)
 
     return 1;
 }
-
 
 /**************************************************************************/
 /*!
@@ -417,14 +416,14 @@ uint8_t PN532::mifareclassic_AuthenticateBlock (uint8_t *uid, uint8_t uidLen, ui
         return 0;
 
     // Read the response packet
-    HAL(readResponse)(pn532_packetbuffer, sizeof(pn532_packetbuffer));
+    uint8_t success = HAL(readResponse)(pn532_packetbuffer, sizeof(pn532_packetbuffer));
 
     // Check if the response is valid and we are authenticated???
     // for an auth success it should be bytes 5-7: 0xD5 0x41 0x00
     // Mifare auth error is technically byte 7: 0x14 but anything other and 0x00 is not good
     if (pn532_packetbuffer[0] != 0x00) {
-        DMSG("Authentification failed\n");
-        return 0;
+        DMSG("Authentification failed");
+        return success;
     }
 
     return 1;

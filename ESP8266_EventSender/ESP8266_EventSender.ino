@@ -27,6 +27,8 @@ const byte intPin = 16;
 volatile bool hasNewEvent = false;
 portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 void IRAM_ATTR handleIncomingEvent() {
+	if (!smartDuelEventHandler.IsDueling) return;
+
 	portENTER_CRITICAL_ISR(&mux);
 	hasNewEvent = true;
 	portEXIT_CRITICAL_ISR(&mux);
@@ -60,14 +62,13 @@ void setup() {
 
 void loop() {
 
-	do {
+	while (!smartDuelEventHandler.IsConnected() || !storageHandler.IsDeckSet) {
 		smartDuelEventHandler.ListenToServer();
 		buttonHandler.CheckButtons();
 		if (!storageHandler.IsDeckSet) {
 			storageHandler.ChooseDeck(buttonHandler.ButtonEvents);
 		}
-		
-	} while (!smartDuelEventHandler.IsConnected() || !storageHandler.IsDeckSet);
+	}
 
 	while (!smartDuelEventHandler.IsInDuelRoom) {
 		smartDuelEventHandler.ListenToServer();

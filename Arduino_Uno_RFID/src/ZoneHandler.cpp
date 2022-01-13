@@ -126,11 +126,14 @@ bool ZoneHandler::EnableWriteMode(String cardID) {
 	byte useZone = 0;
 	
 	SelectMultiplexerAddress(useZone);
-	while(!Zones[useZone].ScanForNewCard()) {
+	bool cardAvailable = Zones[useZone].ScanForNewCard();
+	if (!cardAvailable) {
 		Serial.println("Waiting For Card");
 		delay(2000);
+		return false;
 	}
 
+	Serial.println("Card Found!");
 	delay(2000); // Ensure Card is fully placed
 
 	bool success = Zones[useZone].WriteRFIDTag(cardID);

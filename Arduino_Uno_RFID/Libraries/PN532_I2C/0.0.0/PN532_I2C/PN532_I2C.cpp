@@ -88,7 +88,7 @@ int16_t PN532_I2C::readResponse(uint8_t buf[], uint8_t len, uint16_t timeout)
         delay(1);
         time++;
         if ((0 != timeout) && (time > timeout)) {
-            return -1;
+            return 2;
         }
     } while (1); 
     
@@ -97,22 +97,22 @@ int16_t PN532_I2C::readResponse(uint8_t buf[], uint8_t len, uint16_t timeout)
             0xFF != read()           // STARTCODE2
         ) {
         
-        return PN532_INVALID_FRAME;
+        return 3;
     }
     
     uint8_t length = read();
     if (0 != (uint8_t)(length + read())) {   // checksum of length
-        return PN532_INVALID_FRAME;
+        return 4;
     }
     
     uint8_t cmd = command + 1;               // response command
     if (PN532_PN532TOHOST != read() || (cmd) != read()) {
-        return PN532_INVALID_FRAME;
+        return 5;
     }
     
     length -= 2;
     if (length > len) {
-        return PN532_NO_SPACE;  // not enough space
+        return 6;  // not enough space
     }
     
     DMSG("read:  ");

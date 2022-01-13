@@ -24,7 +24,10 @@ void SmartDuelServer::socketIOEvent(socketIOmessageType_t type, uint8_t* payload
         SmartDuelServer::isConnected = true;
         break;
     case sIOtype_EVENT:
-        //Serial.printf("[IOc] Event: %s\n", payload);
+#ifdef DEBUG_Server
+        Serial.printf("[IOc] Event: %s\n", payload);
+#endif // DEBUG_Server
+
         HandleRecievedEvent(payload);
         break;
     case sIOtype_ERROR:

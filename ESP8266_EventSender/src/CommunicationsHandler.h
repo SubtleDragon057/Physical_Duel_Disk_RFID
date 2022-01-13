@@ -33,7 +33,8 @@ public:
 	CommunicationsHandler();
 
 	void Initialize(const char * networkName, const char * networkPass);
-	void StartDuelDisk(String currentPhase);
+	void StartDuelDisk();
+	void EndDuel();
 	String GetNewEventData();
 	void EnableWriteMode();
 	void TransmitCard(String cardNumber);

@@ -4,7 +4,7 @@
 #include "Wire.h"
 #include "Core\Entities\Enums.h"
 
-//#define DEBUG_CH
+#define DEBUG_CH
 
 class CommunicationsHandler {
 private:

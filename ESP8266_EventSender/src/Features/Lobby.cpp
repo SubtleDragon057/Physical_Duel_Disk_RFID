@@ -18,9 +18,10 @@ String Lobby::CheckLobbyForAction(int buttonEvents[], int deckList[])
     else if (data == "Join" || data == "join" || buttonEvents[1] != 0) {
         return HandleJoinRoomEvent(deckList);
     }
-    else if (buttonEvents[5] == 9) { // Multi34 Button Event (ie. Hold Buttons 4 & 5)
-        return "writeMode";
-    }
+    // TODO: Update write mode after adding "Quick-Play Zone"
+    //else if (buttonEvents[5] == 9) { // Multi34 Button Event (ie. Hold Buttons 4 & 5)
+    //    return "writeMode";
+    //}
 
     return "NoAction";
 }
