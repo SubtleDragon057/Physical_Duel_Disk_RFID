@@ -2,6 +2,8 @@
 #include "Wire.h"
 #include "CrownCorp.h"
 
+//#define DEBUG_CH
+
 CommunicationsHandler::CommunicationsHandler()
 {
 }
@@ -9,9 +11,8 @@ CommunicationsHandler::CommunicationsHandler()
 void CommunicationsHandler::Initialize(const char * networkName, const char * networkPass) {
 	_display.init();
 	_display.flipScreenVertically();
-	String text[1] = { "Display: Init" };
-	Display(UI_Init, text);
 	
+	String text[1] = {};
 	for (uint8_t t = 3; t > 0; t--) {
 		text[0] = "[SETUP] BOOT WAIT " + String(t);
 		Display(UI_Init, text);
@@ -33,6 +34,9 @@ void CommunicationsHandler::Initialize(const char * networkName, const char * ne
 	text[0] = "[SETUP] Connecting Wifi";
 	Display(UI_Init, text);
 	_wifiManager.Connect(networkName, networkPass);
+
+	text[0] = "[SETUP] Configuring Decks";
+	Display(UI_Init, text);
 }
 
 void CommunicationsHandler::StartDuelDisk() {
@@ -105,8 +109,12 @@ bool CommunicationsHandler::CheckForArduino(Enums::Communication command, String
 	return response == successCode;
 }
 
-void CommunicationsHandler::Display(UI_Type type, String incomingMessage[])
-{
+void CommunicationsHandler::Display(UI_Type type, String incomingMessage[]) {
+#ifdef DEBUG_CH
+	Serial.printf("Display(UI Type: %i)\n", type);
+#endif // DEBUG_CH
+
+
 	switch (type) {
 	case UI_Lobby:
 		HandleLobbyUI(incomingMessage);
@@ -157,11 +165,11 @@ void CommunicationsHandler::HandleSpeedDuelUI(String incomingMessage[]) {
 	_display.clear();
 
 	_display.setFont(ArialMT_Plain_10);
-	_display.drawString(5, 0, "Opp: 4000");
+	_display.drawString(5, 0, incomingMessage[2]);
 	_display.drawHorizontalLine(0, 13, 128);
 	_display.drawHorizontalLine(0, 14, 128);
 
-	_display.drawString(5, 52, "Player: 4000");
+	_display.drawString(5, 52, incomingMessage[1]);
 	_display.drawHorizontalLine(0, 49, 128);
 	_display.drawHorizontalLine(0, 50, 128);
 

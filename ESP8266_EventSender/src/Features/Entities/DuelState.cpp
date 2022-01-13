@@ -72,6 +72,22 @@ void DuelState::UpdatePhase(String newPhase, bool isOpponentsTurn) {
 	IsOpponentsTurn = isOpponentsTurn;
 }
 
+void DuelState::UpdateLifepoints(int lifepoints, String duelistID) {
+	for (byte i = 0; i < 2; i++) {
+		if (_playerStates[i].DuelistID() != duelistID) continue;
+		_playerStates[i].UpdateLifepoints(lifepoints);
+	}
+}
+
+// TODO: Ensure these are always correct
+int DuelState::GetPlayerLP() {
+	return _playerStates[0].LifePoints();
+}
+
+int DuelState::GetOppLP() {
+	return _playerStates[1].LifePoints();
+}
+
 String DuelState::GetPhase() {
 	String turnPlayer = IsOpponentsTurn ? "Opp: " : "Player: ";
 	String currentPhase = GetShortenedPhaseName(CurrentPhase);

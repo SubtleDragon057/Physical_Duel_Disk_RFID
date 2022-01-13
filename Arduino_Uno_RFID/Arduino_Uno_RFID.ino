@@ -74,6 +74,7 @@ void loop() {
 		}
 	}
 
+	// Allow for incoming I2C messages
 	Wire.begin(11);
 	delay(100);
 }

@@ -1,6 +1,8 @@
 #include "SmartDuelServer.h"
 #include "ArduinoJson.h"
 
+//#define DEBUG_Server
+
 SmartDuelServer::SmartDuelServer() 
 {
 }
@@ -16,11 +18,17 @@ int SmartDuelServer::CopyNumber;
 void SmartDuelServer::socketIOEvent(socketIOmessageType_t type, uint8_t* payload, std::size_t length) {
     switch (type) {
     case sIOtype_DISCONNECT:
+#ifdef DEBUG_Server
         Serial.printf("[IOc] Disconnected!\n");
+#endif // DEBUG_Server
+        
         SmartDuelServer::isConnected = false;
         break;
     case sIOtype_CONNECT:
+#ifdef DEBUG_Server
         Serial.printf("[IOc] Connected to url: %s\n", payload);
+#endif // DEBUG_Server
+        
         SmartDuelServer::isConnected = true;
         break;
     case sIOtype_EVENT:
@@ -123,6 +131,15 @@ void SmartDuelServer::HandleRecievedEvent(uint8_t* payload) {
             EventName = eventName;
             DuelistID = duelistID;
             EventData = phase;
+            return;
+        }
+        else if (eventName == "duelist:update-lifepoints") {
+            String duelistID = doc[1]["duelistId"];
+            String lifepoints = doc[1]["lifepoints"];
+
+            EventName = eventName;
+            DuelistID = duelistID;
+            EventData = lifepoints;
             return;
         }
         

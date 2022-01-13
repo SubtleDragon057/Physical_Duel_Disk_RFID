@@ -3,8 +3,6 @@
 #include "Arduino.h"
 #include "SocketIOclient.h"
 
-//#define DEBUG_Server
-
 class SmartDuelServer {
 private:
 	SocketIOclient socketIO;

@@ -18,6 +18,7 @@ public:
 	bool IsOpponentsTurn;
 
 	DuelState();
+
 	int GetCardID(String duelistID, int zoneNumber, bool isMonsterZone);
 	int GetCardID(String duelistID, String zoneName);
 	int GetCopyNumber(String duelistID, int zoneNumber, bool isMonsterZone);
@@ -25,6 +26,9 @@ public:
 	void UpdateDuelState(String eventData);
 	void UpdateDuelState(String duelistID, int cardID, int copyNumber, String zoneName);
 	void UpdatePhase(String newPhase, bool isOpponentsTurn = false);
+	void UpdateLifepoints(int lifepoints, String duelistID);
+	int GetPlayerLP();
+	int GetOppLP();
 	String GetPhase();
 	void ClearPlayerStates();
 };

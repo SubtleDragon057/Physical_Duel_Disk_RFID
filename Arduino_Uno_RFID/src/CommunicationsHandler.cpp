@@ -48,6 +48,7 @@ void CommunicationsHandler::HandleRequest() {
 	
 	if (IsInDuel) {
 		Wire.write(_newEventData);
+		_newEventData = "None";
 		return;
 	}
 	

@@ -5,8 +5,6 @@
 #include "Core\Entities\Enums.h"
 #include "PN532.h"
 
-//#define DEBUG_ZH
-
 class ZoneHandler {
 private:
 	const uint8_t _multiplexerAddress = 0x70;

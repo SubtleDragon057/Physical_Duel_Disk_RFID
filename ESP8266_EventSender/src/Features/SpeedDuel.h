@@ -26,6 +26,9 @@ public:
 	void UpdateDuelState(String duelistID, int cardID, int copyNumber, String zoneName);
 	void ClearDuelStates();
 	void UpdatePhase(String newPhase, bool isOpponentsTurn);
+	void UpdateLifepoints(String lifepoints, String duelistID);
+	String GetPlayerLP();
+	String GetOppLP();
 	String GetPhase();
 	String HandleChangePhase();
 };

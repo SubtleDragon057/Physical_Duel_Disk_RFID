@@ -77,6 +77,22 @@ void SpeedDuel::UpdatePhase(String newPhase, bool isOpponentsTurn) {
 	_duelState.UpdatePhase(newPhase, isOpponentsTurn);
 }
 
+void SpeedDuel::UpdateLifepoints(String lifepoints, String duelistID) {
+	char buffer[9];
+	lifepoints.toCharArray(buffer, 9);
+	int LP = atoi(&buffer[0]);
+
+	_duelState.UpdateLifepoints(LP, duelistID);
+}
+
+String SpeedDuel::GetPlayerLP() {
+	return "Player: " + String(_duelState.GetPlayerLP());
+}
+
+String SpeedDuel::GetOppLP() {
+	return "Opp: " + String(_duelState.GetOppLP());
+}
+
 String SpeedDuel::GetPhase() {
 	return _duelState.GetPhase();
 }

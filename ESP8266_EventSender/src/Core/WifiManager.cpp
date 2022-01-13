@@ -1,5 +1,7 @@
 #include "WifiManager.h"
 
+//#define DEBUG_WM
+
 WifiManager::WifiManager()
 {
 }
@@ -17,8 +19,11 @@ void WifiManager::Connect(const char* networkName, const char* networkPass) {
 		HandleRetry("[ERROR] Wifi Not Connected");
 	}
 
+#ifdef DEBUG_WM
 	String networkID = WiFi.SSID();
 	Serial.printf("\n[SETUP] Wifi Connected: %s\n", networkID.c_str());
+#endif // DEBUG_WM
+
 }
 
 void WifiManager::HandleRetry(String errorMessage) {

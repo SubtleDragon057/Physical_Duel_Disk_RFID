@@ -97,6 +97,5 @@ void AnalogIR::SetMultiplexerAddress() {
 #ifdef DEBUG_AIR
 		Serial.print(_address[i]);
 #endif // DEBUG_AIR
-
 	}
 }

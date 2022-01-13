@@ -7,6 +7,7 @@ class PlayerState {
 private:
 	bool _isOppnent;
 	String _duelistID;
+	int _lifepoints = 4000;
 
 	SingleCardZone _singleZones[8] = {
 		SingleCardZone("mainMonster1"),
@@ -32,7 +33,9 @@ private:
 public:
 	PlayerState();
 
+	bool IsOpponent() { return _isOppnent; }
 	String DuelistID() { return _duelistID; }
+	int LifePoints() { return _lifepoints; }
 	bool IsZoneEmpty(bool isMonsterZone, int zoneNumber);
 	bool IsZoneEmpty(String zoneName);
 	int GetCardID(bool isMonsterZone, int zoneNumber);
@@ -41,6 +44,7 @@ public:
 	int GetCopyNumber(String zoneName);
 	void UpdateDuelistID(String duelistID, bool isOpponent);
 	void UpdatePlayerstate(int cardID, int copyNumber, String zoneName);
+	void UpdateLifepoints(int lifepoints);
 	void Clear();
 };
 

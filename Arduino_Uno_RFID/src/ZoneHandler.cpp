@@ -1,6 +1,8 @@
 #include "ZoneHandler.h"
 #include "Wire.h"
 
+//#define DEBUG_ZH
+
 ZoneHandler::ZoneHandler()
 {
 }
@@ -54,15 +56,14 @@ void ZoneHandler::Initialize(byte numZones, PN532& reader, const byte attackSens
 void ZoneHandler::CheckForTrippedSensor(int zoneNumber) {
 	
 #ifdef DEBUG_ZH
-	Serial.print("Checking Zone: "); Serial.println(zoneNumber);
+	//Serial.print("Checking Zone: "); Serial.println(zoneNumber);
 #endif
-
 	
 	Zones[zoneNumber].CheckForTrippedSensors();
 	for (byte i = 0; i < 3; i++) {
 		if (!Zones[zoneNumber].TrippedSensors[i]) continue;
 		
-		delay(100); // delay to ensure card is fully placed
+		delay(250); // delay to ensure card is fully placed
 
 		SelectMultiplexerAddress(zoneNumber);
 		CheckRFIDReader(Zones[zoneNumber], i);
@@ -95,24 +96,30 @@ void ZoneHandler::HandleUpdateCard(DualCardZone& zone, int sensorType, Enums::Ca
 	String cardSerialNumber = zone.GetCardSerialNumber();
 
 #ifdef DEBUG_ZH
+	Serial.println("HandleUpdateCard()");
 	Serial.print("Card Serial: "); Serial.println(cardSerialNumber);
 #endif // DEBUG
 
-
-	if (cardSerialNumber == zone.MonsterSerial || cardSerialNumber == zone.SpellSerial) {
-		cardSerialNumber = zone.GetCardSerialNumber();
-	}
-
 	if (sensorType == Enums::SpellTrap) {
+		if (cardSerialNumber == zone.MonsterSerial) {
+			return;
+		}
 		zone.UpdateCurrentSpell(cardSerialNumber, position);
 		return;
 	}
 
+	while (cardSerialNumber == zone.SpellSerial) {
+		return;
+	}
 	zone.UpdateCurrentMonster(cardSerialNumber, position);
 }
 
 void ZoneHandler::HandleRemoveCard(DualCardZone& zone, int sensorType) {
 
+#ifdef DEBUG_ZH
+	Serial.println("HandleRemoveCard()");
+#endif // DEBUG_ZH
+	
 	if (sensorType == Enums::SpellTrap) {
 		zone.UpdateCurrentSpell(zone.SpellSerial, Enums::NoCard);
 		return;

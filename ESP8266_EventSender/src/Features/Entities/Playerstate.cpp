@@ -1,5 +1,7 @@
 #include "Playerstate.h"
 
+//#define DEBUG_PS
+
 PlayerState::PlayerState() 
 {
 }
@@ -66,10 +68,13 @@ void PlayerState::UpdatePlayerstate(int cardID, int copyNumber, String zoneName)
 	for (byte i = 0; i < 8; i++) {
 		if (_singleZones[i].Name != zoneName) continue;
 		_singleZones[i].UpdateCurrentCard(cardID, copyNumber);
-		/*Serial.printf("Duelist: %s\n", _duelistID.c_str());
+#ifdef DEBUG_PS
+		Serial.printf("Duelist: %s\n", _duelistID.c_str());
 		Serial.printf("SingleCard: %i\n", _singleZones[i].CurrentCard());
 		Serial.printf("Copy Number: %i\n", _singleZones[i].CopyNumber());
-		Serial.printf("Zone: %s\n", _singleZones[i].Name.c_str());*/
+		Serial.printf("Zone: %s\n", _singleZones[i].Name.c_str());
+#endif // DEBUG_PS
+
 		return;
 	}
 
@@ -77,11 +82,23 @@ void PlayerState::UpdatePlayerstate(int cardID, int copyNumber, String zoneName)
 		if (_multiZones[i].Name != zoneName) continue;
 		
 		RemoveFromPreviousZone(cardID, copyNumber);
+		
+#ifdef DEBUG_PS
+		Serial.printf("Duelist: %s\n", _duelistID.c_str());
+		Serial.printf("MultiCard: %s\n", _multiZones[i].Name.c_str());
+#endif // DEBUG_PS
 
-		/*Serial.printf("Duelist: %s\n", _duelistID.c_str());
-		Serial.printf("MultiCard: %s\n", _multiZones[i].Name.c_str());*/
 		return;
 	}
+}
+
+void PlayerState::UpdateLifepoints(int lifepoints) {
+	_lifepoints = lifepoints;
+
+#ifdef DEBUG_PS
+	Serial.printf("Duelist: %s, LP: %i\n", _duelistID.c_str(), _lifepoints);
+#endif // DEBUG_PS
+
 }
 
 void PlayerState::Clear() {

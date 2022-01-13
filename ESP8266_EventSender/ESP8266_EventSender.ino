@@ -36,7 +36,6 @@ void IRAM_ATTR handleIncomingEvent() {
 #ifdef DEBUG_Main
 	Serial.printf("Incoming Event!\n");
 #endif // DEBUG_MAIN
-
 }
 
 void setup() {    
@@ -103,5 +102,9 @@ void loop() {
 
 	String output = communicationsHandler.GetNewEventData();
 	Serial.printf("Event Info: %s\n", output.c_str());
+	if (output == "None" || output == "") {
+		Serial.printf("Event was empty!\n");
+		return;
+	}
 	smartDuelEventHandler.HandleOutgoingEvent(output);
 }

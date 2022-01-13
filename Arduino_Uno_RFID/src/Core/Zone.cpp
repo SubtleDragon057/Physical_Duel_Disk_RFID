@@ -61,37 +61,28 @@ void DualCardZone::UpdateCurrentSpell(String spellID, Enums::CardPosition positi
 	SpellPosition = position;
 }
 
-void DualCardZone::CheckForTrippedSensors() {
-
-	// TODO: Is this delay needed?
-	delay(250);
-	
+void DualCardZone::CheckForTrippedSensors() {	
 	for (byte i = 0; i < 3; i++) {
-		//Serial.print("Sensor "); Serial.print(i); Serial.print(" at ");
 		if (!_sensors[i].isNewCardPresent()) continue;
+		TrippedSensors[i] = true;
 
 #ifdef DEBUG_DCZ
 		Serial.print("Sensor Tripped: "); Serial.println(i);
 #endif // DEBUG
-		
-		TrippedSensors[i] = true;
 	}
 }
 
-bool DualCardZone::ScanForNewCard()
-{
+bool DualCardZone::ScanForNewCard() {
 	return _reader.readPassiveTargetID(PN532_MIFARE_ISO14443A, _uid, &_uidLength);;
 }
 
 // TODO: Add UID scan feature like MFRC library
-bool DualCardZone::ReadAvailableCard()
-{
+bool DualCardZone::ReadAvailableCard() {
 	return true;
 }
 
 // TODO: Implement HALT feature in PN532 Library
-void DualCardZone::StopScanning()
-{
+void DualCardZone::StopScanning() {
 	
 }
 

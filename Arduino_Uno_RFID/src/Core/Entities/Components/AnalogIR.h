@@ -4,6 +4,7 @@
 
 //#define DEBUG_AIR
 
+// TODO: Fix class name & remove Digital IR from solution
 class AnalogIR {
 private:
 
