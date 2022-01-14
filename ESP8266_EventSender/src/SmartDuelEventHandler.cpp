@@ -11,7 +11,7 @@ SmartDuelEventHandler::SmartDuelEventHandler(CommunicationsHandler& communicatio
 
 void SmartDuelEventHandler::HandleLobby(int buttonEvents[], int deckList[]) {
 #ifdef DEBUG_SDEH
-	Serial.printf("HandleLobby()\n");
+	//Serial.printf("HandleLobby()\n");
 #endif // DEBUG_SDEH
 
 	
@@ -70,7 +70,7 @@ void SmartDuelEventHandler::EnterWriteMode(int deckList[]) {
 
 void SmartDuelEventHandler::HandleDuelRoom(int buttonEvents[]) {
 #ifdef DEBUG_SDEH
-	Serial.printf("HandleLobby()\n");
+	//Serial.printf("HandleDuelRoom()\n");
 #endif // DEBUG_SDEH
 	
 	String text[] = { _duelRoom.RoomName };
@@ -116,8 +116,14 @@ void SmartDuelEventHandler::HandleButtonInteraction(int buttonEvents[], bool isI
 	}
 
 	String eventData = _jsonUtility.GetCardEventAsJSON(SocketID, newData.EventName, 
-		newData.CardID, newData.CopyNumber, newData.ZoneName);
+		newData.CardID, newData.CopyNumber, newData.ZoneName, newData.Position);
 	_server.SendEvent(eventData);
+
+#ifdef DEBUG_SDEH
+	Serial.println("HandleButtonInteraction()");
+	Serial.println(eventData);
+#endif // DEBUG_SDEH
+
 }
 
 void SmartDuelEventHandler::HandleMultiButtonEvent(int buttonEventType) {
@@ -224,7 +230,8 @@ void SmartDuelEventHandler::HandleIncomingCardEvents() {
 			SmartDuelServer::DuelistID,
 			SmartDuelServer::CardID,
 			SmartDuelServer::CopyNumber,
-			SmartDuelServer::EventData);
+			SmartDuelServer::EventData,
+			SmartDuelServer::Position);
 		SmartDuelServer::EventName = "Waiting";
 	}
 	else if (SmartDuelServer::EventName == "duelist:declare-phase") {
@@ -269,7 +276,8 @@ void SmartDuelEventHandler::HandleIncomingCardEvents() {
 void SmartDuelEventHandler::HandleOutgoingEvent(String eventData) {
 	String output = _jsonUtility.GetCardEventFromArduino(SocketID, eventData);
 
-#ifdef DEBUG
+#ifdef DEBUG_SDEH
+	Serial.println("HandleOutgoingEvent()");
 	Serial.println(output);
 #endif // DEBUG
 

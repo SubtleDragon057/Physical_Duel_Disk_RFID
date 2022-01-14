@@ -31,8 +31,8 @@ String JSONUtility::GetCardEventAsJSON(String socketID, String eventName, int ca
 	params["duelistId"] = socketID;
 	params["cardId"] = cardID;
 	params["copyNumber"] = copyNumber;
-	params["zoneName"] = zoneName == "" ? String() : zoneName;
-	params["cardPosition"] = cardPosition == "" ? String() : cardPosition;
+	params["zoneName"] = zoneName;
+	params["cardPosition"] = cardPosition;
 
 	String output;
 	serializeJson(doc, output);

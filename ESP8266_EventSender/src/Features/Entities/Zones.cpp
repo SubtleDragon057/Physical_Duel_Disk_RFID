@@ -7,9 +7,10 @@ Zone::Zone(String name) {
 	Name = name;
 }
 
-void Zone::UpdateCurrentCard(int cardID, int copyNum) {
+void Zone::UpdateCurrentCard(int cardID, int copyNum, int position) {
 	_cardID = cardID;
 	_copyNumber = copyNum;
+	_position = position;
 }
 
 SingleCardZone::SingleCardZone(String name) {

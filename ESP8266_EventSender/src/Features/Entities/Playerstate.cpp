@@ -57,22 +57,31 @@ int PlayerState::GetCopyNumber(String zoneName) {
 	return currentCopyNumber;
 }
 
+int PlayerState::GetCardPosition(bool isMonsterZone, int zoneNumber) {
+	if (isMonsterZone) {
+		return _singleZones[zoneNumber].Position();
+	}
+
+	return _singleZones[zoneNumber + 3].Position();
+}
+
 void PlayerState::UpdateDuelistID(String duelistID, bool isOpponent)
 {
 	_duelistID = duelistID;
 	_isOppnent = isOpponent;
 }
 
-void PlayerState::UpdatePlayerstate(int cardID, int copyNumber, String zoneName) {
+void PlayerState::UpdatePlayerstate(int cardID, int copyNumber, String zoneName, int position) {
 	
 	for (byte i = 0; i < 8; i++) {
 		if (_singleZones[i].Name != zoneName) continue;
-		_singleZones[i].UpdateCurrentCard(cardID, copyNumber);
+		_singleZones[i].UpdateCurrentCard(cardID, copyNumber, position);
 #ifdef DEBUG_PS
 		Serial.printf("Duelist: %s\n", _duelistID.c_str());
 		Serial.printf("SingleCard: %i\n", _singleZones[i].CurrentCard());
 		Serial.printf("Copy Number: %i\n", _singleZones[i].CopyNumber());
 		Serial.printf("Zone: %s\n", _singleZones[i].Name.c_str());
+		Serial.printf("Position: %i\n", _singleZones[i].Position());
 #endif // DEBUG_PS
 
 		return;
@@ -105,7 +114,7 @@ void PlayerState::Clear() {
 	UpdateDuelistID("", false);
 	
 	for (byte i = 0; i < 8; i++) {
-		_singleZones[i].UpdateCurrentCard(0, 0);
+		_singleZones[i].UpdateCurrentCard(0, 0, 0);
 	}
 
 	for (byte i = 0; i < 5; i++) {
@@ -118,6 +127,6 @@ void PlayerState::RemoveFromPreviousZone(int cardID, int copyNumber) {
 		if (_singleZones[i].CurrentCard() != cardID &&
 			_singleZones[i].CopyNumber() != copyNumber) continue;
 		
-		_singleZones[i].UpdateCurrentCard(0, 0);
+		_singleZones[i].UpdateCurrentCard(0, 0, 0);
 	}
 }

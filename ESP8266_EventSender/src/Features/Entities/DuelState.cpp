@@ -34,6 +34,16 @@ int DuelState::GetCopyNumber(String duelistID, int zoneNumber, bool isMonsterZon
 	return currentPlayer.GetCopyNumber(isMonsterZone, zoneNumber);
 }
 
+int DuelState::GetCardPosition(String duelistID, int zoneNumber, bool isMonsterZone) {
+	PlayerState currentPlayer = _playerStates[0].DuelistID() == duelistID
+		? _playerStates[0]
+		: _playerStates[1];
+
+	if (currentPlayer.IsZoneEmpty(isMonsterZone, zoneNumber)) return 0;
+
+	return currentPlayer.GetCardPosition(isMonsterZone, zoneNumber);
+}
+
 void DuelState::UpdateDuelistIDs(String socketID, String duelist1, String duelist2) {
 	String opponentID = socketID == duelist1 ? duelist2 : duelist1;
 
@@ -53,17 +63,18 @@ void DuelState::UpdateDuelState(String eventData) {
 	String cardID = doc[1]["cardId"];
 	String copyNum = doc[1]["copyNumber"];
 	String zoneName = doc[1]["zoneName"];
+	String cardPosition = doc[1]["cardPosition"];
 
 	for (byte i = 0; i < 2; i++) {
 		if (_playerStates[i].DuelistID() != duelistID) continue;
-		_playerStates[i].UpdatePlayerstate(GetIntValue(cardID), GetIntValue(copyNum), zoneName);
+		_playerStates[i].UpdatePlayerstate(GetIntValue(cardID), GetIntValue(copyNum), zoneName, GetCardPosition(cardPosition));
 	}
 }
-void DuelState::UpdateDuelState(String duelistID, int cardID, int copyNumber, String zoneName) {
+void DuelState::UpdateDuelState(String duelistID, int cardID, int copyNumber, String zoneName, int position) {
 	
 	for (byte i = 0; i < 2; i++) {
 		if (_playerStates[i].DuelistID() != duelistID) continue;
-		_playerStates[i].UpdatePlayerstate(cardID, copyNumber, zoneName);
+		_playerStates[i].UpdatePlayerstate(cardID, copyNumber, zoneName, position);
 	}
 }
 
@@ -117,4 +128,12 @@ String DuelState::GetShortenedPhaseName(String phase) {
 	else if (CurrentPhase == "endPhase") phaseName = "EP";
 
 	return phaseName;
+}
+
+int DuelState::GetCardPosition(String position) {
+	if (position == "faceDown") return 2;
+	else if (position == "faceUpDefence") return 3;
+	else if (position == "faceDownDefence") return 4;
+
+	return 1;
 }

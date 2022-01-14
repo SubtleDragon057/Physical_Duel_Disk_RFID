@@ -42,8 +42,9 @@ public:
 	int GetCardID(String zoneName);
 	int GetCopyNumber(bool isMonsterZone, int zoneNumber);
 	int GetCopyNumber(String zoneName);
+	int GetCardPosition(bool isMonsterZone, int zoneNumber);
 	void UpdateDuelistID(String duelistID, bool isOpponent);
-	void UpdatePlayerstate(int cardID, int copyNumber, String zoneName);
+	void UpdatePlayerstate(int cardID, int copyNumber, String zoneName, int position);
 	void UpdateLifepoints(int lifepoints);
 	void Clear();
 };

@@ -14,6 +14,7 @@ String SmartDuelServer::RoomName;
 String SmartDuelServer::DuelistID;
 int SmartDuelServer::CardID;
 int SmartDuelServer::CopyNumber;
+int SmartDuelServer::Position;
 
 void SmartDuelServer::socketIOEvent(socketIOmessageType_t type, uint8_t* payload, std::size_t length) {
     switch (type) {
@@ -61,6 +62,10 @@ void SmartDuelServer::ListenToServer() {
 void SmartDuelServer::SendEvent(String eventData) {
     if (eventData == String()) return;    
     socketIO.sendEVENT(eventData);
+
+#ifdef DEBUG_Server
+    Serial.println(eventData);
+#endif // DEBUG_Server
 }
 
 String SmartDuelServer::GetSocketId()
@@ -116,12 +121,20 @@ void SmartDuelServer::HandleRecievedEvent(uint8_t* payload) {
         String cardID = doc[1]["cardId"];
         String copyNum = doc[1]["copyNumber"];
         String zoneName = doc[1]["zoneName"];
+        String position = doc[1]["cardPosition"];
 
         EventName = eventName;
         DuelistID = duelistID;
         CardID = GetIntValue(cardID);
         CopyNumber = GetIntValue(copyNum);
+        Position = GetCardPosition(position);
         EventData = zoneName;
+
+#ifdef DEBUG_Server
+        Serial.printf("Card Event Data:\nID: %s\nCard: %i\nCopy: %i\nPosition: %i\nZone: %s\n",
+            DuelistID.c_str(), CardID, CopyNumber, Position, EventData.c_str());
+#endif // DEBUG_Server
+
     }
     else if (eventScope == "duel") {
         if (eventName == "duelist:declare-phase") {
@@ -157,4 +170,12 @@ int SmartDuelServer::GetIntValue(String stringToChange) {
     stringToChange.toCharArray(charArray, 9);
 
     return atoi(&charArray[0]);
+}
+
+int SmartDuelServer::GetCardPosition(String position) {
+    if (position == "faceDown") return 2;
+    else if (position == "faceUpDefence") return 3;
+    else if (position == "faceDownDefence") return 4;
+
+    return 1;
 }

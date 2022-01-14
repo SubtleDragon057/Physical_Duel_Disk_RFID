@@ -4,13 +4,19 @@ SpeedDuel::SpeedDuel()
 {
 }
 
-// TODO: Check for Face-Down Spell and activate it before declare event
 EventData SpeedDuel::HandleActivateSpell(String socketID, int zoneNumber) {
 	int spellID = _duelState.GetCardID(socketID, zoneNumber, false);
 	int copyNum = _duelState.GetCopyNumber(socketID, zoneNumber, false);
+	int position = _duelState.GetCardPosition(socketID, zoneNumber, false);
 	if (spellID == 0) {
 		Serial.printf("No valid Spell on Zone: %i\n", zoneNumber);
 		return EventData();
+	}
+
+	if (position == Position::FaceDown) {
+		String zone = GetZoneName(zoneNumber + 3);
+		_duelState.UpdateDuelState(socketID, spellID, copyNum, zone, 1);
+		return EventData("card:play", spellID, copyNum, zone, "faceUp");
 	}
 
 	Serial.printf("Spell %i activated on zone: %i\n", spellID, zoneNumber);
@@ -64,9 +70,9 @@ void SpeedDuel::UpdateDuelState(String newDuelState)
 {
 	_duelState.UpdateDuelState(newDuelState);
 }
-void SpeedDuel::UpdateDuelState(String duelistID, int cardID, int copyNumber, String zoneName)
+void SpeedDuel::UpdateDuelState(String duelistID, int cardID, int copyNumber, String zoneName, int position)
 {
-	_duelState.UpdateDuelState(duelistID, cardID, copyNumber, zoneName);
+	_duelState.UpdateDuelState(duelistID, cardID, copyNumber, zoneName, position);
 }
 
 void SpeedDuel::ClearDuelStates() {
@@ -124,4 +130,30 @@ String SpeedDuel::HandleChangePhase() {
 	}
 
 	return _duelState.CurrentPhase;
+}
+
+String SpeedDuel::GetZoneName(int zone) {
+	String zoneName;
+	switch (zone) {
+		case 0:
+			zoneName = "mainMonster1";
+			break;
+		case 1:
+			zoneName = "mainMonster2";
+			break;
+		case 2:
+			zoneName = "mainMonster3";
+			break;
+		case 3:
+			zoneName = "spellTrap1";
+			break;
+		case 4:
+			zoneName = "spellTrap2";
+			break;
+		case 5:
+			zoneName = "spellTrap3";
+			break;
+	}
+
+	return zoneName;
 }

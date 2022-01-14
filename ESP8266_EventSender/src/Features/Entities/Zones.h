@@ -6,6 +6,7 @@ class Zone {
 protected:
 	int _cardID;
 	int _copyNumber;
+	int _position;
 
 public:
 	String Name;
@@ -15,7 +16,8 @@ public:
 
 	int CurrentCard() { return _cardID; }
 	int CopyNumber() { return _copyNumber; }
-	void UpdateCurrentCard(int cardID, int copyNum);
+	int Position() { return _position; }
+	void UpdateCurrentCard(int cardID, int copyNum, int position);
 };
 
 class SingleCardZone : public Zone {

@@ -13,6 +13,13 @@ private:
 
 public:
 	bool HasAttackTarget = true;
+
+	enum Position {
+		FaceUp = 1,
+		FaceDown = 2,
+		FaceUpDefence = 3,
+		FaceDownDefence = 4
+	};
 	
 	SpeedDuel();
 
@@ -23,7 +30,7 @@ public:
 
 	void UpdateDuelistIDs(String socketID, String duelist1, String duelist2);
 	void UpdateDuelState(String newDuelState);
-	void UpdateDuelState(String duelistID, int cardID, int copyNumber, String zoneName);
+	void UpdateDuelState(String duelistID, int cardID, int copyNumber, String zoneName, int position);
 	void ClearDuelStates();
 	void UpdatePhase(String newPhase, bool isOpponentsTurn);
 	void UpdateLifepoints(String lifepoints, String duelistID);
@@ -31,6 +38,7 @@ public:
 	String GetOppLP();
 	String GetPhase();
 	String HandleChangePhase();
+	String GetZoneName(int zone);
 };
 
 #endif

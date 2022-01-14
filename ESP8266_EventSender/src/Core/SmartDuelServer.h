@@ -10,6 +10,7 @@ private:
 	static void socketIOEvent(socketIOmessageType_t type, uint8_t* payload, std::size_t length);
 	static void HandleRecievedEvent(uint8_t* payload);
 	static int GetIntValue(String stringToChange);
+	static int GetCardPosition(String position);
 
 public:
 	static bool isConnected;
@@ -20,6 +21,7 @@ public:
 	static String DuelistID;
 	static int CardID;
 	static int CopyNumber;
+	static int Position;
 	
 	SmartDuelServer();
 
