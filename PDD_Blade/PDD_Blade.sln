@@ -1,0 +1,39 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31829.152
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PDD_Blade", "PDD_Blade.vcxproj", "{C5F80730-F44F-4478-BDAE-6634EFC2CA88}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Wire-1.0", "Libraries\Wire\1.0\Wire\Wire-1.0.vcxitems", "{75BFDDBE-8342-469C-BF8B-FC9D4E1AE6F8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PN532_I2C-0.0.0", "Libraries\PN532_I2C\0.0.0\PN532_I2C\PN532_I2C-0.0.0.vcxitems", "{84B90EB1-4592-4B30-A699-F055B3A837C6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PN532-0.0.0", "Libraries\PN532\0.0.0\PN532\PN532-0.0.0.vcxitems", "{A330AB4A-D4B4-4115-8DE2-FE3928F2BE01}"
+EndProject
+Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Libraries\Wire\1.0\Wire\Wire-1.0.vcxitems*{75bfddbe-8342-469c-bf8b-fc9d4e1ae6f8}*SharedItemsImports = 9
+		Libraries\PN532_I2C\0.0.0\PN532_I2C\PN532_I2C-0.0.0.vcxitems*{84b90eb1-4592-4b30-a699-f055b3a837c6}*SharedItemsImports = 9
+		Libraries\PN532\0.0.0\PN532\PN532-0.0.0.vcxitems*{a330ab4a-d4b4-4115-8de2-fe3928f2be01}*SharedItemsImports = 9
+		Libraries\PN532\0.0.0\PN532\PN532-0.0.0.vcxitems*{c5f80730-f44f-4478-bdae-6634efc2ca88}*SharedItemsImports = 4
+		Libraries\PN532_I2C\0.0.0\PN532_I2C\PN532_I2C-0.0.0.vcxitems*{c5f80730-f44f-4478-bdae-6634efc2ca88}*SharedItemsImports = 4
+		Libraries\Wire\1.0\Wire\Wire-1.0.vcxitems*{c5f80730-f44f-4478-bdae-6634efc2ca88}*SharedItemsImports = 4
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Debug|x86.ActiveCfg = Debug|Win32
+		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Debug|x86.Build.0 = Debug|Win32
+		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Release|x86.ActiveCfg = Release|Win32
+		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C69E3CA6-C4C9-4E52-BFB9-8E71B6B366B0}
+	EndGlobalSection
+EndGlobal
