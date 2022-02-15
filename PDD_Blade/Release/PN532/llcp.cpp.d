@@ -1,8 +1,8 @@
 C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Blade\uno\Release\PN532\llcp.cpp.o: \
- C:\Users\Devan\Documents\Arduino\libraries\PN532\llcp.cpp \
- C:\Users\Devan\Documents\Arduino\libraries\PN532\llcp.h \
- C:\Users\Devan\Documents\Arduino\libraries\PN532\mac_link.h \
- C:\Users\Devan\Documents\Arduino\libraries\PN532\PN532.h \
+ E:\Duel_Disk_Project\GitHub_Desktop\Physical_Duel_Disk_Arduino_Code\PDD_Blade\Libraries\PN532\0.0.0\PN532\llcp.cpp \
+ E:\Duel_Disk_Project\GitHub_Desktop\Physical_Duel_Disk_Arduino_Code\PDD_Blade\Libraries\PN532\0.0.0\PN532\llcp.h \
+ E:\Duel_Disk_Project\GitHub_Desktop\Physical_Duel_Disk_Arduino_Code\PDD_Blade\Libraries\PN532\0.0.0\PN532\mac_link.h \
+ E:\Duel_Disk_Project\GitHub_Desktop\Physical_Duel_Disk_Arduino_Code\PDD_Blade\Libraries\PN532\0.0.0\PN532\PN532.h \
  E:\Programs\Arduino\hardware\arduino\avr\cores\arduino/Arduino.h \
  E:\Programs\Arduino\hardware\arduino\avr\cores\arduino/binary.h \
  E:\Programs\Arduino\hardware\arduino\avr\cores\arduino/WCharacter.h \
@@ -14,5 +14,5 @@ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Blade\uno\Release\PN532\llcp.cpp.
  E:\Programs\Arduino\hardware\arduino\avr\cores\arduino/USBAPI.h \
  E:\Programs\Arduino\hardware\arduino\avr\cores\arduino/Arduino.h \
  E:\Programs\Arduino\hardware\arduino\avr\variants\standard/pins_arduino.h \
- C:\Users\Devan\Documents\Arduino\libraries\PN532\PN532Interface.h \
- C:\Users\Devan\Documents\Arduino\libraries\PN532\PN532_debug.h
+ E:\Duel_Disk_Project\GitHub_Desktop\Physical_Duel_Disk_Arduino_Code\PDD_Blade\Libraries\PN532\0.0.0\PN532\PN532Interface.h \
+ E:\Duel_Disk_Project\GitHub_Desktop\Physical_Duel_Disk_Arduino_Code\PDD_Blade\Libraries\PN532\0.0.0\PN532\PN532_debug.h
