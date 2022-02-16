@@ -92,20 +92,19 @@ String DualCardZone::GetCardSerialNumber() {
 
 	uint8_t status = _reader.mifareclassic_AuthenticateBlock(_uid, _uidLength, _block, 0, keya);
 	if (!status) {
-		return "Auth Failed";
+		return "Failure";
 	}
 
 	status = _reader.mifareclassic_ReadDataBlock(_block, readBackBlock);
 	if (!status) {
 		Serial.print("[WARN] Could not read block!\n");
-		return "Read Failed";
+		return "Failure";
 	}
 
 #ifdef DEBUG_DCZ
 	Serial.print("Reading Block 4:");
 	Serial.println((char*)&readBackBlock);
 #endif // DEBUG
-
 	
 	String cardSerial = (char*)&readBackBlock;
 	return cardSerial;

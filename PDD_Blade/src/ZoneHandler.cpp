@@ -2,6 +2,7 @@
 #include "Wire.h"
 
 //#define DEBUG_ZH
+//#define DEBUG_Readers
 
 ZoneHandler::ZoneHandler()
 {
@@ -28,7 +29,7 @@ void ZoneHandler::Initialize(byte numZones, PN532& reader, const byte attackSens
 		reader.begin();
 		reader.performRFTest();
 
-#ifdef DEBUG_ZH
+#ifdef DEBUG_Readers
 		Serial.print(F("[DEBUG] "));
 		uint32_t versiondata = reader.getFirmwareVersion();
 		if (!versiondata) {
@@ -39,7 +40,7 @@ void ZoneHandler::Initialize(byte numZones, PN532& reader, const byte attackSens
 		Serial.print("Found chip PN5"); Serial.println((versiondata >> 24) & 0xFF, HEX);
 		Serial.print("Firmware ver. "); Serial.print((versiondata >> 16) & 0xFF, DEC);
 		Serial.print('.'); Serial.println((versiondata >> 8) & 0xFF, DEC);
-#endif // DEBUG
+#endif // DEBUG_Readers
 
 		reader.setPassiveActivationRetries(10);
 
@@ -100,16 +101,24 @@ void ZoneHandler::HandleUpdateCard(DualCardZone& zone, int sensorType, Enums::Ca
 	Serial.print("Card Serial: "); Serial.println(cardSerialNumber);
 #endif // DEBUG
 
+	if (cardSerialNumber == "Failure") return;
+	
 	if (sensorType == Enums::SpellTrap) {
 		if (cardSerialNumber == zone.MonsterSerial) {
-			return;
+			delay(100);
+			cardSerialNumber = zone.GetCardSerialNumber();
+
+			if (cardSerialNumber == zone.MonsterSerial) return;
 		}
 		zone.UpdateCurrentSpell(cardSerialNumber, position);
 		return;
 	}
 
-	while (cardSerialNumber == zone.SpellSerial) {
-		return;
+	if (cardSerialNumber == zone.SpellSerial) {
+		delay(100);
+		cardSerialNumber = zone.GetCardSerialNumber();
+
+		if (cardSerialNumber == zone.SpellSerial) return;
 	}
 	zone.UpdateCurrentMonster(cardSerialNumber, position);
 }

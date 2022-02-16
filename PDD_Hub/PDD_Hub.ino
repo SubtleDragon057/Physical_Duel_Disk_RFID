@@ -15,13 +15,11 @@
 #include "src\SmartDuelEventHandler.h"
 #include "src\CommunicationsHandler.h"
 #include "src\StorageHandler.h"
-#include "src\Secrets.h"
 
 ButtonHandler buttonHandler;
 CommunicationsHandler communicationsHandler;
 SmartDuelEventHandler smartDuelEventHandler(communicationsHandler);
 StorageHandler storageHandler(communicationsHandler);
-SECRETS secrets;
 
 const byte sdReaderPin = 5;
 const byte intPin = 16;
@@ -44,7 +42,7 @@ void setup() {
   Serial.begin(115200);
   Wire.begin(SDA, SCL);
 
-  communicationsHandler.Initialize(secrets.networkName, secrets.networkPass);
+  communicationsHandler.Initialize();
   
   bool connected = false;
   for (byte i = 10; i > 0; i--) {
@@ -53,7 +51,7 @@ void setup() {
   }
   storageHandler.Initialize(connected);
   buttonHandler.Initialize();
-  smartDuelEventHandler.Connect(secrets.socketIP, secrets.socketPort);
+  smartDuelEventHandler.Connect();
 
   attachInterrupt(digitalPinToInterrupt(intPin), handleIncomingEvent, FALLING);
 
@@ -103,7 +101,7 @@ void loop() {
 
 	String output = communicationsHandler.GetNewEventData();
 	Serial.printf("Event Info: %s\n", output.c_str());
-	if (output == "None" || output == "") {
+	if (output == "" || output == "Failure") {
 		Serial.printf("Event was empty!\n");
 		return;
 	}

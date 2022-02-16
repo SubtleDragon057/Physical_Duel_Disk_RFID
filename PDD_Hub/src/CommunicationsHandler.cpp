@@ -1,6 +1,5 @@
 #include "CommunicationsHandler.h"
 #include "Wire.h"
-#include "CrownCorp.h"
 
 //#define DEBUG_CH
 
@@ -8,9 +7,8 @@ CommunicationsHandler::CommunicationsHandler()
 {
 }
 
-void CommunicationsHandler::Initialize(const char * networkName, const char * networkPass) {
-	_display.init();
-	_display.flipScreenVertically();
+void CommunicationsHandler::Initialize() {
+	_displayManager.Initialize();
 	
 	String text[1] = {};
 	for (uint8_t t = 3; t > 0; t--) {
@@ -33,7 +31,7 @@ void CommunicationsHandler::Initialize(const char * networkName, const char * ne
 
 	text[0] = "[SETUP] Connecting Wifi";
 	Display(UI_Init, text);
-	_wifiManager.Connect(networkName, networkPass);
+	_wifiManager.Connect(_secrets.networkName, _secrets.networkPass);
 
 	text[0] = "[SETUP] Configuring Decks";
 	Display(UI_Init, text);
@@ -59,12 +57,69 @@ String CommunicationsHandler::GetNewEventData() {
 	Wire.requestFrom(_arduinoAddress, _newDuelData);
 
 	String eventData = "";
+	bool success;
 	while (Wire.available()) {
 		char message = Wire.read();
+		
+		// If char is not 0-9 an error occurred
+		if (message < 48 || message > 57) {
+			success = false;
+			break;
+		}
+
 		eventData += message;
+		success = true;
+	}
+
+	if (!success) {
+		eventData = RetryLastCommunication();
+	}
+	else {
+		Wire.beginTransmission(_arduinoAddress);
+		Wire.write(Enums::Communication::ClearEventData);
+		Wire.endTransmission();
 	}
 
 	return eventData;
+}
+
+String CommunicationsHandler::RetryLastCommunication() {
+	
+	bool success;
+	String eventData = "";
+	for (byte i = 5; i > 0; i--) {
+		eventData = "";
+		Wire.requestFrom(_arduinoAddress, _newDuelData);
+
+		while (Wire.available()) {
+			char message = Wire.read();
+
+			// If char is not 0-9 an error occurred
+			if (message < 48 || message > 57) {
+				success = false;
+				break;
+			}
+
+			eventData += message;
+			success = true;
+		}
+
+		if (success) break;
+	}
+
+	if (success) {
+		Wire.beginTransmission(_arduinoAddress);
+		Wire.write(Enums::Communication::ClearEventData);
+		Wire.endTransmission();
+
+		return eventData;
+	}
+
+	Wire.beginTransmission(_arduinoAddress);
+	Wire.write(Enums::Communication::CommunicationFailure);
+	Wire.endTransmission();
+
+	return "Failure";
 }
 
 void CommunicationsHandler::EnableWriteMode() {
@@ -117,79 +172,15 @@ void CommunicationsHandler::Display(UI_Type type, String incomingMessage[]) {
 
 	switch (type) {
 	case UI_Lobby:
-		HandleLobbyUI(incomingMessage);
+		_displayManager.HandleLobbyUI(incomingMessage);
 		break;
 	case UI_DeckSelect:
-		HandleDeckSelectorUI(incomingMessage);
+		_displayManager.HandleDeckSelectorUI(incomingMessage);
 		break;
 	case UI_SpeedDuel:
-		HandleSpeedDuelUI(incomingMessage);
+		_displayManager.HandleSpeedDuelUI(incomingMessage);
 		break;
 	default:
-		HandleBasicUI(incomingMessage);
+		_displayManager.HandleBasicUI(incomingMessage);
 	}
-}
-
-void CommunicationsHandler::HandleBasicUI(String incomingMessage[]) {
-	_display.clear();
-
-	_display.setFont(ArialMT_Plain_10);
-	_display.drawString(5, 0, "Initialize");
-	_display.drawHorizontalLine(0, 13, 128);
-	_display.drawHorizontalLine(0, 14, 128);
-	
-	_display.drawXbm(32, 20, CC_Logo_Width, CC_Logo_Height, CC_Logo_Bytes);
-
-	_display.setTextAlignment(TEXT_ALIGN_CENTER);
-	_display.drawString(64, 51, incomingMessage[0]);
-	_display.setTextAlignment(TEXT_ALIGN_LEFT);
-
-	_display.display();
-}
-
-void CommunicationsHandler::HandleLobbyUI(String incomingMessage[]) {
-	_display.clear();
-
-	_display.setFont(ArialMT_Plain_10);
-	_display.drawString(5, 0, "Lobby");
-	_display.drawHorizontalLine(0, 13, 128);
-	_display.drawHorizontalLine(0, 14, 128);
-
-	_display.setFont(ArialMT_Plain_16);
-	_display.drawString(5, 30, "Room: " + incomingMessage[0]);
-
-	_display.display();
-}
-
-void CommunicationsHandler::HandleSpeedDuelUI(String incomingMessage[]) {
-	_display.clear();
-
-	_display.setFont(ArialMT_Plain_10);
-	_display.drawString(5, 0, incomingMessage[2]);
-	_display.drawHorizontalLine(0, 13, 128);
-	_display.drawHorizontalLine(0, 14, 128);
-
-	_display.drawString(5, 52, incomingMessage[1]);
-	_display.drawHorizontalLine(0, 49, 128);
-	_display.drawHorizontalLine(0, 50, 128);
-
-	_display.setFont(ArialMT_Plain_16);
-	_display.drawString(5, 23, incomingMessage[0]);
-
-	_display.display();
-}
-
-void CommunicationsHandler::HandleDeckSelectorUI(String incomingMessage[]) {
-	_display.clear();
-
-	_display.setFont(ArialMT_Plain_10);
-	_display.drawString(5, 0, "Deck Selector");
-	_display.drawHorizontalLine(0, 13, 128);
-	_display.drawHorizontalLine(0, 14, 128);
-
-	for (byte i = 0; i < sizeof(incomingMessage); i++) {
-		_display.drawString(5, i + (15 + 10*i), incomingMessage[i]);
-	}
-
-	_display.display();
 }

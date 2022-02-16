@@ -56,14 +56,14 @@ byte ProximitySensor::GetDefenceSensorReading() {
 	Serial.println(read);
 #endif // DEBUG_AIR	
 
-	if (read < 130) {
-		return 0; // Enums::LOW
+	if (read < 200) {
+		return 2; // Enums::Medium
 	}
-	else if (read > 550) {
+	else if (read > 600) {
 		return 1; // Enums::HIGH
 	}
 
-	return 2; // Enums::Medium
+	return 0; // Enums::LOW
 }
 
 byte ProximitySensor::GetSpellSensorReading() {

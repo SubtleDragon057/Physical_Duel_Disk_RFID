@@ -2,23 +2,21 @@
 #define CommunicationsHandler_h
 #include "arduino.h"
 #include "Core\WifiManager.h"
-#include "SSD1306Wire.h"
+#include "Features\DisplayManager.h"
+#include "Secrets.h"
 #include "Core\Entities\Enums.h"
 
 class CommunicationsHandler {
 private:
 	WifiManager _wifiManager;
-	SSD1306Wire _display = SSD1306Wire(0x3c, SDA, SCL);
+	DisplayManager _displayManager;
+	SECRETS _secrets;
 
 	const byte _arduinoAddress = 11;
 	const byte _connectionResponseLength = 3;
 	const byte _newDuelData = 12;
 
 	bool CheckForArduino(Enums::Communication command, String successCode);
-	void HandleBasicUI(String incomingMessage[]);
-	void HandleLobbyUI(String incomingMessage[]);
-	void HandleSpeedDuelUI(String incomingMessage[]);
-	void HandleDeckSelectorUI(String incomingMessage[]);
 
 public:
 	typedef enum {
@@ -32,10 +30,11 @@ public:
 	
 	CommunicationsHandler();
 
-	void Initialize(const char * networkName, const char * networkPass);
+	void Initialize();
 	void StartDuelDisk();
 	void EndDuel();
 	String GetNewEventData();
+	String RetryLastCommunication();
 	void EnableWriteMode();
 	void TransmitCard(String cardNumber);
 	void Display(UI_Type type, String incomingMessage[]);

@@ -3,6 +3,8 @@
 #include "Wire.h"
 #include "Core\Entities\Enums.h"
 
+//#define DEBUG_CH
+
 CommunicationsHandler::CommunicationsHandler()
 {
 	pinMode(_espInterrupt, OUTPUT);
@@ -33,11 +35,26 @@ void CommunicationsHandler::HandleRecieve() {
 		_recievedData = Wire.read();
 	}
 
-	if (_recievedData == Enums::Communication::EndDuel) {
-		IsInDuel = false;
+	switch (_recievedData) {
+		case Enums::Communication::EndDuel:
+			IsInDuel = false;
 #ifdef DEBUG_CH
-		Serial.println("The Duel Has Ended!");
+			Serial.println("The Duel Has Ended!");
 #endif // DEBUG_CH
+			break;
+		case Enums::Communication::ClearEventData:
+			_newEventData = "";
+#ifdef DEBUG_CH
+			Serial.println("Event Recieved - Clearing Data");
+#endif // DEBUG_CH
+			break;
+		case Enums::Communication::CommunicationFailure:
+			_newEventData = "";
+			// Handle Failure
+#ifdef DEBUG_CH
+			Serial.println("Communication Failure!");
+#endif // DEBUG_CH
+			break;
 	}
 }
 
@@ -48,7 +65,6 @@ void CommunicationsHandler::HandleRequest() {
 	
 	if (IsInDuel) {
 		Wire.write(_newEventData);
-		_newEventData = "None";
 		return;
 	}
 	

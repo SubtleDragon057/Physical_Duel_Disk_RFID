@@ -13,7 +13,6 @@ void SmartDuelEventHandler::HandleLobby(int buttonEvents[], int deckList[]) {
 #ifdef DEBUG_SDEH
 	//Serial.printf("HandleLobby()\n");
 #endif // DEBUG_SDEH
-
 	
 	String text[] = { "" };
 	_communicationsHandler->Display(CommunicationsHandler::UI_Lobby, text);
@@ -159,19 +158,47 @@ void SmartDuelEventHandler::HandlePhaseChange() {
 	_server.SendEvent(eventData);
 }
 
-void SmartDuelEventHandler::Connect(String socketIP, int socketPort) {
-	String text[] = { "Locating Local Server" };
+void SmartDuelEventHandler::Connect() {
+
+	for (uint8_t t = 3; t > 0; t--) {
+		String text[] = { "[SETUP] DUEL ONLINE?  " + String(t) };
+		_communicationsHandler->Display(CommunicationsHandler::UI_Init, text);
+		delay(1000);
+	}
+	
+	if (digitalRead(33) == LOW) {
+		String text[] = { "[SETUP] LOCATING CC SERVERS" };
+		_communicationsHandler->Display(CommunicationsHandler::UI_Init, text);
+		
+		_server.Initialize(_secrets.onlineServerAddress, _secrets.onlineServerPort);
+		return;
+	}
+	
+	String text[] = { "[SETUP] LOCATING LOCAL SERVERS" };
 	_communicationsHandler->Display(CommunicationsHandler::UI_Init, text);
 	
-	_server.Initialize(socketIP, socketPort);
+	_server.Initialize(_secrets.socketIP, _secrets.socketPort);
 }
 
-// TODO: Gives 404 code and disconnects
-void SmartDuelEventHandler::ConnectSecure(String socketIP, int socketPort) {
-	String text[] = { "Locating Duel Servers" };
+void SmartDuelEventHandler::ConnectSecure() {
+	for (uint8_t t = 3; t > 0; t--) {
+		String text[] = { "[SETUP] DUEL ONLINE?  " + String(t) };
+		_communicationsHandler->Display(CommunicationsHandler::UI_Init, text);
+		delay(1000);
+	}
+
+	if (digitalRead(33) == LOW) {
+		String text[] = { "[SETUP] LOCATING CC SERVERS" };
+		_communicationsHandler->Display(CommunicationsHandler::UI_Init, text);
+
+		_server.InitializeSSL(_secrets.onlineServerAddress, _secrets.onlineServerSecurePort);
+		return;
+	}
+
+	String text[] = { "[SETUP] LOCATING LOCAL SERVERS" };
 	_communicationsHandler->Display(CommunicationsHandler::UI_Init, text);
 
-	_server.InitializeSSL(socketIP, socketPort);
+	_server.InitializeSSL(_secrets.socketIP, _secrets.socketPort);
 }
 
 void SmartDuelEventHandler::ListenToServer() {
@@ -179,8 +206,16 @@ void SmartDuelEventHandler::ListenToServer() {
 	if (_server.isConnected && (SocketID == NULL || SocketID != socketID)) {
 		SocketID = socketID;
 	}
-	
+
 	_server.ListenToServer();
+
+	if (!_server.isConnected) {
+		String text[] = { "No Connection to Server!" };
+		_communicationsHandler->Display(CommunicationsHandler::UI_Init, text);
+
+		SmartDuelServer::EventName = "room:close";
+	}
+
 	HandleIncomingRoomEvents();
 	HandleIncomingCardEvents();
 }

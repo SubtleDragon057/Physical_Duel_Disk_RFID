@@ -27,7 +27,9 @@ public:
 		EndDuel = 4,
 		StartDuel = 6,
 		EnterWriteMode = 7,
-		AcknowledgeSuccess = 9
+		AcknowledgeSuccess = 9,
+		ClearEventData = 8,
+		CommunicationFailure = 2
 	};
 };
 

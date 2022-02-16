@@ -240,9 +240,11 @@ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\PDD_Hub
  C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6/tools/sdk/include/esp32/hwcrypto/aes.h \
  C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6/tools/sdk/include/esp32/rom/aes.h \
  C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6/tools/sdk/include/mbedtls/mbedtls/error.h \
+ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Features\DisplayManager.h \
  C:\Users\Devan\Documents\Arduino\libraries\ESP8266_and_ESP32_OLED_driver_for_SSD1306_displays\src/SSD1306Wire.h \
  C:\Users\Devan\Documents\Arduino\libraries\ESP8266_and_ESP32_OLED_driver_for_SSD1306_displays\src/OLEDDisplay.h \
  C:\Users\Devan\Documents\Arduino\libraries\ESP8266_and_ESP32_OLED_driver_for_SSD1306_displays\src/OLEDDisplayFonts.h \
+ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Secrets.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Core\SmartDuelServer.h \
  C:\Users\Devan\Documents\Arduino\libraries\arduinoWebSockets-master\src/SocketIOclient.h \
  C:\Users\Devan\Documents\Arduino\libraries\arduinoWebSockets-master\src/WebSockets.h \
@@ -257,5 +259,4 @@ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\PDD_Hub
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Features\Entities\EventData.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Core\Utils\JSONUtility.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\CommunicationsHandler.h \
- C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\StorageHandler.h \
- C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Secrets.h
+ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\StorageHandler.h

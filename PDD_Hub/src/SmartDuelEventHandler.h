@@ -3,6 +3,7 @@
 #include "Arduino.h"
 #include "CommunicationsHandler.h"
 #include "Core\SmartDuelServer.h"
+#include "Secrets.h"
 #include "Features\Lobby.h"
 #include "Features\DuelRoom.h"
 #include "Features\SpeedDuel.h"
@@ -12,6 +13,7 @@ class SmartDuelEventHandler {
 private:
 	SmartDuelServer _server;
 	CommunicationsHandler * _communicationsHandler;
+	SECRETS _secrets;
 	Lobby _lobby;
 	DuelRoom _duelRoom;
 	SpeedDuel _speedDuel;
@@ -45,8 +47,8 @@ public:
 
 	// Server Functions
 	bool IsConnected() { return _server.isConnected; }
-	void Connect(String socketIP, int socketPort);
-	void ConnectSecure(String socketIP, int socketPort);
+	void Connect();
+	void ConnectSecure();
 	void ListenToServer();
 	void HandleIncomingRoomEvents();
 	void HandleIncomingCardEvents();
