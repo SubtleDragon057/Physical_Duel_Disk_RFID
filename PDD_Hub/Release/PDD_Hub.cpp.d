@@ -145,7 +145,7 @@ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\PDD_Hub
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Core\Entities\Enums.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Core\Entities\Enums.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\SmartDuelEventHandler.h \
- C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\CommunicationsHandler.h \
+ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\PeripheralsHandler.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Core\WifiManager.h \
  C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6\libraries\WiFi\src/Wifi.h \
  C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6\cores\esp32/Print.h \
@@ -245,18 +245,20 @@ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\PDD_Hub
  C:\Users\Devan\Documents\Arduino\libraries\ESP8266_and_ESP32_OLED_driver_for_SSD1306_displays\src/OLEDDisplay.h \
  C:\Users\Devan\Documents\Arduino\libraries\ESP8266_and_ESP32_OLED_driver_for_SSD1306_displays\src/OLEDDisplayFonts.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Secrets.h \
+ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\StorageHandler.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Core\SmartDuelServer.h \
  C:\Users\Devan\Documents\Arduino\libraries\arduinoWebSockets-master\src/SocketIOclient.h \
  C:\Users\Devan\Documents\Arduino\libraries\arduinoWebSockets-master\src/WebSockets.h \
  C:\Users\Devan\Documents\Arduino\libraries\arduinoWebSockets-master\src/WebSocketsVersion.h \
  C:\Users\Devan\Documents\Arduino\libraries\arduinoWebSockets-master\src/WebSocketsClient.h \
- C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Features\Lobby.h \
- C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Features\DuelRoom.h \
+ C:\Users\Devan\Documents\Arduino\libraries\ArduinoJson\src/ArduinoJson.h \
+ C:\Users\Devan\Documents\Arduino\libraries\ArduinoJson\src/ArduinoJson.hpp \
+ C:\Users\Devan\Documents\Arduino\libraries\ArduinoJson\src/ArduinoJson/Configuration.hpp \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Features\SpeedDuel.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Features\Entities\DuelState.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Features\Entities\Playerstate.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Features\Entities\Zones.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Features\Entities\EventData.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Core\Utils\JSONUtility.h \
- C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\CommunicationsHandler.h \
+ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\PeripheralsHandler.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\StorageHandler.h

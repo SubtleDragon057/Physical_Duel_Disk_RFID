@@ -1,21 +1,19 @@
 #ifndef SmartDuelEventHandler_h
 #define SmartDuelEventHandler_h
 #include "Arduino.h"
-#include "CommunicationsHandler.h"
+#include "PeripheralsHandler.h"
+#include "StorageHandler.h"
 #include "Core\SmartDuelServer.h"
 #include "Secrets.h"
-#include "Features\Lobby.h"
-#include "Features\DuelRoom.h"
 #include "Features\SpeedDuel.h"
 #include "Core\Utils\JSONUtility.h"
 
 class SmartDuelEventHandler {
 private:
 	SmartDuelServer _server;
-	CommunicationsHandler * _communicationsHandler;
+	PeripheralsHandler* _peripheralsHandler;
+	StorageHandler* _storageHandler;
 	SECRETS _secrets;
-	Lobby _lobby;
-	DuelRoom _duelRoom;
 	SpeedDuel _speedDuel;
 	JSONUtility _jsonUtility;
 
@@ -23,35 +21,35 @@ private:
 	bool _uiEventActive = false;
 	const byte _numButtonEvents = 6;
 
+	// Duel Room Functions
+	void HandleLobby(int buttonEvents[]);
+	void EnterWriteMode(int deckList[]);
+	void HandleDuelRoom(int buttonEvents[]);
+	void HandleButtonInteraction(int buttonEvents[], bool isInBattle = false);
+
+	// Server Functions
+	void HandleIncomingRoomEvents();
+	void HandleIncomingCardEvents();
+	void HandleIncomingDuelistEvents();
+
+	void DisplayMessageOnScreen(PeripheralsHandler::UI_Type uiType, String message);
 	String GetTargetZoneName(int multiButtonEvent, int zoneNumber);
 
 public:
-	bool IsInDuelRoom = false;
-	bool IsDueling = false;
 	String SocketID;
+	Enums::DuelRoomState DuelRoomState = Enums::Lobby;
 	
-	SmartDuelEventHandler(CommunicationsHandler &communicationsHandler);
-
-	// Lobby Functions
-	void HandleLobby(int buttonEvents[], int deckList[]);
-	void EnterWriteMode(int deckList[]);
+	SmartDuelEventHandler(PeripheralsHandler &peripheralsHandler, StorageHandler &storageHandler);
 
 	// Duel Room Functions
-	void HandleDuelRoom(int buttonEvents[]);
-
-	// Speed Duel Functions
-	bool HasAttackTarget() { return _speedDuel.HasAttackTarget; }
-	void HandleButtonInteraction(int buttonEvents[], bool isInBattle = false);
+	void HandleDuelRoomState(int buttonEvents[]);
 	void HandleMultiButtonEvent(int buttonEventType);
 	void HandlePhaseChange();
 
 	// Server Functions
 	bool IsConnected() { return _server.isConnected; }
-	void Connect();
-	void ConnectSecure();
+	void Connect(bool useEncryption = false);
 	void ListenToServer();
-	void HandleIncomingRoomEvents();
-	void HandleIncomingCardEvents();
 	void HandleOutgoingEvent(String eventData);
 };
 

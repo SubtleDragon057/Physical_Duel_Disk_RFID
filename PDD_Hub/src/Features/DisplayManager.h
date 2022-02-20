@@ -8,7 +8,7 @@ class DisplayManager {
 private:
 	SSD1306Wire _display = SSD1306Wire(0x3c, SDA, SCL);
 
-public:
+public:	
 	DisplayManager();
 	
 	void Initialize();

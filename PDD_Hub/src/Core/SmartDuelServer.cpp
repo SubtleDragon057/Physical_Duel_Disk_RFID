@@ -1,5 +1,5 @@
 #include "SmartDuelServer.h"
-#include "ArduinoJson.h"
+#include "Entities\Enums.h"
 
 //#define DEBUG_Server
 
@@ -8,7 +8,9 @@ SmartDuelServer::SmartDuelServer()
 }
 bool SmartDuelServer::isConnected = false;
 
-String SmartDuelServer::EventName;
+int SmartDuelServer::EventScope;
+int SmartDuelServer::EventAction;
+
 String SmartDuelServer::EventData;
 String SmartDuelServer::RoomName;
 String SmartDuelServer::DuelistID;
@@ -80,14 +82,12 @@ void SmartDuelServer::HandleRecievedEvent(uint8_t* payload) {
     String eventName = doc[0];
 
     if (error) {
-        /*Serial.print("Error: ");
-        Serial.println(error.c_str());
-        Serial.print("Memory: ");
-        Serial.println(doc.memoryUsage());
-        Serial.print("Capacity: ");
-        Serial.println(doc.capacity());
-        Serial.print("Overflow: ");
-        Serial.println(doc.overflowed());*/
+#ifdef DEBUG_Server
+        Serial.print("Error: "); Serial.println(error.c_str());
+        Serial.print("Memory: "); Serial.println(doc.memoryUsage());
+        Serial.print("Capacity: "); Serial.println(doc.capacity());
+        Serial.print("Overflow: "); Serial.println(doc.overflowed());
+#endif // DEBUG_Server
 
         doc.clear();
         doc.garbageCollect();
@@ -96,73 +96,105 @@ void SmartDuelServer::HandleRecievedEvent(uint8_t* payload) {
 
     String eventScope = eventName.substring(0, 4);
     if (eventScope == "room") {
-        String roomName = doc[1]["roomName"];
-
-        if (eventName == "room:join") {
-            Serial.println("That room doesn't exist! Please try again");
-            return;
-        }
-        
-        if (eventName == "room:start") {
-            String socket1 = doc[1]["duelRoom"]["duelists"][0]["id"];
-            String socket2 = doc[1]["duelRoom"]["duelists"][1]["id"];
-            String turnDuelist = doc[1]["duelRoom"]["duelPhase"]["duelistId"];
-
-            DuelistID = socket1;
-            EventData = socket2;
-            EventData = turnDuelist;
-        }
-
-        EventName = eventName;
-        RoomName = roomName;
+        EventScope = Enums::EventScope::Room;
+        HandleRoomScope(eventName.substring(5), doc);
     }
     else if (eventScope == "card") {
-        String duelistID = doc[1]["duelistId"];
-        String cardID = doc[1]["cardId"];
-        String copyNum = doc[1]["copyNumber"];
-        String zoneName = doc[1]["zoneName"];
-        String position = doc[1]["cardPosition"];
-
-        EventName = eventName;
-        DuelistID = duelistID;
-        CardID = GetIntValue(cardID);
-        CopyNumber = GetIntValue(copyNum);
-        Position = GetCardPosition(position);
-        EventData = zoneName;
-
-#ifdef DEBUG_Server
-        Serial.printf("Card Event Data:\nID: %s\nCard: %i\nCopy: %i\nPosition: %i\nZone: %s\n",
-            DuelistID.c_str(), CardID, CopyNumber, Position, EventData.c_str());
-#endif // DEBUG_Server
-
+        EventScope = Enums::EventScope::Card;
+        HandleCardScope(eventName.substring(5), doc);
     }
     else if (eventScope == "duel") {
-        if (eventName == "duelist:declare-phase") {
-            String duelistID = doc[1]["duelistId"];
-            String phase = doc[1]["phase"];
-
-            EventName = eventName;
-            DuelistID = duelistID;
-            EventData = phase;
-            return;
-        }
-        else if (eventName == "duelist:update-lifepoints") {
-            String duelistID = doc[1]["duelistId"];
-            String lifepoints = doc[1]["lifepoints"];
-
-            EventName = eventName;
-            DuelistID = duelistID;
-            EventData = lifepoints;
-            return;
-        }
-        
-        String duelistID = doc[1]["duelistId"];
-        String result = doc[1]["result"];
-
-        EventName = eventName;
-        DuelistID = duelistID;
-        EventData = result;
+        EventScope = Enums::EventScope::Duelist;
+        HandleDuelistScope(eventName.substring(8), doc);
     }
+}
+
+void SmartDuelServer::HandleRoomScope(String eventAction, DynamicJsonDocument eventJSON) {
+    String roomName = eventJSON[1]["roomName"];
+
+    if (eventAction == "create") {
+        EventAction = Enums::EventAction::Create;
+        RoomName = roomName;
+        return;
+    }
+
+    if (eventAction == "join") {
+        EventAction = Enums::EventAction::Join;
+        Serial.println("That room doesn't exist! Please try again");
+        return;
+    }
+
+    if (eventAction == "start") {
+        String socket1 = eventJSON[1]["duelRoom"]["duelists"][0]["id"];
+        String socket2 = eventJSON[1]["duelRoom"]["duelists"][1]["id"];
+        String turnDuelist = eventJSON[1]["duelRoom"]["duelPhase"]["duelistId"];
+
+        EventAction = Enums::EventAction::Start;
+        DuelistID = socket1;
+        EventData = socket2;
+        EventData = turnDuelist;
+        return;
+    }
+
+    if (eventAction == "close") {
+        EventAction = Enums::EventAction::Close;
+    }
+}
+
+void SmartDuelServer::HandleCardScope(String eventAction, DynamicJsonDocument eventJSON) {
+    String duelistID = eventJSON[1]["duelistId"];
+    String cardID = eventJSON[1]["cardId"];
+    String copyNum = eventJSON[1]["copyNumber"];
+    String zoneName = eventJSON[1]["zoneName"];
+    String position = eventJSON[1]["cardPosition"];
+
+    //EventName = eventName;
+    DuelistID = duelistID;
+    CardID = GetIntValue(cardID);
+    CopyNumber = GetIntValue(copyNum);
+    Position = GetCardPosition(position);
+    EventData = zoneName;
+
+#ifdef DEBUG_Server
+    Serial.printf("Card Event Data:\nID: %s\nCard: %i\nCopy: %i\nPosition: %i\nZone: %s\n",
+        DuelistID.c_str(), CardID, CopyNumber, Position, EventData.c_str());
+#endif // DEBUG_Server
+}
+
+void SmartDuelServer::HandleDuelistScope(String eventAction, DynamicJsonDocument eventJSON) {
+    if (eventAction == "end-turn") {
+        EventAction = Enums::EventAction::EndTurn;
+        return;
+    }
+    
+    if (eventAction == "declare-phase") {
+        String duelistID = eventJSON[1]["duelistId"];
+        String phase = eventJSON[1]["phase"];
+
+        EventAction = Enums::EventAction::Phase;
+        DuelistID = duelistID;
+        EventData = phase;
+        return;
+    }
+    
+    if (eventAction == "update-lifepoints") {
+        String duelistID = eventJSON[1]["duelistId"];
+        String lifepoints = eventJSON[1]["lifepoints"];
+
+        EventAction = Enums::EventAction::LifePoints;
+        DuelistID = duelistID;
+        EventData = lifepoints;
+        return;
+    }
+
+    String duelistID = eventJSON[1]["duelistId"];
+    String result = eventJSON[1]["result"];
+
+    EventAction = eventAction == "flip-coin" 
+        ? Enums::EventAction::Coin 
+        : Enums::EventAction::Dice;
+    DuelistID = duelistID;
+    EventData = result;
 }
 
 int SmartDuelServer::GetIntValue(String stringToChange) {

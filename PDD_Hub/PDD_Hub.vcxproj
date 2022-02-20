@@ -106,10 +106,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Features\DisplayManager.h" />
     <ClInclude Include="src\ButtonHandler.h">
       <FileType>CppCode</FileType>
     </ClInclude>
-    <ClInclude Include="src\CommunicationsHandler.h">
+    <ClInclude Include="src\PeripheralsHandler.h">
       <FileType>CppCode</FileType>
     </ClInclude>
     <ClInclude Include="src\Core\Entities\Button.h">
@@ -127,10 +128,7 @@
     <ClInclude Include="src\Core\WifiManager.h">
       <FileType>CppCode</FileType>
     </ClInclude>
-    <ClInclude Include="src\CrownCorp.h">
-      <FileType>CppCode</FileType>
-    </ClInclude>
-    <ClInclude Include="src\Features\DuelRoom.h">
+    <ClInclude Include="src\Features\Entities\CrownCorp.h">
       <FileType>CppCode</FileType>
     </ClInclude>
     <ClInclude Include="src\Features\Entities\DuelState.h">
@@ -143,9 +141,6 @@
       <FileType>CppCode</FileType>
     </ClInclude>
     <ClInclude Include="src\Features\Entities\Zones.h">
-      <FileType>CppCode</FileType>
-    </ClInclude>
-    <ClInclude Include="src\Features\Lobby.h">
       <FileType>CppCode</FileType>
     </ClInclude>
     <ClInclude Include="src\Features\SpeedDuel.h">
@@ -163,17 +158,16 @@
     <ClInclude Include="__vm\.PDD_Hub.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Features\DisplayManager.cpp" />
     <ClCompile Include="src\ButtonHandler.cpp" />
-    <ClCompile Include="src\CommunicationsHandler.cpp" />
+    <ClCompile Include="src\PeripheralsHandler.cpp" />
     <ClCompile Include="src\Core\Entities\Button.cpp" />
     <ClCompile Include="src\Core\SmartDuelServer.cpp" />
     <ClCompile Include="src\Core\Utils\JSONUtility.cpp" />
     <ClCompile Include="src\Core\WifiManager.cpp" />
-    <ClCompile Include="src\Features\DuelRoom.cpp" />
     <ClCompile Include="src\Features\Entities\DuelState.cpp" />
     <ClCompile Include="src\Features\Entities\Playerstate.cpp" />
     <ClCompile Include="src\Features\Entities\Zones.cpp" />
-    <ClCompile Include="src\Features\Lobby.cpp" />
     <ClCompile Include="src\Features\SpeedDuel.cpp" />
     <ClCompile Include="src\SmartDuelEventHandler.cpp" />
     <ClCompile Include="src\StorageHandler.cpp" />

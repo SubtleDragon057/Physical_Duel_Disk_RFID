@@ -12,8 +12,6 @@ private:
 	bool CheckForValidTarget(String zoneName);
 
 public:
-	bool HasAttackTarget = true;
-
 	enum Position {
 		FaceUp = 1,
 		FaceDown = 2,

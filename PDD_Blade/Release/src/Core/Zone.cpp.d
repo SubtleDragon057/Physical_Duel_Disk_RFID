@@ -1,6 +1,6 @@
-C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Blade\uno\Release\src\Core\Zone.cpp.o: \
- C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Blade\uno\Release\src\Core\Zone.cpp \
- C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Blade\uno\Release\src\Core\Zone.h \
+C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Blade\nano_atmega328old\Release\src\Core\Zone.cpp.o: \
+ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Blade\nano_atmega328old\Release\src\Core\Zone.cpp \
+ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Blade\nano_atmega328old\Release\src\Core\Zone.h \
  E:\Programs\Arduino\hardware\arduino\avr\cores\arduino/Arduino.h \
  E:\Programs\Arduino\hardware\arduino\avr\cores\arduino/binary.h \
  E:\Programs\Arduino\hardware\arduino\avr\cores\arduino/WCharacter.h \
@@ -11,8 +11,9 @@ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Blade\uno\Release\src\Core\Zone.c
  E:\Programs\Arduino\hardware\arduino\avr\cores\arduino/Printable.h \
  E:\Programs\Arduino\hardware\arduino\avr\cores\arduino/USBAPI.h \
  E:\Programs\Arduino\hardware\arduino\avr\cores\arduino/Arduino.h \
- E:\Programs\Arduino\hardware\arduino\avr\variants\standard/pins_arduino.h \
- C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Blade\uno\Release\src\Core\Entities\Enums.h \
- C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Blade\uno\Release\src\Core\Entities\Components\ProximitySensor.h \
+ E:\Programs\Arduino\hardware\arduino\avr\variants\eightanaloginputs/pins_arduino.h \
+ e:\programs\arduino\hardware\arduino\avr\variants\standard\pins_arduino.h \
+ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Blade\nano_atmega328old\Release\src\Core\Entities\Enums.h \
+ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Blade\nano_atmega328old\Release\src\Core\Entities\Components\ProximitySensor.h \
  E:\Duel_Disk_Project\GitHub_Desktop\Physical_Duel_Disk_Arduino_Code\PDD_Blade\Libraries\PN532\0.0.0\PN532/PN532.h \
  E:\Duel_Disk_Project\GitHub_Desktop\Physical_Duel_Disk_Arduino_Code\PDD_Blade\Libraries\PN532\0.0.0\PN532/PN532Interface.h

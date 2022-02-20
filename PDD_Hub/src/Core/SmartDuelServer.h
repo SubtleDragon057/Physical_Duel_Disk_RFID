@@ -2,6 +2,7 @@
 #define SmartDuelServer_h
 #include "Arduino.h"
 #include "SocketIOclient.h"
+#include "ArduinoJson.h"
 
 class SmartDuelServer {
 private:
@@ -12,10 +13,17 @@ private:
 	static int GetIntValue(String stringToChange);
 	static int GetCardPosition(String position);
 
+	// Event Scope Functions
+	static void HandleRoomScope(String eventAction, DynamicJsonDocument eventJSON);
+	static void HandleCardScope(String eventAction, DynamicJsonDocument eventJSON);
+	static void HandleDuelistScope(String eventAction, DynamicJsonDocument eventJSON);
+
 public:
 	static bool isConnected;
 
-	static String EventName;
+	static int EventScope;
+	static int EventAction;
+
 	static String EventData;
 	static String RoomName;
 	static String DuelistID;

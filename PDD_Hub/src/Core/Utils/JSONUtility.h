@@ -11,6 +11,10 @@ private:
 public:
 	JSONUtility();
 
+	String HandleCreateRoomEvent(int deckList[]);
+	String HandleJoinRoomEvent(int deckList[]);
+	String HandleCloseRoomEvent(String roomName);
+
 	String GetCardEventFromArduino(String socketID, String data);
 	String GetCardEventAsJSON(String socketID, String eventName, int cardID, int copyNumber, 
 		String zoneName = "", String cardPosition = "");

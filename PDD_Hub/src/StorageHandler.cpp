@@ -2,9 +2,9 @@
 #include "SD.h"
 #include "Core\Entities\Enums.h"
 
-StorageHandler::StorageHandler(CommunicationsHandler &communicationsHandler)
+StorageHandler::StorageHandler(PeripheralsHandler &peripheralsHandler)
 {
-    _communicationsHandler = &communicationsHandler;
+    _peripheralsHandler = &peripheralsHandler;
 }
 
 void StorageHandler::Initialize(bool isSDReaderConnected) {    
@@ -12,11 +12,11 @@ void StorageHandler::Initialize(bool isSDReaderConnected) {
 
     if (!_isSDConnected) {
         String text[] = { "Using Default Deck" };
-        _communicationsHandler->Display(CommunicationsHandler::UI_Init, text);
+        _peripheralsHandler->Display(PeripheralsHandler::UI_Init, text);
     }
     else {
         String text[] = { "Decks Configured!" };
-        _communicationsHandler->Display(CommunicationsHandler::UI_Init, text);
+        _peripheralsHandler->Display(PeripheralsHandler::UI_Init, text);
     }
     delay(2000);
 }
@@ -68,7 +68,7 @@ void StorageHandler::GetListOfDecks() {
     for (byte i = 0; i < 5; i++) {
         text[i] = String(i + 1) + ": " + _deckNames[i] + '\n';
     }
-    _communicationsHandler->Display(CommunicationsHandler::UI_DeckSelect, text);
+    _peripheralsHandler->Display(PeripheralsHandler::UI_DeckSelect, text);
 }
 
 void StorageHandler::ReadYDK(String deckName) {
@@ -76,7 +76,7 @@ void StorageHandler::ReadYDK(String deckName) {
 
     if (!_deckYDK) {
         String text[] = { "Couldn't open file!" };
-        _communicationsHandler->Display(CommunicationsHandler::UI_DeckSelect, text);
+        _peripheralsHandler->Display(PeripheralsHandler::UI_DeckSelect, text);
         return;
     }
 

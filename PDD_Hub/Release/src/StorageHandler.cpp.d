@@ -133,7 +133,7 @@ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Sto
  C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6/tools/sdk/include/spi_flash/esp_spi_flash.h \
  C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6\variants\node32s/pins_arduino.h \
  C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6\libraries\FS\src/FS.h \
- C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\CommunicationsHandler.h \
+ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\PeripheralsHandler.h \
  C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6\cores\esp32/arduino.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Core\WifiManager.h \
  C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6\libraries\WiFi\src/Wifi.h \

@@ -43,7 +43,6 @@ void SpeedDuel::HandleAttackEvent(String socketID, int zoneNumber) {
 	}
 
 	_attackingMonster = zoneNumber;
-	HasAttackTarget = false;
 	Serial.println("Declare an Attack Target!");
 }
 
@@ -54,7 +53,6 @@ EventData SpeedDuel::HandleMonsterAttack(String socketID, String zoneName) {
 		return EventData();
 	}
 
-	HasAttackTarget = true;
 	int monsterID = _duelState.GetCardID(socketID, _attackingMonster, true);
 	int copyNum = _duelState.GetCopyNumber(socketID, _attackingMonster, true);
 

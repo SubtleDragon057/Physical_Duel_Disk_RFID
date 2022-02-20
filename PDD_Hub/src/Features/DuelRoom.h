@@ -12,7 +12,7 @@ public:
 	DuelRoom();
 
 	String CheckDuelRoomForAction(int buttonEvents[]);
-	void UpdateCurrentRoom(String roomName);
+	//void UpdateCurrentRoom(String roomName);
 };
 
 #endif

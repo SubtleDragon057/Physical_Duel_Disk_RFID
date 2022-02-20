@@ -13,28 +13,40 @@
 
 #include "src\ButtonHandler.h"
 #include "src\SmartDuelEventHandler.h"
-#include "src\CommunicationsHandler.h"
+#include "src\PeripheralsHandler.h"
 #include "src\StorageHandler.h"
 
 ButtonHandler buttonHandler;
-CommunicationsHandler communicationsHandler;
-SmartDuelEventHandler smartDuelEventHandler(communicationsHandler);
-StorageHandler storageHandler(communicationsHandler);
+PeripheralsHandler peripheralsHandler;
+StorageHandler storageHandler(peripheralsHandler);
+SmartDuelEventHandler smartDuelEventHandler(peripheralsHandler, storageHandler);
 
 const byte sdReaderPin = 5;
 const byte intPin = 16;
 volatile bool hasNewEvent = false;
 portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 void IRAM_ATTR handleIncomingEvent() {
-	if (!smartDuelEventHandler.IsDueling) return;
+	Serial.printf("Interrupt Detected!\n");
+	
+	if (!peripheralsHandler.IsBladeConnected) {
+		portENTER_CRITICAL_ISR(&mux);
+		peripheralsHandler.IsBladeConnected = true;
+		portEXIT_CRITICAL_ISR(&mux);
 
-	portENTER_CRITICAL_ISR(&mux);
-	hasNewEvent = true;
-	portEXIT_CRITICAL_ISR(&mux);
+		return;
+	}
 
-#ifdef DEBUG_Main
-	Serial.printf("Incoming Event!\n");
-#endif // DEBUG_MAIN
+	switch (smartDuelEventHandler.DuelRoomState) {
+		case Enums::DuelRoomState::IsInDuel:
+		case Enums::DuelRoomState::WaitingForAttackTarget:
+			portENTER_CRITICAL_ISR(&mux);
+			hasNewEvent = true;
+			portEXIT_CRITICAL_ISR(&mux);
+			break;
+		default:
+			Serial.printf("No State Match: %i\n", smartDuelEventHandler.DuelRoomState);
+			break;
+	}
 }
 
 void setup() {    
@@ -42,24 +54,24 @@ void setup() {
   Serial.begin(115200);
   Wire.begin(SDA, SCL);
 
-  communicationsHandler.Initialize();
+  attachInterrupt(digitalPinToInterrupt(intPin), handleIncomingEvent, FALLING);
+  peripheralsHandler.InitializeCommunications();
   
-  bool connected = false;
+  bool sdReaderCnnected = false;
   for (byte i = 10; i > 0; i--) {
-	  connected = SD.begin(sdReaderPin);
-	  if (connected) break;
+	  sdReaderCnnected = SD.begin(sdReaderPin);
+	  if (sdReaderCnnected) break;
   }
-  storageHandler.Initialize(connected);
+  storageHandler.Initialize(sdReaderCnnected);
   buttonHandler.Initialize();
   smartDuelEventHandler.Connect();
-
-  attachInterrupt(digitalPinToInterrupt(intPin), handleIncomingEvent, FALLING);
 
   Serial.printf("\n");
 }
 
 void loop() {
 
+	// Allow player to set deck while waiting for Server
 	while (!smartDuelEventHandler.IsConnected() || !storageHandler.IsDeckSet) {
 		smartDuelEventHandler.ListenToServer();
 		buttonHandler.CheckButtons();
@@ -68,38 +80,16 @@ void loop() {
 		}
 	}
 
-	while (!smartDuelEventHandler.IsInDuelRoom) {
-		smartDuelEventHandler.ListenToServer();
-		buttonHandler.CheckButtons();
-		smartDuelEventHandler.HandleLobby(buttonHandler.ButtonEvents, storageHandler.DeckList);
-	}
-
-	// TODO: Find better implementation - this one is broken
-	// Set to false to allow user to choose new deck when entering lobby again
-	//storageHandler.IsDeckSet = false;
-
-	while (smartDuelEventHandler.IsInDuelRoom && !smartDuelEventHandler.IsDueling) {
-		smartDuelEventHandler.ListenToServer();
-		buttonHandler.CheckButtons();
-		smartDuelEventHandler.HandleDuelRoom(buttonHandler.ButtonEvents);
-	}
-
 	smartDuelEventHandler.ListenToServer();
 	buttonHandler.CheckButtons();
-	smartDuelEventHandler.HandleButtonInteraction(buttonHandler.ButtonEvents);
-
-	while (!smartDuelEventHandler.HasAttackTarget()) {
-		smartDuelEventHandler.ListenToServer();
-		buttonHandler.CheckButtons();
-		smartDuelEventHandler.HandleButtonInteraction(buttonHandler.ButtonEvents, true);
-	}
+	smartDuelEventHandler.HandleDuelRoomState(buttonHandler.ButtonEvents);
 
 	if (!hasNewEvent) return;
 	portENTER_CRITICAL(&mux);
 	hasNewEvent = false;
 	portEXIT_CRITICAL(&mux);
 
-	String output = communicationsHandler.GetNewEventData();
+	String output = peripheralsHandler.GetNewEventData();
 	Serial.printf("Event Info: %s\n", output.c_str());
 	if (output == "" || output == "Failure") {
 		Serial.printf("Event was empty!\n");

@@ -31,6 +31,30 @@ public:
 		ClearEventData = 8,
 		CommunicationFailure = 2
 	};
+	enum DuelRoomState {
+		Lobby,
+		WaitingForOpponent,
+		IsInDuel,
+		WaitingForAttackTarget
+	};
+	enum EventScope {
+		Waiting,
+		Room,
+		Card,
+		Duelist
+	};
+	enum EventAction {
+		NoCurrentAction,
+		Create,
+		Start,
+		Join,
+		Close,
+		Phase,
+		LifePoints,
+		Coin,
+		Dice,
+		EndTurn
+	};
 };
 
 #endif

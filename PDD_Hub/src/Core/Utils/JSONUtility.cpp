@@ -5,6 +5,72 @@ JSONUtility::JSONUtility()
 {
 }
 
+String JSONUtility::HandleCreateRoomEvent(int deckList[]) {
+	StaticJsonDocument<770> staticDoc;
+	JsonArray deck = staticDoc.createNestedArray();
+	for (byte i = 0; i < 35; i++) {
+		if (deckList[i] == 0) continue;
+		deck.add(deckList[i]);
+	}
+
+	StaticJsonDocument<770> doc;
+	JsonArray jsonArray = doc.to<JsonArray>();
+
+	jsonArray.add("room:create");
+
+	JsonObject params = jsonArray.createNestedObject();
+	params["roomName"] = "";
+	params["deckList"] = deck;
+
+	String output;
+	serializeJson(doc, output);
+
+	return output;
+}
+
+String JSONUtility::HandleJoinRoomEvent(int deckList[]) {
+	Serial.printf("Which room would you like to join?\n");
+
+	while (!Serial.available()) {}
+
+	String roomName = Serial.readString();
+
+	StaticJsonDocument<770> staticDoc;
+	JsonArray deck = staticDoc.createNestedArray();
+	for (byte i = 0; i < 35; i++) {
+		if (deckList[i] == 0) continue;
+		deck.add(deckList[i]);
+	}
+
+	StaticJsonDocument<770> doc;
+	JsonArray jsonArray = doc.to<JsonArray>();
+
+	jsonArray.add("room:join");
+
+	JsonObject params = jsonArray.createNestedObject();
+	params["roomName"] = roomName;
+	params["deckList"] = deck;
+	params["error"];
+
+	String output;
+	serializeJson(doc, output);
+	return output;
+}
+
+String JSONUtility::HandleCloseRoomEvent(String roomName) {
+	StaticJsonDocument<100> doc;
+	JsonArray jsonArray = doc.to<JsonArray>();
+
+	jsonArray.add("room:close");
+
+	JsonObject params = jsonArray.createNestedObject();
+	params["roomName"] = roomName;
+
+	String output;
+	serializeJson(doc, output);
+	return output;
+}
+
 String JSONUtility::GetCardEventFromArduino(String socketID, String data)
 {
 	String eventName = data.substring(0, 1); // Event #

@@ -4,26 +4,50 @@
 
 //#define DEBUG_SDEH
 
-SmartDuelEventHandler::SmartDuelEventHandler(CommunicationsHandler& communicationsHandler)
+SmartDuelEventHandler::SmartDuelEventHandler(PeripheralsHandler& peripheralsHandler, StorageHandler& storageHandler)
 {
-	_communicationsHandler = &communicationsHandler;
+	_peripheralsHandler = &peripheralsHandler;
+	_storageHandler = &storageHandler;
 }
 
-void SmartDuelEventHandler::HandleLobby(int buttonEvents[], int deckList[]) {
+void SmartDuelEventHandler::HandleDuelRoomState(int buttonEvents[]) {
+	switch (DuelRoomState) {
+		case Enums::Lobby:
+			HandleLobby(buttonEvents);
+			break;
+		case Enums::WaitingForOpponent:
+			HandleDuelRoom(buttonEvents);
+			break;
+		case Enums::IsInDuel:
+			HandleButtonInteraction(buttonEvents);
+			break;
+		case Enums::WaitingForAttackTarget:
+			HandleButtonInteraction(buttonEvents, true);
+			break;
+	}
+}
+
+void SmartDuelEventHandler::HandleLobby(int buttonEvents[]) {
 #ifdef DEBUG_SDEH
 	//Serial.printf("HandleLobby()\n");
 #endif // DEBUG_SDEH
 	
-	String text[] = { "" };
-	_communicationsHandler->Display(CommunicationsHandler::UI_Lobby, text);
-	
-	String data = _lobby.CheckLobbyForAction(buttonEvents, deckList);
-	if (data == "NoAction") return;
+	DisplayMessageOnScreen(PeripheralsHandler::UI_Lobby, "");
 
-	if (data == "writeMode") {
-		EnterWriteMode(deckList);
-		return;
+	String data;
+	if (buttonEvents[0] != 0) {
+		data = _jsonUtility.HandleCreateRoomEvent(_storageHandler->DeckList);
 	}
+	else if (buttonEvents[1] != 0) {
+		data = _jsonUtility.HandleJoinRoomEvent(_storageHandler->DeckList);
+	}
+	// TODO: Update write mode after adding "Quick-Play Zone"
+	//else if (buttonEvents[5] == 9) { // Multi34 Button Event (ie. Hold Buttons 4 & 5)
+	//    EnterWriteMode(deckList);
+	//	  return;
+	//}
+
+	if (data == "") return;
 
 	_server.SendEvent(data);
 }
@@ -31,7 +55,7 @@ void SmartDuelEventHandler::HandleLobby(int buttonEvents[], int deckList[]) {
 // TODO: This function will lock up the system for its duration
 void SmartDuelEventHandler::EnterWriteMode(int deckList[]) {
 	String text[] = { "Write Mode" };
-	_communicationsHandler->Display(CommunicationsHandler::UI_WriteMode, text);
+	_peripheralsHandler->Display(PeripheralsHandler::UI_WriteMode, text);
 
 	delay(1000);
 
@@ -51,19 +75,19 @@ void SmartDuelEventHandler::EnterWriteMode(int deckList[]) {
 		Serial.println(deckListWithCopyNum[i]);
 	}
 
-	_communicationsHandler->EnableWriteMode();
+	_peripheralsHandler->EnableWriteMode();
 	Serial.printf("Sending Deck\n");
 
 	for (byte i = 0; i < 36; i++) {
 		if (deckListWithCopyNum[i] == 0) continue;
 		
 		String cardNumber[] = { deckListWithCopyNum[i].substring(1) };
-		_communicationsHandler->Display(CommunicationsHandler::UI_WriteMode, cardNumber);
-		_communicationsHandler->TransmitCard(deckListWithCopyNum[i]);
+		_peripheralsHandler->Display(PeripheralsHandler::UI_WriteMode, cardNumber);
+		_peripheralsHandler->TransmitCard(deckListWithCopyNum[i]);
 	}
 
 	text[1] = "Done! Returning to Lobby";
-	_communicationsHandler->Display(CommunicationsHandler::UI_WriteMode, text);
+	_peripheralsHandler->Display(PeripheralsHandler::UI_WriteMode, text);
 	delay(1000);
 }
 
@@ -72,12 +96,11 @@ void SmartDuelEventHandler::HandleDuelRoom(int buttonEvents[]) {
 	//Serial.printf("HandleDuelRoom()\n");
 #endif // DEBUG_SDEH
 	
-	String text[] = { _duelRoom.RoomName };
-	_communicationsHandler->Display(CommunicationsHandler::UI_Lobby, text);
+	DisplayMessageOnScreen(PeripheralsHandler::UI_Lobby, SmartDuelServer::RoomName);
 	
-	String data = _duelRoom.CheckDuelRoomForAction(buttonEvents);
-	if (data == "NoAction") return;
+	if (buttonEvents[0] == Enums::ButtonClicks::NoChange) return;
 
+	String data = _jsonUtility.HandleCloseRoomEvent(SmartDuelServer::RoomName);
 	_server.SendEvent(data);
 }
 
@@ -90,6 +113,7 @@ void SmartDuelEventHandler::HandleButtonInteraction(int buttonEvents[], bool isI
 		if (isInBattle) {
 			String zoneName = GetTargetZoneName(buttonEvents[5], i);
 			newData = _speedDuel.HandleMonsterAttack(SocketID, zoneName);
+			DuelRoomState = Enums::IsInDuel;
 			break;
 		}
 
@@ -102,6 +126,9 @@ void SmartDuelEventHandler::HandleButtonInteraction(int buttonEvents[], bool isI
 				continue;
 			case Enums::ButtonClicks::Hold:
 				_speedDuel.HandleAttackEvent(SocketID, i);
+				DuelRoomState = Enums::WaitingForAttackTarget;
+				_uiEventActive = true;
+				DisplayMessageOnScreen(PeripheralsHandler::UI_SpeedDuel, "Choose Target!");
 				continue;
 			case Enums::ButtonClicks::Multi01:
 			case Enums::ButtonClicks::Multi34:
@@ -158,47 +185,24 @@ void SmartDuelEventHandler::HandlePhaseChange() {
 	_server.SendEvent(eventData);
 }
 
-void SmartDuelEventHandler::Connect() {
+void SmartDuelEventHandler::Connect(bool useEncryption) {
 
 	for (uint8_t t = 3; t > 0; t--) {
-		String text[] = { "[SETUP] DUEL ONLINE?  " + String(t) };
-		_communicationsHandler->Display(CommunicationsHandler::UI_Init, text);
-		delay(1000);
-	}
-	
-	if (digitalRead(33) == LOW) {
-		String text[] = { "[SETUP] LOCATING CC SERVERS" };
-		_communicationsHandler->Display(CommunicationsHandler::UI_Init, text);
-		
-		_server.Initialize(_secrets.onlineServerAddress, _secrets.onlineServerPort);
-		return;
-	}
-	
-	String text[] = { "[SETUP] LOCATING LOCAL SERVERS" };
-	_communicationsHandler->Display(CommunicationsHandler::UI_Init, text);
-	
-	_server.Initialize(_secrets.socketIP, _secrets.socketPort);
-}
-
-void SmartDuelEventHandler::ConnectSecure() {
-	for (uint8_t t = 3; t > 0; t--) {
-		String text[] = { "[SETUP] DUEL ONLINE?  " + String(t) };
-		_communicationsHandler->Display(CommunicationsHandler::UI_Init, text);
+		DisplayMessageOnScreen(PeripheralsHandler::UI_Init, 
+			"[SETUP] Duel Online?  " + String(t));
 		delay(1000);
 	}
 
-	if (digitalRead(33) == LOW) {
-		String text[] = { "[SETUP] LOCATING CC SERVERS" };
-		_communicationsHandler->Display(CommunicationsHandler::UI_Init, text);
-
-		_server.InitializeSSL(_secrets.onlineServerAddress, _secrets.onlineServerSecurePort);
-		return;
+	switch (digitalRead(33)) {
+		case LOW:
+			DisplayMessageOnScreen(PeripheralsHandler::UI_Init, "[SETUP] Locating CC Servers");
+			_server.Initialize(_secrets.onlineServerAddress, _secrets.onlineServerPort);
+			break;
+		case HIGH:
+			DisplayMessageOnScreen(PeripheralsHandler::UI_Init, "[SETUP] Locating Local Server");
+			_server.Initialize(_secrets.socketIP, _secrets.socketPort);
+			break;
 	}
-
-	String text[] = { "[SETUP] LOCATING LOCAL SERVERS" };
-	_communicationsHandler->Display(CommunicationsHandler::UI_Init, text);
-
-	_server.InitializeSSL(_secrets.socketIP, _secrets.socketPort);
 }
 
 void SmartDuelEventHandler::ListenToServer() {
@@ -210,102 +214,102 @@ void SmartDuelEventHandler::ListenToServer() {
 	_server.ListenToServer();
 
 	if (!_server.isConnected) {
-		String text[] = { "No Connection to Server!" };
-		_communicationsHandler->Display(CommunicationsHandler::UI_Init, text);
-
-		SmartDuelServer::EventName = "room:close";
+		DisplayMessageOnScreen(PeripheralsHandler::UI_ConnectionError, 
+			"No Connection to Server!");
+		SmartDuelServer::EventScope = Enums::EventScope::Room;
+		SmartDuelServer::EventAction = Enums::EventAction::Close;
+		return;
 	}
 
-	HandleIncomingRoomEvents();
-	HandleIncomingCardEvents();
-}
-
-void SmartDuelEventHandler::HandleIncomingRoomEvents() {		
-	
-	if (SmartDuelServer::EventName == "room:create" ||
-		SmartDuelServer::EventName == "room:join") {
-		_duelRoom.UpdateCurrentRoom(SmartDuelServer::RoomName);
-		IsInDuelRoom = true;
-		SmartDuelServer::EventName = "Waiting";
-	}	
-	else if (SmartDuelServer::EventName == "room:close") {
-		IsInDuelRoom = false;
-		IsDueling = false;
-		_speedDuel.ClearDuelStates();
-		_communicationsHandler->EndDuel();
-		SmartDuelServer::EventName = "Waiting";
+	switch (SmartDuelServer::EventScope) {
+		case Enums::EventScope::Room:
+			HandleIncomingRoomEvents();
+			break;
+		case Enums::EventScope::Card:
+			HandleIncomingCardEvents();
+			break;
+		case Enums::EventScope::Duelist:
+			HandleIncomingDuelistEvents();
+			break;
 	}
-	else if (SmartDuelServer::EventName == "room:start") {
-		_duelRoom.UpdateCurrentRoom(SmartDuelServer::RoomName);		
-		_speedDuel.UpdateDuelistIDs(
-			SocketID,
-			SmartDuelServer::DuelistID,
-			SmartDuelServer::EventData);
-		IsInDuelRoom = true;
-		IsDueling = true;
-		_uiEventActive = true; // TODO: Puts a 4 second timer in play before showing duel
-		_eventStartTime = millis();
 
-		bool isOpponentsTurn = SmartDuelServer::EventData != SocketID;
-		_speedDuel.UpdatePhase("drawPhase", isOpponentsTurn);
-		_communicationsHandler->StartDuelDisk();
-		SmartDuelServer::EventName = "Waiting";
-	}
-}
-
-void SmartDuelEventHandler::HandleIncomingCardEvents() {
 	if (_uiEventActive && (millis() - _eventStartTime) > 4000) {
 		_uiEventActive = false;
-		String currentPhase[] = { _speedDuel.GetPhase(), _speedDuel.GetPlayerLP(), _speedDuel.GetOppLP() };
-		_communicationsHandler->Display(CommunicationsHandler::UI_SpeedDuel, currentPhase);
+		DisplayMessageOnScreen(PeripheralsHandler::UI_SpeedDuel, _speedDuel.GetPhase());
 	}
+
+	SmartDuelServer::EventScope = Enums::EventScope::Waiting;
+}
+
+void SmartDuelEventHandler::HandleIncomingRoomEvents() {	
+	bool isOpponentsTurn = SmartDuelServer::EventData != SocketID;
 	
-	if (SmartDuelServer::EventName == "card:play") {
-		_speedDuel.UpdateDuelState(
-			SmartDuelServer::DuelistID,
-			SmartDuelServer::CardID,
-			SmartDuelServer::CopyNumber,
-			SmartDuelServer::EventData,
-			SmartDuelServer::Position);
-		SmartDuelServer::EventName = "Waiting";
+	switch (SmartDuelServer::EventAction) {
+		case Enums::EventAction::Create:
+		case Enums::EventAction::Join:
+			DuelRoomState = Enums::WaitingForOpponent;
+			break;
+		case Enums::EventAction::Close:
+			DuelRoomState = Enums::Lobby;
+			_speedDuel.ClearDuelStates();
+			_peripheralsHandler->EndDuel();
+			_storageHandler->IsDeckSet = false;
+			break;
+		case Enums::EventAction::Start:
+			_speedDuel.UpdateDuelistIDs(
+				SocketID,
+				SmartDuelServer::DuelistID,
+				SmartDuelServer::EventData);
+			DuelRoomState = Enums::IsInDuel;
+			_uiEventActive = true; // TODO: Puts a 4 second timer in play before showing duel
+			_eventStartTime = millis();
+			_speedDuel.UpdatePhase("drawPhase", isOpponentsTurn);
+			_peripheralsHandler->StartDuelDisk();
+			break;
 	}
-	else if (SmartDuelServer::EventName == "duelist:declare-phase") {
-		bool isOpponentsTurn = SmartDuelServer::DuelistID != SocketID;
 
-		_speedDuel.UpdatePhase(SmartDuelServer::EventData, isOpponentsTurn);
-		String currentPhase[] = { _speedDuel.GetPhase(), _speedDuel.GetPlayerLP(), _speedDuel.GetOppLP() };
-		_communicationsHandler->Display(CommunicationsHandler::UI_SpeedDuel, currentPhase);
-		SmartDuelServer::EventName = "Waiting";
-	}
-	else if (SmartDuelServer::EventName == "duelist:end-turn") {
-		bool isOpponentsTurn = SmartDuelServer::DuelistID == SocketID;
+	SmartDuelServer::EventAction = Enums::EventAction::NoCurrentAction;
+}
 
-		_speedDuel.UpdatePhase("drawPhase", isOpponentsTurn);
-		String currentPhase[] = { _speedDuel.GetPhase(), _speedDuel.GetPlayerLP(), _speedDuel.GetOppLP() };
-		_communicationsHandler->Display(CommunicationsHandler::UI_SpeedDuel, currentPhase);
-		SmartDuelServer::EventName = "Waiting";
+void SmartDuelEventHandler::HandleIncomingCardEvents() {	
+	_speedDuel.UpdateDuelState(
+		SmartDuelServer::DuelistID,
+		SmartDuelServer::CardID,
+		SmartDuelServer::CopyNumber,
+		SmartDuelServer::EventData,
+		SmartDuelServer::Position);
+	
+	SmartDuelServer::EventAction = Enums::EventAction::NoCurrentAction;
+}
+
+void SmartDuelEventHandler::HandleIncomingDuelistEvents() {	
+	bool isOpponentsTurn = SmartDuelServer::DuelistID != SocketID;
+	switch (SmartDuelServer::EventAction) {
+		case Enums::EventAction::Coin:
+			DisplayMessageOnScreen(PeripheralsHandler::UI_SpeedDuel, "Flip: " + SmartDuelServer::EventData);
+			_uiEventActive = true;
+			_eventStartTime = millis();
+			break;
+		case Enums::EventAction::Dice:
+			DisplayMessageOnScreen(PeripheralsHandler::UI_SpeedDuel, "Roll: " + SmartDuelServer::EventData);
+			_uiEventActive = true;
+			_eventStartTime = millis();
+			break;
+		case Enums::EventAction::EndTurn:
+			_speedDuel.UpdatePhase("drawPhase", !isOpponentsTurn);
+			DisplayMessageOnScreen(PeripheralsHandler::UI_SpeedDuel, _speedDuel.GetPhase());
+			break;
+		case Enums::EventAction::LifePoints:
+			_speedDuel.UpdateLifepoints(SmartDuelServer::EventData, SmartDuelServer::DuelistID);
+			DisplayMessageOnScreen(PeripheralsHandler::UI_SpeedDuel, _speedDuel.GetPhase());
+			break;
+		case Enums::EventAction::Phase:
+			_speedDuel.UpdatePhase(SmartDuelServer::EventData, isOpponentsTurn);
+			DisplayMessageOnScreen(PeripheralsHandler::UI_SpeedDuel, _speedDuel.GetPhase());
+			break;
 	}
-	else if (SmartDuelServer::EventName == "duelist:update-lifepoints") {
-		_speedDuel.UpdateLifepoints(SmartDuelServer::EventData, SmartDuelServer::DuelistID);
-		
-		String data[] = { _speedDuel.GetPhase(), _speedDuel.GetPlayerLP(), _speedDuel.GetOppLP() };
-		_communicationsHandler->Display(CommunicationsHandler::UI_SpeedDuel, data);
-		SmartDuelServer::EventName = "Waiting";
-	}
-	else if (SmartDuelServer::EventName == "duelist:flip-coin") {
-		String text[] = { "Flip: " + SmartDuelServer::EventData, _speedDuel.GetPlayerLP(), _speedDuel.GetOppLP() };
-		_communicationsHandler->Display(CommunicationsHandler::UI_SpeedDuel, text);
-		_uiEventActive = true;
-		_eventStartTime = millis();
-		SmartDuelServer::EventName = "Waiting";
-	}
-	else if (SmartDuelServer::EventName == "duelist:roll-dice") {
-		String text[] = { "Roll: " + SmartDuelServer::EventData, _speedDuel.GetPlayerLP(), _speedDuel.GetOppLP() };
-		_communicationsHandler->Display(CommunicationsHandler::UI_SpeedDuel, text);
-		_uiEventActive = true;
-		_eventStartTime = millis();
-		SmartDuelServer::EventName = "Waiting";
-	}
+
+	SmartDuelServer::EventAction = Enums::EventAction::NoCurrentAction;
 }
 
 void SmartDuelEventHandler::HandleOutgoingEvent(String eventData) {
@@ -320,20 +324,25 @@ void SmartDuelEventHandler::HandleOutgoingEvent(String eventData) {
 	_speedDuel.UpdateDuelState(output);
 }
 
+void SmartDuelEventHandler::DisplayMessageOnScreen(PeripheralsHandler::UI_Type uiType, String message) {
+	String data[3] = { message, _speedDuel.GetPlayerLP(), _speedDuel.GetOppLP() };
+	_peripheralsHandler->Display(uiType, data);
+}
+
 String SmartDuelEventHandler::GetTargetZoneName(int multiButtonEvent, int zoneNumber) {
 	if (multiButtonEvent == Enums::ButtonClicks::Multi04) return "hand";
 	
 	String zoneName = "";
 	switch (zoneNumber) {
-	case 0:
-		zoneName = "mainMonster3";
-		break;
-	case 1:
-		zoneName = "mainMonster2";
-		break;
-	case 2:
-		zoneName = "mainMonster1";
-		break;
+		case 0:
+			zoneName = "mainMonster3";
+			break;
+		case 1:
+			zoneName = "mainMonster2";
+			break;
+		case 2:
+			zoneName = "mainMonster1";
+			break;
 	}
 
 	return zoneName;

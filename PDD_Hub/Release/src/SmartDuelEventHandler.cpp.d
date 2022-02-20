@@ -132,7 +132,7 @@ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Sma
  C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6/tools/sdk/include/spi_flash/esp_partition.h \
  C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6/tools/sdk/include/spi_flash/esp_spi_flash.h \
  C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6\variants\node32s/pins_arduino.h \
- C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\CommunicationsHandler.h \
+ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\PeripheralsHandler.h \
  C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6\cores\esp32/arduino.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Core\WifiManager.h \
  C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6\libraries\WiFi\src/Wifi.h \
@@ -237,13 +237,16 @@ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Sma
  C:\Users\Devan\Documents\Arduino\libraries\ESP8266_and_ESP32_OLED_driver_for_SSD1306_displays\src/OLEDDisplayFonts.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Secrets.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Core\Entities\Enums.h \
+ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\StorageHandler.h \
+ C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6\libraries\FS\src/FS.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Core\SmartDuelServer.h \
  C:\Users\Devan\Documents\Arduino\libraries\arduinoWebSockets-master\src/SocketIOclient.h \
  C:\Users\Devan\Documents\Arduino\libraries\arduinoWebSockets-master\src/WebSockets.h \
  C:\Users\Devan\Documents\Arduino\libraries\arduinoWebSockets-master\src/WebSocketsVersion.h \
  C:\Users\Devan\Documents\Arduino\libraries\arduinoWebSockets-master\src/WebSocketsClient.h \
- C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Features\Lobby.h \
- C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Features\DuelRoom.h \
+ C:\Users\Devan\Documents\Arduino\libraries\ArduinoJson\src/ArduinoJson.h \
+ C:\Users\Devan\Documents\Arduino\libraries\ArduinoJson\src/ArduinoJson.hpp \
+ C:\Users\Devan\Documents\Arduino\libraries\ArduinoJson\src/ArduinoJson/Configuration.hpp \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Features\SpeedDuel.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Features\Entities\DuelState.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Features\Entities\Playerstate.h \

@@ -2,7 +2,7 @@
 #define StorageHandler_h
 #include "Arduino.h"
 #include "FS.h"
-#include "CommunicationsHandler.h"
+#include "PeripheralsHandler.h"
 
 class StorageHandler {
 private:
@@ -10,7 +10,7 @@ private:
 	bool _isSDConnected;
 	String _deckName;
 	File _deckYDK;
-	CommunicationsHandler* _communicationsHandler;
+	PeripheralsHandler* _peripheralsHandler;
 	String _deckNames[5];
 
 	int _defaultDeckList[35] = {
@@ -47,7 +47,7 @@ public:
 	int DeckList[36];
 	bool IsDeckSet = false;
 
-	StorageHandler(CommunicationsHandler &communicatiosnHandler);
+	StorageHandler(PeripheralsHandler &communicatiosnHandler);
 
 	void Initialize(bool isSDReaderConnected);
 	

@@ -229,4 +229,5 @@ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Cor
  C:\Users\Devan\Documents\Arduino\libraries\arduinoWebSockets-master\src/WebSocketsClient.h \
  C:\Users\Devan\Documents\Arduino\libraries\ArduinoJson\src/ArduinoJson.h \
  C:\Users\Devan\Documents\Arduino\libraries\ArduinoJson\src/ArduinoJson.hpp \
- C:\Users\Devan\Documents\Arduino\libraries\ArduinoJson\src/ArduinoJson/Configuration.hpp
+ C:\Users\Devan\Documents\Arduino\libraries\ArduinoJson\src/ArduinoJson/Configuration.hpp \
+ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Core\Entities\Enums.h

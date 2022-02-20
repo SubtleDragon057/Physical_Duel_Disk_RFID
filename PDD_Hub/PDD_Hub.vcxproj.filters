@@ -24,12 +24,6 @@
     <ClInclude Include="src\ButtonHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\CommunicationsHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CrownCorp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Secrets.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -54,12 +48,6 @@
     <ClInclude Include="src\Core\Utils\JSONUtility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Features\DuelRoom.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Features\Lobby.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Features\SpeedDuel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -75,12 +63,18 @@
     <ClInclude Include="src\Features\Entities\Zones.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Features\DisplayManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PeripheralsHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Features\Entities\CrownCorp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ButtonHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CommunicationsHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\SmartDuelEventHandler.cpp">
@@ -101,12 +95,6 @@
     <ClCompile Include="src\Core\Utils\JSONUtility.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Features\DuelRoom.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Features\Lobby.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Features\SpeedDuel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -117,6 +105,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Features\Entities\Zones.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Features\DisplayManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PeripheralsHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
