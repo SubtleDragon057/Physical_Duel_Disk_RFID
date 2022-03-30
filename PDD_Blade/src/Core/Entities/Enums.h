@@ -12,14 +12,13 @@ public:
 		SetSpellTrap = 4,
 		ActivateSpellTrap = 5,
 	};
+	enum SingleCardZoneType {
+		MonsterZone,
+		SpellTrapZone
+	};
 	enum CardType {
 		Monster,
 		Spell
-	};
-	enum SensorType {
-		MonsterAttack,
-		MonsterDefence,
-		SpellTrap,
 	};
 	enum SensorReading {
 		Low = 0,
@@ -34,14 +33,14 @@ public:
 		NoCard = 5
 	};
 	enum Communication {
-		Connection = 5,
+		CommunicationFailure = 2,
 		GetEventInfo = 3,
 		EndDuel = 4,
+		Connection = 5,
 		StartDuel = 6,
 		EnterWriteMode = 7,
-		AcknowledgeSuccess = 9,
 		ClearEventData = 8,
-		CommunicationFailure = 2
+		AcknowledgeSuccess = 9
 	};
 };
 

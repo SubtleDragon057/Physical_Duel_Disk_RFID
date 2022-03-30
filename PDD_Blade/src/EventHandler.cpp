@@ -1,19 +1,17 @@
-#include "Arduino.h"
 #include "EventHandler.h"
-#include "Core\Zone.h"
-#include "Core\Entities\Enums.h"
+
+#define DEBUG_EH
 
 EventHandler::EventHandler() 
 {
 }
 
-String EventHandler::GetFormattedEventData(DualCardZone &zone, int sensor)
-{
+String EventHandler::GetFormattedEventData(DualCardZone &zone, Enums::SingleCardZoneType zoneType) {
 	String eventData = "";
-	eventData.concat(SetEventType(zone, sensor));
+	eventData.concat(SetEventType(zone, zoneType));
 
 	// Card Zone
-	if (sensor != Enums::SpellTrap) {
+	if (zoneType != Enums::SpellTrapZone) {
 		eventData.concat(zone.ZoneNumber);
 	}
 	else {
@@ -21,13 +19,13 @@ String EventHandler::GetFormattedEventData(DualCardZone &zone, int sensor)
 	}
 
 	// Card ID and Position
-	if (sensor != Enums::SpellTrap) {
-		eventData.concat(zone.MonsterSerial);
-		eventData.concat(zone.MonsterPosition);
+	if (zoneType != Enums::SpellTrapZone) {
+		eventData.concat(zone.monsterZoneCard.serialNum);
+		eventData.concat(zone.monsterZoneCard.cardPosition);
 	}
 	else {
-		eventData.concat(zone.SpellSerial);
-		eventData.concat(zone.SpellPosition);
+		eventData.concat(zone.spellZoneCard.serialNum);
+		eventData.concat(zone.spellZoneCard.cardPosition);
 	}
 
 	// Handle Error
@@ -45,13 +43,13 @@ String EventHandler::GetFormattedEventData(DualCardZone &zone, int sensor)
 }
 
 Enums::Events EventHandler::SetEventType(DualCardZone zone, int sensor) {
-	if (sensor == Enums::SpellTrap) {
-		return zone.SpellPosition == Enums::NoCard 
+	if (sensor == Enums::SpellTrapZone) {
+		return zone.spellZoneCard.cardPosition == Enums::NoCard 
 			? Enums::Events::Remove 
 			: Enums::Events::SetSpellTrap;
 	}
 
-	return zone.MonsterPosition == Enums::NoCard
+	return zone.monsterZoneCard.cardPosition == Enums::NoCard
 		? Enums::Events::Remove
 		: Enums::Events::Summon;
 }

@@ -3,10 +3,9 @@
 #include "Wire.h"
 #include "Core\Entities\Enums.h"
 
-//#define DEBUG_CH
+#define DEBUG_CH
 
-CommunicationsHandler::CommunicationsHandler()
-{
+CommunicationsHandler::CommunicationsHandler() {
 	pinMode(_espInterrupt, OUTPUT);
 	digitalWrite(_espInterrupt, HIGH);
 }
@@ -43,16 +42,21 @@ void CommunicationsHandler::HandleRecieve() {
 #endif // DEBUG_CH
 			break;
 		case Enums::Communication::ClearEventData:
+			SendEventSuccess = true;
 			_newEventData = "";
 #ifdef DEBUG_CH
 			Serial.println("Event Recieved - Clearing Data");
 #endif // DEBUG_CH
 			break;
 		case Enums::Communication::CommunicationFailure:
-			_newEventData = "";
 			// Handle Failure
 #ifdef DEBUG_CH
 			Serial.println("Communication Failure!");
+			Serial.print("Failed Data: ");
+			for (byte i = 0; i < 13; i++) {
+				Serial.print(_newEventData[i]);
+			}
+			Serial.println();
 #endif // DEBUG_CH
 			break;
 	}
@@ -64,7 +68,7 @@ void CommunicationsHandler::HandleRequest() {
 #endif // DEBUG_CH
 	
 	if (IsInDuel) {
-		Wire.write(_newEventData);
+		Wire.write(GetEventData());
 		return;
 	}
 	
@@ -77,6 +81,10 @@ void CommunicationsHandler::HandleRequest() {
 		case Enums::Communication::Connection:
 			Wire.write("057");
 			_recievedData = 0;
+
+			digitalWrite(_espInterrupt, LOW);
+			delay(10);
+			digitalWrite(_espInterrupt, HIGH);
 			break;
 		case Enums::Communication::StartDuel:
 			Wire.write("Dra");
@@ -91,14 +99,38 @@ void CommunicationsHandler::HandleRequest() {
 	}
 }
 
-void CommunicationsHandler::HandleNewEvent(String eventData) {
+void CommunicationsHandler::HandleNewEvent(uint8_t eventType, EventData eventData) {
+	String eventString = "";
+
+	switch (eventType) {
+		case 1:
+			eventString = eventData.monsterZoneEvent;
+			break;
+		case 2:
+			eventString = eventData.spellZoneEvent;
+			break;
+		default:
+			Serial.println(F("[ERROR] Invalid Event Type!"));
+			return;
+	}
+	
 	char buffer[13];
-	eventData.toCharArray(buffer, 13);
+	eventString.toCharArray(buffer, 13);
 	_newEventData = buffer;
+
+#ifdef DEBUG_CH
+	Serial.print("Handling Data: ");
+	for (byte i = 0; i < 13; i++) {
+		Serial.print(_newEventData[i]);
+	}
+	Serial.println();
+#endif // DEBUG_CH
 
 	digitalWrite(_espInterrupt, LOW);
 	delay(10);
 	digitalWrite(_espInterrupt, HIGH);
+
+	SendEventSuccess = false;
 }
 
 void CommunicationsHandler::GetNextCard() {

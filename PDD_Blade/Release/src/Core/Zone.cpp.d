@@ -16,4 +16,6 @@ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Blade\nano_atmega328old\Release\s
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Blade\nano_atmega328old\Release\src\Core\Entities\Enums.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Blade\nano_atmega328old\Release\src\Core\Entities\Components\ProximitySensor.h \
  E:\Duel_Disk_Project\GitHub_Desktop\Physical_Duel_Disk_Arduino_Code\PDD_Blade\Libraries\PN532\0.0.0\PN532/PN532.h \
- E:\Duel_Disk_Project\GitHub_Desktop\Physical_Duel_Disk_Arduino_Code\PDD_Blade\Libraries\PN532\0.0.0\PN532/PN532Interface.h
+ E:\Duel_Disk_Project\GitHub_Desktop\Physical_Duel_Disk_Arduino_Code\PDD_Blade\Libraries\PN532\0.0.0\PN532/PN532Interface.h \
+ E:\Duel_Disk_Project\GitHub_Desktop\Physical_Duel_Disk_Arduino_Code\PDD_Blade\Libraries\Wire\1.0\Wire\src/Wire.h \
+ E:\Programs\Arduino\hardware\arduino\avr\cores\arduino/Stream.h

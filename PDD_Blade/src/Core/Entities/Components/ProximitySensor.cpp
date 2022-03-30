@@ -1,101 +1,78 @@
 #include "ProximitySensor.h"
 
-ProximitySensor::ProximitySensor() 
-{
-}
-ProximitySensor::ProximitySensor(byte address[], byte sensorType) {	
-	_address = address;
+//#define DEBUG_PS
+
+ProximitySensor::ProximitySensor(SensorType sensorType) {
 	_sensorType = sensorType;
-	CurrentValue = 1; // Enums::HIGH
 }
 
-bool ProximitySensor::isNewCardPresent() {
+void ProximitySensor::UpdateAddress(byte address[]) {
+	for (byte i = 0; i < 4; i++) {
+		_address[i] = address[i];
+	}
+}
+
+bool ProximitySensor::isCardPresent() {
 	SetMultiplexerAddress();
-	int read;
+	CurrentValue = GetCurrentPosition();
 
-	switch (_sensorType) {
-		case 1 :
-			read = GetDigitalReading();
-			break;
-		case 2:
-			read = GetDefenceSensorReading();
-			break;
-		case 3:
-			read = GetSpellSensorReading();
-			break;
-	}
-
-	if (read == CurrentValue) return false;
-
-	CurrentValue = read;
-	return true;
+	return CurrentValue != NoCard;
 }
 
-byte ProximitySensor::GetDigitalReading() {
-	int read = digitalRead(A0);
+byte ProximitySensor::GetCurrentPosition() {
+	float read = GetReading();
 
-#ifdef DEBUG_AIR
-	Serial.print(": ");
-	Serial.println(read);
-#endif // DEBUG_AIR
+	if (read < 0) { read = 0; }
+	else if (read > 1000) { read = 1000; }
 
-	return read;
+	if (read < 150) {
+		return FaceDown;
+	}
+	else if (read > 500) {
+		return NoCard;
+	}
+
+	return FaceUp;
 }
 
-byte ProximitySensor::GetDefenceSensorReading() {
-	int read = 0;
+float ProximitySensor::GetReading() {
+	float averageValue = 0;
+	uint16_t maxSensorValue = 0;
+	uint16_t minSensorValue = 1000;
+	
+	for (uint8_t i = 0; i < 12; i++) {
+		uint16_t sensorValue = 0;
 
-	for (byte i = 10; i > 0; i--) {
-		int val = analogRead(A0);
-		read += val;
-	}
-	read = (read / 10);
+		for (uint8_t j = 0; j < 4; j++) {
+			sensorValue += analogRead(A0);
+		}
+		sensorValue = sensorValue / 4;
 
-#ifdef DEBUG_AIR
-	Serial.print(": ");
-	Serial.println(read);
-#endif // DEBUG_AIR	
+		if (sensorValue > maxSensorValue) {
+			maxSensorValue = sensorValue;
+		}
 
-	if (read < 200) {
-		return 2; // Enums::Medium
-	}
-	else if (read > 600) {
-		return 1; // Enums::HIGH
-	}
+		if (sensorValue < minSensorValue) {
+			minSensorValue = sensorValue;
+		}
 
-	return 0; // Enums::LOW
-}
-
-byte ProximitySensor::GetSpellSensorReading() {
-	int read = 0;
-
-	for (byte i = 10; i > 0; i--) {
-		int val = analogRead(A0);
-		read += val;
-	}
-	read = (read / 10);
-
-#ifdef DEBUG_AIR
-	Serial.print(": ");
-	Serial.println(read);
-#endif // DEBUG_AIR
-
-	if (read < 130) {
-		return 0; // Enums::LOW
-	}
-	else if (read > 800) {
-		return 1; // Enums::HIGH
+		averageValue += sensorValue;
 	}
 
-	return 2; // Enums::Medium
+	uint16_t outlyingResults = maxSensorValue + minSensorValue;
+	averageValue = (averageValue - outlyingResults) / 10;
+
+#ifdef DEBUG_PS
+	Serial.print("Average Value: "); Serial.println(averageValue);
+	Serial.print("Highest Value: "); Serial.println(maxSensorValue);
+	Serial.print("Lowest Value: "); Serial.println(minSensorValue);
+#endif
+
+	return averageValue;
 }
 
 void ProximitySensor::SetMultiplexerAddress() {
 	for (byte i = 0; i < 4; i++) {
 		digitalWrite(2 + i, _address[i]);
-		
-#ifdef DEBUG_AIR
-		Serial.print(_address[i]);
-#endif // DEBUG_AIR
 	}
 }

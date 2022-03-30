@@ -5,8 +5,6 @@
 #include "Entities\Components\ProximitySensor.h"
 #include "PN532.h"
 
-//#define DEBUG_DCZ
-
 class DualCardZone {
 private:
 	PN532 _reader;
@@ -14,28 +12,37 @@ private:
 	byte _uid[7];
 	byte _uidLength;
 
-	ProximitySensor _sensors[3] = {};
+	const uint8_t _multiplexerAddress = 0x70;
 
-public:
-	int ZoneNumber;
-	bool TrippedSensors[3] = { false, false, false };
+	ProximitySensor _sensors[3] = {
+		ProximitySensor(ProximitySensor::Attack),
+		ProximitySensor(ProximitySensor::Defence),
+		ProximitySensor(ProximitySensor::Spell)
+	};
 
-	String MonsterSerial = "";
-	Enums::CardPosition MonsterPosition = Enums::NoCard;
-
-	String SpellSerial = "";
-	Enums::CardPosition SpellPosition = Enums::NoCard;
-
-	DualCardZone();
-	void Initialize(byte zoneNum, PN532 &reader, byte attackSensorAddress[],
-		byte defenceSensorAddress[], byte spellSensorAddress[]);
+	struct YGOCard {
+		bool isCardPresent = false;
+		bool hasCardPresenceChanged = false;
+		String serialNum = "";
+		Enums::CardPosition cardPosition = Enums::NoCard;
+	};
 
 	Enums::CardPosition ReadCurrentMonsterPosition();
 	Enums::CardPosition ReadCurrentSpellPosition();
-	void UpdateCurrentMonster(String monsterID, Enums::CardPosition position);
-	void UpdateCurrentSpell(String spellID, Enums::CardPosition position);
+	void SelectMultiplexerAddress(uint8_t address);
 
-	void CheckForTrippedSensors();
+public:	
+	byte ZoneNumber;	
+	
+	YGOCard monsterZoneCard;
+	YGOCard spellZoneCard;
+
+	DualCardZone(byte zoneNum);
+	void Initialize(PN532 &reader);
+
+	bool CheckForCardPresenceChanges();
+	void UpdateCurrentMonster();
+	void UpdateCurrentSpell();
 
 	bool ScanForNewCard();
 	bool ReadAvailableCard();

@@ -1,75 +1,118 @@
 #include "Zone.h"
+#include "Wire.h"
 
-DualCardZone::DualCardZone()
-{
+//#define DEBUG_DCZ
+//#define DEBUG_Readers
+
+DualCardZone::DualCardZone(byte zoneNum) {	
+	ZoneNumber = zoneNum;
 }
 
-void DualCardZone::Initialize(byte zoneNum, PN532 &reader, byte attackSensorAddress[],
-	byte defenceSensorAddress[], byte spellSensorAddress[]) {
-	Serial.print(F("[BOOT] Initialize Zone "));	Serial.println(zoneNum);
+void DualCardZone::Initialize(PN532 &reader) {
+	Serial.print(F("[BOOT] Initialize Zone "));	Serial.println(ZoneNumber);
 	
 	_reader = reader;
-	ZoneNumber = zoneNum;
-	_sensors[0] = ProximitySensor(attackSensorAddress, 1);
-	_sensors[1] = ProximitySensor(defenceSensorAddress, 2);
-	_sensors[2] = ProximitySensor(spellSensorAddress, 3);
-}
 
-Enums::CardPosition DualCardZone::ReadCurrentMonsterPosition() {
-	Enums::CardPosition position = Enums::NoCard;
-	int lightValue = _sensors[1].CurrentValue;
+	SelectMultiplexerAddress(ZoneNumber);
 
-	switch (lightValue) {
-		case Enums::Low:
-			position = Enums::FaceDownDefence;
-			break;
-		case Enums::Medium:
-			position = Enums::FaceUpDefence;
-			break;
+	_reader.begin();
+	_reader.performRFTest();
+	_reader.setPassiveActivationRetries(10);
+
+	/*byte attackSensorAddress[4] = { 1,0,1,1 };
+	byte defenceSensorAddress[4] = { 1,1,1,0 };
+	byte spellSensorAddress[4] = { 0,1,0,1 };
+
+	if (ZoneNumber == 1) {
+		attackSensorAddress[0] = 0; attackSensorAddress[1] = 1;
+		attackSensorAddress[2] = 1; attackSensorAddress[3] = 1;
+
+		defenceSensorAddress[0] = 0; defenceSensorAddress[1] = 0;
+		defenceSensorAddress[2] = 0; defenceSensorAddress[3] = 1;
+
+		spellSensorAddress[0] = 1; spellSensorAddress[1] = 1;
+		spellSensorAddress[2] = 0; spellSensorAddress[3] = 1;
 	}
-	
-	if (_sensors[0].CurrentValue == Enums::Low) {
-		position = Enums::FaceUp;
-	}
+	else if (ZoneNumber == 2) {
+		attackSensorAddress[0] = 1; attackSensorAddress[1] = 1;
+		attackSensorAddress[2] = 1; attackSensorAddress[3] = 1;
 
-	return position;
-}
+		defenceSensorAddress[0] = 1; defenceSensorAddress[1] = 0;
+		defenceSensorAddress[2] = 0; defenceSensorAddress[3] = 1;
 
-Enums::CardPosition DualCardZone::ReadCurrentSpellPosition() {
-	Enums::CardPosition position = Enums::NoCard;
-	int lightValue = _sensors[2].CurrentValue;
-
-	switch (lightValue) {
-		case Enums::Low:
-			position = Enums::FaceDown;
-			break;
-		case Enums::Medium:
-			position = Enums::FaceUp;
-			break;
+		spellSensorAddress[0] = 0; spellSensorAddress[1] = 0;
+		spellSensorAddress[2] = 1; spellSensorAddress[3] = 1;
 	}
 
-	return position;
-}
+	_sensors[0].UpdateAddress(attackSensorAddress);
+	_sensors[1].UpdateAddress(defenceSensorAddress);
+	_sensors[2].UpdateAddress(spellSensorAddress);
 
-void DualCardZone::UpdateCurrentMonster(String monsterID, Enums::CardPosition position) {
-	MonsterSerial = monsterID;
-	MonsterPosition = position;
-}
-
-void DualCardZone::UpdateCurrentSpell(String spellID, Enums::CardPosition position) {
-	SpellSerial = spellID;
-	SpellPosition = position;
-}
-
-void DualCardZone::CheckForTrippedSensors() {	
 	for (byte i = 0; i < 3; i++) {
-		if (!_sensors[i].isNewCardPresent()) continue;
-		TrippedSensors[i] = true;
+		_sensors[i].Debug();
+	}*/
 
-#ifdef DEBUG_DCZ
-		Serial.print("Sensor Tripped: "); Serial.println(i);
-#endif // DEBUG
+#ifdef DEBUG_Readers
+	Serial.print(F("[DEBUG] "));
+	uint32_t versiondata = reader.getFirmwareVersion();
+	if (!versiondata) {
+		Serial.print("Didn't find PN53x board on Zone ");
+		Serial.println(ZoneNumber);
 	}
+	Serial.print("Found chip PN5"); Serial.println((versiondata >> 24) & 0xFF, HEX);
+	Serial.print("Firmware ver. "); Serial.print((versiondata >> 16) & 0xFF, DEC);
+	Serial.print('.'); Serial.println((versiondata >> 8) & 0xFF, DEC);
+#endif
+}
+
+bool DualCardZone::CheckForCardPresenceChanges() {
+	monsterZoneCard.isCardPresent = _sensors[ProximitySensor::Attack].isCardPresent();
+	monsterZoneCard.hasCardPresenceChanged =
+		monsterZoneCard.hasCardPresenceChanged != monsterZoneCard.isCardPresent;
+
+	spellZoneCard.isCardPresent = _sensors[ProximitySensor::Spell].isCardPresent();
+	spellZoneCard.hasCardPresenceChanged =
+		spellZoneCard.hasCardPresenceChanged != spellZoneCard.isCardPresent;
+
+	return monsterZoneCard.hasCardPresenceChanged || spellZoneCard.hasCardPresenceChanged;
+}
+
+void DualCardZone::UpdateCurrentMonster() {
+	if (!monsterZoneCard.isCardPresent) {
+		monsterZoneCard.cardPosition = Enums::NoCard;
+		return;
+	}
+
+	SelectMultiplexerAddress(ZoneNumber);
+	
+	bool error = ScanForNewCard();
+	if (error) {
+		//Handle error
+		return;
+	}
+
+	// TODO: Ensure it gets proper NFC tag info
+	monsterZoneCard.serialNum = GetCardSerialNumber();
+	monsterZoneCard.cardPosition = ReadCurrentMonsterPosition();
+}
+
+void DualCardZone::UpdateCurrentSpell() {
+	if (!spellZoneCard.isCardPresent) {
+		spellZoneCard.cardPosition = Enums::NoCard;
+		return;
+	}
+
+	SelectMultiplexerAddress(ZoneNumber);
+
+	bool error = ScanForNewCard();
+	if (error) {
+		//Handle error
+		return;
+	}
+
+	// TODO: Ensure it gets proper NFC tag info
+	monsterZoneCard.serialNum = GetCardSerialNumber();
+	monsterZoneCard.cardPosition = ReadCurrentSpellPosition();
 }
 
 bool DualCardZone::ScanForNewCard() {
@@ -86,6 +129,7 @@ void DualCardZone::StopScanning() {
 	
 }
 
+// TODO: Optimize ie. Remove use of String
 String DualCardZone::GetCardSerialNumber() {	
 	uint8_t readBackBlock[16];
 	uint8_t keya[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
@@ -128,4 +172,43 @@ bool DualCardZone::WriteRFIDTag(String cardID) {
 	status = _reader.mifareclassic_WriteDataBlock(_block, &serial);
 	Serial.print("Write Success: "); Serial.println(status);
 	return status;
+}
+
+Enums::CardPosition DualCardZone::ReadCurrentMonsterPosition() {
+	bool hasDefCard = _sensors[ProximitySensor::Defence].isCardPresent();
+	if (!hasDefCard) {
+		return Enums::FaceUp;
+	}
+
+	switch (_sensors[ProximitySensor::Defence].CurrentValue) {
+	case Enums::Low:
+		return Enums::FaceDownDefence;
+		break;
+	case Enums::Medium:
+		return Enums::FaceUpDefence;
+		break;
+	default:
+		return Enums::NoCard;
+	}
+}
+
+Enums::CardPosition DualCardZone::ReadCurrentSpellPosition() {
+	switch (_sensors[ProximitySensor::Spell].CurrentValue) {
+		case Enums::Low:
+			return Enums::FaceDown;
+			break;
+		case Enums::Medium:
+			return Enums::FaceUp;
+			break;
+		default:
+			return Enums::NoCard;
+	}
+}
+
+void DualCardZone::SelectMultiplexerAddress(uint8_t address) {
+	if (address > 7) return;
+
+	Wire.beginTransmission(_multiplexerAddress);
+	Wire.write(1 << address);
+	Wire.endTransmission();
 }
