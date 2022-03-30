@@ -80,10 +80,11 @@ String PeripheralsHandler::GetNewEventData() {
 
 		if (success) break;
 		eventData = "";
+		delay(10);
 	}
 
 	if (!success) {
-		SendCommand(Enums::Communication::CommunicationFailure, "tle");
+		SendCommand(Enums::Communication::CommunicationFailure, "tle");		
 		return "Failure";
 	}
 

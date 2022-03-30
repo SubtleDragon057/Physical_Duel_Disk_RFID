@@ -151,6 +151,9 @@ String SpeedDuel::GetZoneName(int zone) {
 		case 5:
 			zoneName = "spellTrap3";
 			break;
+		case 7:
+			zoneName = "skill";
+			break;
 	}
 
 	return zoneName;

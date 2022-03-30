@@ -71,6 +71,7 @@ void StorageHandler::GetListOfDecks() {
     _peripheralsHandler->Display(PeripheralsHandler::UI_DeckSelect, text);
 }
 
+// TODO: Handle Skill Cards
 void StorageHandler::ReadYDK(String deckName) {
     _deckYDK = SD.open("/decks/" + deckName);
 

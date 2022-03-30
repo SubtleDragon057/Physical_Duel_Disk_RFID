@@ -4,8 +4,6 @@
 #include "Core\Entities\Button.h"
 #include "Core\Entities\Enums.h"
 
-//#define DEBUG_BH
-
 //==============================================//
 // MULTI-CLICK: One Button, Multiple EventsStatic
 // By Jeff Saltzman Oct. 13, 2009

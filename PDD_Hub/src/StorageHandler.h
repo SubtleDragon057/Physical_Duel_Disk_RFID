@@ -14,40 +14,35 @@ private:
 	String _deckNames[5];
 
 	int _defaultDeckList[35] = {
+		300101004,
 		25652259,
 		25652259,
-		11549357,
+		64788463,
 		90876561,
-		62651957,
-		84636823,
-		65622692,
-		98502113,
-		5818798,
-		11321183,
-		14898066,
 		71413901,
-		64500000,
-		99785935,
-		46986414,
-		76909279,
-		24094653,
-		24094653,
-		4796100,
-		78193831,
 		89631139,
-		46363422,
-		31553716,
-		39256679,
-		91998119,
-		75347539,
-		77207191
+		11321183,
+		45141844,
+		30860696,
+		88472456,
+		34627841,
+		24094653,
+		24094653,
+		32807846,
+		32807846,
+		95281259,
+		14087893,
+		68005187,
+		25005816,
+		73729209,
+		6150044
 		};
 
 public:
 	int DeckList[36];
 	bool IsDeckSet = false;
 
-	StorageHandler(PeripheralsHandler &communicatiosnHandler);
+	StorageHandler(PeripheralsHandler &peripheralsHandler);
 
 	void Initialize(bool isSDReaderConnected);
 	
