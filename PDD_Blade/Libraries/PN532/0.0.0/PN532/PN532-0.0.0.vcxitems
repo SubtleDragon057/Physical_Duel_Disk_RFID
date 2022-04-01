@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding ="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" >
+  <PropertyGroup Label="Globals" >
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{a330ab4a-d4b4-4115-8de2-fe3928f2be01}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)llcp.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)mac_link.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)PN532.cpp" />
+<ClCompile Include="$(MSBuildThisFileDirectory)snep.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)llcp.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)mac_link.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)PN532.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)PN532Interface.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)PN532_debug.h" />
+<ClInclude Include="$(MSBuildThisFileDirectory)snep.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="$(MSBuildThisFileDirectory)library.properties" />
+<Text Include="$(MSBuildThisFileDirectory)license.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)README.md" />
+  </ItemGroup>
+</Project>

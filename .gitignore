@@ -1,14 +1,7 @@
-# Visual Studio cache directory
-.vs/
-__vm/
-\debug
 
-*.vcxproj
-*.vcxproj.filters
-*.vcxproj.user
-*.sln
-
-#Ignore any changes to the secrets so the default isn't changed
-ESP8266_EventSender/Secrets.h
-ESP8266_EventSender/src/Secrets.h
-Arduino_Uno_RFID/CppProperties.json
+**/.vs
+PDD_Hub/.vs/PDD_Hub/v16/Browse.VC.db
+*.db
+PDD_Hub/.vs/PDD_Hub/v16/Browse.VC.db
+PDD_Hub/.vs/PDD_Hub/v16/Browse.VC.db
+PDD_Hub/.vs/PDD_Hub/v16/Browse.VC.db
