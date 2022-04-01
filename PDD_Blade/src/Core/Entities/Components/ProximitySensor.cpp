@@ -15,7 +15,7 @@ bool ProximitySensor::isNewCardPresent() {
 
 	switch (_sensorType) {
 		case 1 :
-			read = GetDigitalReading();
+			read = GetDefenceSensorReading();
 			break;
 		case 2:
 			read = GetDefenceSensorReading();
@@ -56,14 +56,16 @@ byte ProximitySensor::GetDefenceSensorReading() {
 	Serial.println(read);
 #endif // DEBUG_AIR	
 
-	if (read < 200) {
-		return 2; // Enums::Medium
-	}
-	else if (read > 600) {
-		return 1; // Enums::HIGH
-	}
+	return read > 500;
+	
+	//if (read < 200) {
+	//	return 2; // Enums::Medium
+	//}
+	//else if (read > 500) {
+	//	return 1; // Enums::HIGH
+	//}
 
-	return 0; // Enums::LOW
+	//return 0; // Enums::LOW
 }
 
 byte ProximitySensor::GetSpellSensorReading() {
@@ -80,14 +82,16 @@ byte ProximitySensor::GetSpellSensorReading() {
 	Serial.println(read);
 #endif // DEBUG_AIR
 
-	if (read < 130) {
-		return 0; // Enums::LOW
-	}
-	else if (read > 800) {
-		return 1; // Enums::HIGH
-	}
+	return read > 500;
+	
+	//if (read < 130) {
+	//	return 0; // Enums::LOW
+	//}
+	//else if (read > 500) {
+	//	return 1; // Enums::HIGH
+	//}
 
-	return 2; // Enums::Medium
+	//return 2; // Enums::Medium
 }
 
 void ProximitySensor::SetMultiplexerAddress() {

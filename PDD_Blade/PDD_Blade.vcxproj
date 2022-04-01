@@ -118,6 +118,7 @@
     <ClInclude Include="src\Core\Entities\Enums.h">
       <FileType>CppCode</FileType>
     </ClInclude>
+    <ClInclude Include="src\Core\Entities\EventData.h" />
     <ClInclude Include="src\Core\Entities\YgoCard.h">
       <FileType>CppCode</FileType>
     </ClInclude>
@@ -135,6 +136,7 @@
   <ItemGroup>
     <ClCompile Include="src\CommunicationsHandler.cpp" />
     <ClCompile Include="src\Core\Entities\Components\ProximitySensor.cpp" />
+    <ClCompile Include="src\Core\Entities\EventData.cpp" />
     <ClCompile Include="src\Core\Entities\YgoCard.cpp" />
     <ClCompile Include="src\Core\Zone.cpp" />
     <ClCompile Include="src\EventHandler.cpp" />

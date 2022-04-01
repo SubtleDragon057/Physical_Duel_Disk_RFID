@@ -25,4 +25,5 @@ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Blade\nano_atmega328old\Release\P
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Blade\nano_atmega328old\Release\src\Core\Entities\Components\ProximitySensor.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Blade\nano_atmega328old\Release\src\Core\Entities\Enums.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Blade\nano_atmega328old\Release\src\EventHandler.h \
- C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Blade\nano_atmega328old\Release\src\CommunicationsHandler.h
+ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Blade\nano_atmega328old\Release\src\CommunicationsHandler.h \
+ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Blade\nano_atmega328old\Release\src\Core\Entities\EventData.h
