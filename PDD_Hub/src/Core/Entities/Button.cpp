@@ -1,15 +1,8 @@
 #include "Button.h"
 
-Button::Button() 
-{
-}
 Button::Button(String name, byte pin) {
 	_name = name;
 	_pin = pin;
-}
-
-void Button::Initialize() {
-    pinMode(_pin, INPUT);
 
     _currentState = Enums::ButtonState::ReleasedState;
     _previousState = Enums::ButtonState::ReleasedState;

@@ -50,7 +50,7 @@ public:
 	bool IsConnected() { return _server.isConnected; }
 	void Connect(bool useEncryption = false);
 	void ListenToServer();
-	void HandleOutgoingEvent(String eventData);
+	void HandleOutgoingEvent(int cardID, int copyNum, String zoneName, String cardPosition);
 };
 
 #endif

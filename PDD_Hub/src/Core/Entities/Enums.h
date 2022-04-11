@@ -55,6 +55,10 @@ public:
 		Dice,
 		EndTurn
 	};
+	enum SingleCardZoneType {
+		Monster,
+		SpellTrap
+	};
 };
 
 #endif

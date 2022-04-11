@@ -251,6 +251,9 @@ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Sma
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Features\Entities\DuelState.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Features\Entities\Playerstate.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Features\Entities\Zones.h \
+ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Features\Entities\ProximitySensor.h \
+ C:\Users\Devan\Documents\Arduino\libraries\PN532/PN532.h \
+ C:\Users\Devan\Documents\Arduino\libraries\PN532/PN532Interface.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Features\Entities\EventData.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Core\Utils\JSONUtility.h \
  C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Features\Entities\EventData.h

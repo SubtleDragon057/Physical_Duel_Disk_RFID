@@ -4,8 +4,7 @@
 
 //#define DEBUG_SDEH
 
-SmartDuelEventHandler::SmartDuelEventHandler(PeripheralsHandler& peripheralsHandler, StorageHandler& storageHandler)
-{
+SmartDuelEventHandler::SmartDuelEventHandler(PeripheralsHandler& peripheralsHandler, StorageHandler& storageHandler) {
 	_peripheralsHandler = &peripheralsHandler;
 	_storageHandler = &storageHandler;
 }
@@ -252,7 +251,6 @@ void SmartDuelEventHandler::HandleIncomingRoomEvents() {
 		case Enums::EventAction::Close:
 			DuelRoomState = Enums::Lobby;
 			_speedDuel.ClearDuelStates();
-			_peripheralsHandler->EndDuel();
 			_storageHandler->IsDeckSet = false;
 			break;
 		case Enums::EventAction::Start:
@@ -264,7 +262,6 @@ void SmartDuelEventHandler::HandleIncomingRoomEvents() {
 			_uiEventActive = true; // TODO: Puts a 4 second timer in play before showing duel
 			_eventStartTime = millis();
 			_speedDuel.UpdatePhase("drawPhase", isOpponentsTurn);
-			_peripheralsHandler->StartDuelDisk();
 			break;
 	}
 
@@ -312,8 +309,10 @@ void SmartDuelEventHandler::HandleIncomingDuelistEvents() {
 	SmartDuelServer::EventAction = Enums::EventAction::NoCurrentAction;
 }
 
-void SmartDuelEventHandler::HandleOutgoingEvent(String eventData) {
-	String output = _jsonUtility.GetCardEventFromArduino(SocketID, eventData);
+void SmartDuelEventHandler::HandleOutgoingEvent(int cardID, int copyNum, String zoneName, String cardPosition) {
+	String output = cardPosition == ""
+		? _jsonUtility.GetCardEventAsJSON(SocketID, "card:play", cardID, copyNum, "graveyard", "FaceUp")
+		: _jsonUtility.GetCardEventAsJSON(SocketID, "card:play", cardID, copyNum, zoneName, cardPosition);
 
 #ifdef DEBUG_SDEH
 	Serial.println("HandleOutgoingEvent()");

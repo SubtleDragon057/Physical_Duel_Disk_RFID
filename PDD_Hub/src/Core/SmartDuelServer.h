@@ -11,7 +11,6 @@ private:
 	static void socketIOEvent(socketIOmessageType_t type, uint8_t* payload, std::size_t length);
 	static void HandleRecievedEvent(uint8_t* payload);
 	static int GetIntValue(String stringToChange);
-	static int GetCardPosition(String position);
 
 	// Event Scope Functions
 	static void HandleRoomScope(String eventAction, DynamicJsonDocument eventJSON);
@@ -27,9 +26,9 @@ public:
 	static String EventData;
 	static String RoomName;
 	static String DuelistID;
+	static String Position;
 	static int CardID;
 	static int CopyNumber;
-	static int Position;
 	
 	SmartDuelServer();
 

@@ -3,6 +3,7 @@
 #include "Arduino.h"
 #include "Core\Entities\Button.h"
 #include "Core\Entities\Enums.h"
+#include "PeripheralsHandler.h"
 
 //#define DEBUG_BH
 
@@ -16,27 +17,14 @@
 
 class ButtonHandler {
 private:
-#ifdef ESP8266;
-    byte button1Pin = 0;
-    byte button2Pin = 2;
-    byte button3Pin = 14;
-    byte button4Pin = 12;
-    byte button5Pin = 13;
-#endif
-#ifdef ESP32
-    const byte button1Pin = 32;
-    const byte button2Pin = 33;
-    const byte button3Pin = 25;
-    const byte button4Pin = 26;
-    const byte button5Pin = 27;
-#endif
-
+    
+    const byte _buttonPin = A0;
     Button _buttons[5] = {
-        Button("Button1", button1Pin),
-        Button("Button2", button2Pin),
-        Button("Button3", button3Pin),
-        Button("Button4", button4Pin),
-        Button("Button5", button5Pin)
+        Button("Button1", _buttonPin),
+        Button("Button2", _buttonPin),
+        Button("Button3", _buttonPin),
+        Button("Button4", _buttonPin),
+        Button("Button5", _buttonPin)
     };
 
     int _debounce;
@@ -49,6 +37,8 @@ private:
     Enums::ButtonClicks HandleMultiButtonEvent();
     Enums::ButtonClicks HandleButtonRelease(Button button);
 
+    PeripheralsHandler* _peripheralsHandler;
+
     // Debug feature only
     void PrintEvents(int buttonEvents[]);    
 
@@ -56,7 +46,7 @@ public:
     // First 5 Events are single button, the Last is Multi Button
     int ButtonEvents[6];
     
-    ButtonHandler();
+    ButtonHandler(PeripheralsHandler& peripheralsHandler);
 
     void Initialize(int debouceTime = 20, int doubleClickTime = 275, int holdTime = 1000);
     void CheckButtons();

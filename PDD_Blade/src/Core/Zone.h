@@ -14,10 +14,12 @@ private:
 
 	const uint8_t _multiplexerAddress = 0x70;
 
-	ProximitySensor _sensors[3] = {
-		ProximitySensor(ProximitySensor::Attack),
-		ProximitySensor(ProximitySensor::Defence),
-		ProximitySensor(ProximitySensor::Spell)
+	ProximitySensor _attackSensor = ProximitySensor(ProximitySensor::Attack);
+	ProximitySensor _defenceSensor = ProximitySensor(ProximitySensor::Defence);
+	ProximitySensor _spellSensor = ProximitySensor(ProximitySensor::Spell);
+
+	ProximitySensor* _sensors[3] = {
+		&_attackSensor, &_defenceSensor, &_spellSensor
 	};
 
 	struct YGOCard {

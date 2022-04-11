@@ -10,51 +10,32 @@
 #include <Arduino.h>
 #include <SD.h>
 #include <SPI.h>
+#include <PN532.h>
+#include <PN532_I2C.h>
 
 #include "src\ButtonHandler.h"
 #include "src\SmartDuelEventHandler.h"
 #include "src\PeripheralsHandler.h"
 #include "src\StorageHandler.h"
+#include "src\ZoneHandler.h"
 
-ButtonHandler buttonHandler;
 PeripheralsHandler peripheralsHandler;
+ButtonHandler buttonHandler(peripheralsHandler);
 StorageHandler storageHandler(peripheralsHandler);
 SmartDuelEventHandler smartDuelEventHandler(peripheralsHandler, storageHandler);
+ZoneHandler zoneHandler(smartDuelEventHandler, peripheralsHandler);
 
+PN532_I2C pnI2C(Wire);
+PN532 reader(pnI2C);
+
+const byte numZones = 3;
 const byte sdReaderPin = 5;
-const byte intPin = 16;
-volatile bool hasNewEvent = false;
-portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
-void IRAM_ATTR handleIncomingEvent() {
-	Serial.printf("Interrupt Detected!\n");
-	
-	if (!peripheralsHandler.IsBladeConnected) {
-		portENTER_CRITICAL_ISR(&mux);
-		peripheralsHandler.IsBladeConnected = true;
-		portEXIT_CRITICAL_ISR(&mux);
-
-		return;
-	}
-
-	switch (smartDuelEventHandler.DuelRoomState) {
-		case Enums::DuelRoomState::IsInDuel:
-		case Enums::DuelRoomState::WaitingForAttackTarget:
-			portENTER_CRITICAL_ISR(&mux);
-			hasNewEvent = true;
-			portEXIT_CRITICAL_ISR(&mux);
-			break;
-		default:
-			Serial.printf("No State Match: %i\n", smartDuelEventHandler.DuelRoomState);
-			break;
-	}
-}
 
 void setup() {    
 
   Serial.begin(115200);
   Wire.begin(SDA, SCL);
 
-  attachInterrupt(digitalPinToInterrupt(intPin), handleIncomingEvent, FALLING);
   peripheralsHandler.InitializeCommunications();
   
   bool sdReaderCnnected = false;
@@ -65,6 +46,7 @@ void setup() {
   storageHandler.Initialize(sdReaderCnnected);
   buttonHandler.Initialize();
   smartDuelEventHandler.Connect();
+  zoneHandler.Initialize(numZones, reader);
 
   Serial.printf("\n");
 }
@@ -84,16 +66,11 @@ void loop() {
 	buttonHandler.CheckButtons();
 	smartDuelEventHandler.HandleDuelRoomState(buttonHandler.ButtonEvents);
 
-	if (!hasNewEvent) return;
-	portENTER_CRITICAL(&mux);
-	hasNewEvent = false;
-	portEXIT_CRITICAL(&mux);
+	if (smartDuelEventHandler.DuelRoomState == Enums::Lobby ||
+		smartDuelEventHandler.DuelRoomState == Enums::WaitingForOpponent) return;
 
-	String output = peripheralsHandler.GetNewEventData();
-	Serial.printf("Event Info: %s\n", output.c_str());
-	if (output == "" || output == "Failure") {
-		Serial.printf("Event was empty!\n");
-		return;
+	// Cycle through each zone on the Duel Disk to check for any changes
+	for (int i = 0; i < numZones; i++) {
+		zoneHandler.CheckForNewEvents(i);
 	}
-	smartDuelEventHandler.HandleOutgoingEvent(output);
 }

@@ -2,24 +2,12 @@
 #include "Wire.h"
 
 //#define DEBUG_DCZ
-//#define DEBUG_Readers
+#define DEBUG_Readers
 
 DualCardZone::DualCardZone(byte zoneNum) {	
 	ZoneNumber = zoneNum;
-}
 
-void DualCardZone::Initialize(PN532 &reader) {
-	Serial.print(F("[BOOT] Initialize Zone "));	Serial.println(ZoneNumber);
-	
-	_reader = reader;
-
-	SelectMultiplexerAddress(ZoneNumber);
-
-	_reader.begin();
-	_reader.performRFTest();
-	_reader.setPassiveActivationRetries(10);
-
-	/*byte attackSensorAddress[4] = { 1,0,1,1 };
+	byte attackSensorAddress[4] = { 1,0,1,1 };
 	byte defenceSensorAddress[4] = { 1,1,1,0 };
 	byte spellSensorAddress[4] = { 0,1,0,1 };
 
@@ -44,13 +32,21 @@ void DualCardZone::Initialize(PN532 &reader) {
 		spellSensorAddress[2] = 1; spellSensorAddress[3] = 1;
 	}
 
-	_sensors[0].UpdateAddress(attackSensorAddress);
-	_sensors[1].UpdateAddress(defenceSensorAddress);
-	_sensors[2].UpdateAddress(spellSensorAddress);
+	_sensors[0]->UpdateAddress(attackSensorAddress);
+	_sensors[1]->UpdateAddress(defenceSensorAddress);
+	_sensors[2]->UpdateAddress(spellSensorAddress);
+}
 
-	for (byte i = 0; i < 3; i++) {
-		_sensors[i].Debug();
-	}*/
+void DualCardZone::Initialize(PN532 &reader) {
+	Serial.print(F("[BOOT] Initialize Zone "));	Serial.println(ZoneNumber);
+	
+	_reader = reader;
+
+	SelectMultiplexerAddress(ZoneNumber);
+
+	_reader.begin();
+	_reader.performRFTest();
+	_reader.setPassiveActivationRetries(10);
 
 #ifdef DEBUG_Readers
 	Serial.print(F("[DEBUG] "));
@@ -63,14 +59,18 @@ void DualCardZone::Initialize(PN532 &reader) {
 	Serial.print("Firmware ver. "); Serial.print((versiondata >> 16) & 0xFF, DEC);
 	Serial.print('.'); Serial.println((versiondata >> 8) & 0xFF, DEC);
 #endif
+
+	for (byte i = 0; i < 3; i++) {
+		_sensors[i]->Debug();
+	}
 }
 
 bool DualCardZone::CheckForCardPresenceChanges() {
-	monsterZoneCard.isCardPresent = _sensors[ProximitySensor::Attack].isCardPresent();
+	monsterZoneCard.isCardPresent = _sensors[ProximitySensor::Attack]->isCardPresent();
 	monsterZoneCard.hasCardPresenceChanged =
 		monsterZoneCard.hasCardPresenceChanged != monsterZoneCard.isCardPresent;
 
-	spellZoneCard.isCardPresent = _sensors[ProximitySensor::Spell].isCardPresent();
+	spellZoneCard.isCardPresent = _sensors[ProximitySensor::Spell]->isCardPresent();
 	spellZoneCard.hasCardPresenceChanged =
 		spellZoneCard.hasCardPresenceChanged != spellZoneCard.isCardPresent;
 
@@ -175,12 +175,12 @@ bool DualCardZone::WriteRFIDTag(String cardID) {
 }
 
 Enums::CardPosition DualCardZone::ReadCurrentMonsterPosition() {
-	bool hasDefCard = _sensors[ProximitySensor::Defence].isCardPresent();
+	bool hasDefCard = _sensors[ProximitySensor::Defence]->isCardPresent();
 	if (!hasDefCard) {
 		return Enums::FaceUp;
 	}
 
-	switch (_sensors[ProximitySensor::Defence].CurrentValue) {
+	switch (_sensors[ProximitySensor::Defence]->CurrentValue) {
 	case Enums::Low:
 		return Enums::FaceDownDefence;
 		break;
@@ -193,7 +193,7 @@ Enums::CardPosition DualCardZone::ReadCurrentMonsterPosition() {
 }
 
 Enums::CardPosition DualCardZone::ReadCurrentSpellPosition() {
-	switch (_sensors[ProximitySensor::Spell].CurrentValue) {
+	switch (_sensors[ProximitySensor::Spell]->CurrentValue) {
 		case Enums::Low:
 			return Enums::FaceDown;
 			break;

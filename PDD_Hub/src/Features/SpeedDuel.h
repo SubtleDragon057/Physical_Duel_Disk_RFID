@@ -28,7 +28,7 @@ public:
 
 	void UpdateDuelistIDs(String socketID, String duelist1, String duelist2);
 	void UpdateDuelState(String newDuelState);
-	void UpdateDuelState(String duelistID, int cardID, int copyNumber, String zoneName, int position);
+	void UpdateDuelState(String duelistID, int cardID, int copyNumber, String zoneName, String position);
 	void ClearDuelStates();
 	void UpdatePhase(String newPhase, bool isOpponentsTurn);
 	void UpdateLifepoints(String lifepoints, String duelistID);

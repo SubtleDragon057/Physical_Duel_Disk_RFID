@@ -3,8 +3,10 @@
 
 //#define DEBUG_CH
 
-PeripheralsHandler::PeripheralsHandler()
-{
+PeripheralsHandler::PeripheralsHandler() {
+	for (byte i = 0; i < 4; i++) {
+		pinMode(_muxPins[i], OUTPUT);
+	}
 }
 
 void PeripheralsHandler::InitializeCommunications() {
@@ -17,20 +19,10 @@ void PeripheralsHandler::InitializeCommunications() {
 		delay(1000);
 	}
 
-	text[0] = "[SETUP] Sync Blade I2C";
+	text[0] = "[SETUP] Initialize Zones";
 	Display(UI_Init, text);
 	
-	bool isArduinoConnected = false;
-	do {
-		isArduinoConnected = SendCommand(Enums::Communication::Connection, "057");
-		delay(50);
-	} while (!isArduinoConnected);
-
-	text[0] = "[SETUP] Sync Blade Int";
-	Display(UI_Init, text);
-	do {
-		delay(50);
-	} while (!IsBladeConnected);
+	// TODO: PN532 setup status
 
 	delay(1000);
 
@@ -40,97 +32,6 @@ void PeripheralsHandler::InitializeCommunications() {
 
 	text[0] = "[SETUP] Configuring Decks";
 	Display(UI_Init, text);
-}
-
-void PeripheralsHandler::StartDuelDisk() {
-	bool isArduinoConnected = false;
-	do {
-		isArduinoConnected = SendCommand(Enums::Communication::StartDuel, "Dra");
-		delay(50);
-	} while (!isArduinoConnected);
-}
-
-void PeripheralsHandler::EndDuel() {
-	bool isArduinoConnected = false;
-	do {		
-		isArduinoConnected = SendCommand(Enums::Communication::EndDuel, "gon");
-		delay(50);
-	} while (!isArduinoConnected);
-}
-
-String PeripheralsHandler::GetNewEventData() {
-	
-	bool success;
-	String eventData = "";
-	for (byte i = 5; i > 0; i--) {
-		Wire.requestFrom(_arduinoAddress, _newDuelData);
-
-		while (Wire.available()) {
-			char message = Wire.read();
-
-			// If char is not 0-9 an error occurred
-			if (message < 48 || message > 57) {
-				success = false;
-				break;
-			}
-
-			eventData += message;
-			success = true;
-		}
-
-		if (success) break;
-		eventData = "";
-	}
-
-	if (!success) {
-		SendCommand(Enums::Communication::CommunicationFailure, "tle");
-		return "Failure";
-	}
-
-	SendCommand(Enums::Communication::ClearEventData, "tle");
-	return eventData;
-}
-
-void PeripheralsHandler::EnableWriteMode() {
-	String text[] = { "Configuring Deck" };
-	Display(UI_WriteMode, text);
-
-	bool isArduinoConnected = false;
-	do {		
-		isArduinoConnected = SendCommand(Enums::Communication::EnterWriteMode, "Sub");
-		delay(100);
-	} while (!isArduinoConnected);
-}
-
-void PeripheralsHandler::TransmitCard(String cardNumber) {
-	char cardNumAsChar[10];
-	cardNumber.toCharArray(cardNumAsChar, 10);
-	
-	// Send Card
-	Wire.beginTransmission(_arduinoAddress);
-	Wire.write(cardNumAsChar);
-	Wire.endTransmission();
-
-	// TODO: Add check from UI rather than Serial
-	// Wait for card to be written - Temp disabled to clear I2C line
-	while (1) {}
-}
-
-bool PeripheralsHandler::SendCommand(Enums::Communication command, String successCode) {
-	String response = "";
-
-	Wire.beginTransmission(_arduinoAddress);
-	Wire.write(command);
-	Wire.endTransmission();
-
-	Wire.requestFrom(_arduinoAddress, _connectionResponseLength);
-
-	while (Wire.available()) {
-		char message = Wire.read();
-		response += message;
-	}
-
-	return response == successCode;
 }
 
 void PeripheralsHandler::Display(UI_Type type, String incomingMessage[]) {
@@ -150,5 +51,11 @@ void PeripheralsHandler::Display(UI_Type type, String incomingMessage[]) {
 		break;
 	default:
 		_displayManager.HandleBasicUI(incomingMessage);
+	}
+}
+
+void PeripheralsHandler::SelectMultiplexerAddress(uint8_t address) {
+	for (byte i = 0; i < 4; i++) {
+		digitalWrite(_muxPins[i], _muxChannels[address][i]);
 	}
 }

@@ -23,14 +23,11 @@ public:
 	bool DoubleClickEnabled = false;
 	bool EnableMultiClick = false;
 	
-	Button();
 	Button(String name, byte pin);
 
 	String Name() { return _name; }
-	byte Pin() { return _pin; }
 	int ButtonHoldTime() { return _timeSinceReleased - _timeSincePressed; }
 
-    void Initialize();
 	Enums::ButtonClicks CheckButtonForEvent(int debounce, int doubleClickTime);
 	void EnableDoubleClick();
 };

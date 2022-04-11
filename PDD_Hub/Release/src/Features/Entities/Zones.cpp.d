@@ -131,4 +131,10 @@ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Fea
  C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6\cores\esp32/Esp.h \
  C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6/tools/sdk/include/spi_flash/esp_partition.h \
  C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6/tools/sdk/include/spi_flash/esp_spi_flash.h \
- C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6\variants\node32s/pins_arduino.h
+ C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6\variants\node32s/pins_arduino.h \
+ C:\Users\Devan\AppData\Local\Temp\VMBuilds\PDD_Hub\esp32_node32s\Release\src\Features\Entities\ProximitySensor.h \
+ C:\Users\Devan\Documents\Arduino\libraries\PN532/PN532.h \
+ C:\Users\Devan\Documents\Arduino\libraries\PN532/PN532Interface.h \
+ C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6\libraries\Wire\src/Wire.h \
+ C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6\cores\esp32/esp32-hal.h \
+ C:\Users\Devan\AppData\Local\arduino15\packages\esp32\hardware\esp32\1.0.6/tools/sdk/include/freertos/freertos/queue.h

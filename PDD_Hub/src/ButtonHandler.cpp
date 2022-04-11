@@ -8,11 +8,9 @@
 // Nov 20, 2021
 //==============================================//
 
-ButtonHandler::ButtonHandler() 
-{
-    for (byte i = 0; i < 5; i++) {
-        _buttons[i].Initialize();
-    }
+ButtonHandler::ButtonHandler(PeripheralsHandler& peripheralsHandler) {
+    _peripheralsHandler = &peripheralsHandler;
+    pinMode(_buttonPin, INPUT);
 }
 
 void ButtonHandler::Initialize(int debouceTime, int doubleClickTime, int holdTime)
@@ -25,6 +23,7 @@ void ButtonHandler::Initialize(int debouceTime, int doubleClickTime, int holdTim
 void ButtonHandler::CheckButtons() {
     
     for (byte i = 0; i < 5; i++) {
+        _peripheralsHandler->SelectMultiplexerAddress(i);
         ButtonEvents[i] = GetButtonEvent(i);
 	}
 

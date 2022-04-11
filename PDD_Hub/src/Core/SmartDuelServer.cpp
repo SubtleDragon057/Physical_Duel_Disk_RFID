@@ -14,9 +14,9 @@ int SmartDuelServer::EventAction;
 String SmartDuelServer::EventData;
 String SmartDuelServer::RoomName;
 String SmartDuelServer::DuelistID;
+String SmartDuelServer::Position;
 int SmartDuelServer::CardID;
 int SmartDuelServer::CopyNumber;
-int SmartDuelServer::Position;
 
 void SmartDuelServer::socketIOEvent(socketIOmessageType_t type, uint8_t* payload, std::size_t length) {
     switch (type) {
@@ -152,7 +152,7 @@ void SmartDuelServer::HandleCardScope(String eventAction, DynamicJsonDocument ev
     DuelistID = duelistID;
     CardID = GetIntValue(cardID);
     CopyNumber = GetIntValue(copyNum);
-    Position = GetCardPosition(position);
+    Position = position;
     EventData = zoneName;
 
 #ifdef DEBUG_Server
@@ -202,12 +202,4 @@ int SmartDuelServer::GetIntValue(String stringToChange) {
     stringToChange.toCharArray(charArray, 9);
 
     return atoi(&charArray[0]);
-}
-
-int SmartDuelServer::GetCardPosition(String position) {
-    if (position == "faceDown") return 2;
-    else if (position == "faceUpDefence") return 3;
-    else if (position == "faceDownDefence") return 4;
-
-    return 1;
 }

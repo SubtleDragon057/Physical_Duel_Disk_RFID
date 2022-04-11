@@ -71,17 +71,6 @@ String JSONUtility::HandleCloseRoomEvent(String roomName) {
 	return output;
 }
 
-String JSONUtility::GetCardEventFromArduino(String socketID, String data)
-{
-	String eventName = data.substring(0, 1); // Event #
-	String zoneName = GetZoneName(data.substring(1, 2), eventName); // Zone Name
-	int cardID = GetCardID(data.substring(3, 11)); // Serial #
-	int copyNumber = data.substring(2, 3).toInt(); // Copy Number
-	String cardPosition = GetCardPosition(data.substring(11, 12)); // Position
-
-	return GetCardEventAsJSON(socketID, "card:play", cardID, copyNumber, zoneName, cardPosition);
-}
-
 String JSONUtility::GetCardEventAsJSON(String socketID, String eventName, int cardID, int copyNumber, 
 	String zoneName, String cardPosition) {
 	
@@ -151,66 +140,4 @@ String JSONUtility::GetPhaseEventAsJSON(String socketId, String eventName, Strin
 	serializeJson(doc, output);
 
 	return output;
-}
-
-String JSONUtility::GetZoneName(String zone, String eventType) {
-	if (eventType == "2") {
-		return "graveyard";
-	}
-	
-	String zoneName;
-	int zoneNumber = zone.toInt();
-
-	switch (zoneNumber) {
-	case 0:
-		zoneName = "mainMonster1";
-		break;
-	case 1:
-		zoneName = "mainMonster2";
-		break;
-	case 2:
-		zoneName = "mainMonster3";
-		break;
-	case 3:
-		zoneName = "spellTrap1";
-		break;
-	case 4:
-		zoneName = "spellTrap2";
-		break;
-	case 5:
-		zoneName = "spellTrap3";
-		break;
-	}
-
-	return zoneName;
-}
-
-String JSONUtility::GetCardPosition(String positionNumber) {
-	String cardPosition;
-	int positionNum = positionNumber.toInt();
-
-	switch (positionNum)
-	{
-		case 2:
-			cardPosition = "faceDown";
-			break;
-		case 3:
-			cardPosition = "faceUpDefence";
-			break;
-		case 4:
-			cardPosition = "faceDownDefence";
-			break;
-		default:
-			cardPosition = "faceUp";
-			break;
-	}
-
-	return cardPosition;
-}
-
-int JSONUtility::GetCardID(String cardID) {
-	char charArray[9];
-	cardID.toCharArray(charArray, 9);
-
-	return atoi(&charArray[0]);
 }

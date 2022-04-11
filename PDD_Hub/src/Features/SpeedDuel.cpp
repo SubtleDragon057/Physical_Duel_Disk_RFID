@@ -7,15 +7,15 @@ SpeedDuel::SpeedDuel()
 EventData SpeedDuel::HandleActivateSpell(String socketID, int zoneNumber) {
 	int spellID = _duelState.GetCardID(socketID, zoneNumber, false);
 	int copyNum = _duelState.GetCopyNumber(socketID, zoneNumber, false);
-	int position = _duelState.GetCardPosition(socketID, zoneNumber, false);
+	String position = _duelState.GetCardPosition(socketID, zoneNumber, false);
 	if (spellID == 0) {
 		Serial.printf("No valid Spell on Zone: %i\n", zoneNumber);
 		return EventData();
 	}
 
-	if (position == Position::FaceDown) {
+	if (position == "faceDown") {
 		String zone = GetZoneName(zoneNumber + 3);
-		_duelState.UpdateDuelState(socketID, spellID, copyNum, zone, 1);
+		_duelState.UpdateDuelState(socketID, spellID, copyNum, zone, "faceUp");
 		return EventData("card:play", spellID, copyNum, zone, "faceUp");
 	}
 
@@ -68,7 +68,7 @@ void SpeedDuel::UpdateDuelState(String newDuelState)
 {
 	_duelState.UpdateDuelState(newDuelState);
 }
-void SpeedDuel::UpdateDuelState(String duelistID, int cardID, int copyNumber, String zoneName, int position)
+void SpeedDuel::UpdateDuelState(String duelistID, int cardID, int copyNumber, String zoneName, String position)
 {
 	_duelState.UpdateDuelState(duelistID, cardID, copyNumber, zoneName, position);
 }

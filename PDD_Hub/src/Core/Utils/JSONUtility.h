@@ -3,11 +3,6 @@
 #include "Arduino.h"
 
 class JSONUtility {
-private:	
-	String GetZoneName(String zone, String eventType);
-	String GetCardPosition(String positionNumber);
-	int GetCardID(String cardID);
-
 public:
 	JSONUtility();
 
@@ -15,7 +10,6 @@ public:
 	String HandleJoinRoomEvent(int deckList[]);
 	String HandleCloseRoomEvent(String roomName);
 
-	String GetCardEventFromArduino(String socketID, String data);
 	String GetCardEventAsJSON(String socketID, String eventName, int cardID, int copyNumber, 
 		String zoneName = "", String cardPosition = "");
 	String GetDuelistEventAsJSON(String socketID, String eventName);
