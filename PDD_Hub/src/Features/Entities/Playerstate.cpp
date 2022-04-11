@@ -7,6 +7,10 @@ PlayerState::PlayerState()
 }
 
 bool PlayerState::IsZoneEmpty(bool isMonsterZone, int zoneNumber) {
+	if (zoneNumber == 4) {
+		return IsZoneEmpty("skill");
+	}
+	
 	if (isMonsterZone) {
 		return _singleZones[zoneNumber].CurrentCard() == 0;
 	}
@@ -24,6 +28,10 @@ bool PlayerState::IsZoneEmpty(String zoneName) {
 }
 
 int PlayerState::GetCardID(bool isMonsterZone, int zoneNumber) {
+	if (zoneNumber == 4) {
+		return GetCardID("skill");
+	}
+	
 	if (isMonsterZone) {
 		return _singleZones[zoneNumber].CurrentCard();
 	}
@@ -41,6 +49,10 @@ int PlayerState::GetCardID(String zoneName) {
 }
 
 int PlayerState::GetCopyNumber(bool isMonsterZone, int zoneNumber) {
+	if (zoneNumber == 4) {
+		return GetCopyNumber("skill");
+	}
+	
 	if (isMonsterZone) {
 		return _singleZones[zoneNumber].CopyNumber();
 	}
@@ -57,12 +69,25 @@ int PlayerState::GetCopyNumber(String zoneName) {
 	return currentCopyNumber;
 }
 
-String PlayerState::GetCardPosition(bool isMonsterZone, int zoneNumber) {
+int PlayerState::GetCardPosition(bool isMonsterZone, int zoneNumber) {
+	if (zoneNumber == 4) {
+		return GetCardPosition("skill");
+	}
+	
 	if (isMonsterZone) {
 		return _singleZones[zoneNumber].Position();
 	}
 
 	return _singleZones[zoneNumber + 3].Position();
+}
+int PlayerState::GetCardPosition(String zoneName) {
+	int currentPosition = 0;
+	for (byte i = 0; i < 8; i++) {
+		if (_singleZones[i].Name != zoneName) continue;
+		currentPosition = _singleZones[i].Position();
+	}
+
+	return currentPosition;
 }
 
 void PlayerState::UpdateDuelistID(String duelistID, bool isOpponent)

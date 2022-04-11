@@ -65,5 +65,8 @@
     <ClCompile Include="src\Core\Entities\Components\ProximitySensor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Core\Entities\EventData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

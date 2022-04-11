@@ -10,11 +10,11 @@ CommunicationsHandler::CommunicationsHandler() {
 	digitalWrite(_espInterrupt, HIGH);
 }
 
-void CommunicationsHandler::HandleRecieve() {	
+void CommunicationsHandler::HandleRecieve() {
 #ifdef DEBUG_CH
 	Serial.println("Handle Receive");
 #endif // DEBUG_CH
-	
+
 	if (EnableWriteMode) {
 		IncomingCardID = "";
 		while (Wire.available()) {
@@ -29,23 +29,23 @@ void CommunicationsHandler::HandleRecieve() {
 
 		return;
 	}
-	
+
 	while (Wire.available()) {
 		_recievedData = Wire.read();
 	}
 
 	switch (_recievedData) {
-		case Enums::Communication::EndDuel:
-			IsInDuel = false;
+	case Enums::Communication::EndDuel:
+		IsInDuel = false;
 #ifdef DEBUG_CH
-			Serial.println("The Duel Has Ended!");
+		Serial.println("The Duel Has Ended!");
 #endif // DEBUG_CH
 			break;
 		case Enums::Communication::ClearEventData:
 			SendEventSuccess = true;
 			_newEventData = "";
 #ifdef DEBUG_CH
-			Serial.println("Event Recieved - Clearing Data");
+		Serial.println("Event Recieved Successfully!");
 #endif // DEBUG_CH
 			break;
 		case Enums::Communication::CommunicationFailure:
@@ -58,20 +58,20 @@ void CommunicationsHandler::HandleRecieve() {
 			}
 			Serial.println();
 #endif // DEBUG_CH
-			break;
+		break;
 	}
 }
 
-void CommunicationsHandler::HandleRequest() {		
+void CommunicationsHandler::HandleRequest() {
 #ifdef DEBUG_CH
 	Serial.println("Handle Request");
 #endif // DEBUG_CH
-	
+
 	if (IsInDuel) {
 		Wire.write(GetEventData());
 		return;
 	}
-	
+
 	switch (_recievedData) {
 		case Enums::Communication::EnterWriteMode:
 			Wire.write("Sub");

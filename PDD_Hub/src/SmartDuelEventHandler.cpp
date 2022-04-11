@@ -191,7 +191,7 @@ void SmartDuelEventHandler::Connect(bool useEncryption) {
 			"[SETUP] Duel Online?  " + String(t));
 		delay(1000);
 	}
-
+	
 	switch (digitalRead(33)) {
 		case LOW:
 			DisplayMessageOnScreen(PeripheralsHandler::UI_Init, "[SETUP] Locating CC Servers");
@@ -258,6 +258,7 @@ void SmartDuelEventHandler::HandleIncomingRoomEvents() {
 				SocketID,
 				SmartDuelServer::DuelistID,
 				SmartDuelServer::EventData);
+			_speedDuel.UpdateDuelState(SocketID, _storageHandler->DeckList[0], 1, "skill", 2);
 			DuelRoomState = Enums::IsInDuel;
 			_uiEventActive = true; // TODO: Puts a 4 second timer in play before showing duel
 			_eventStartTime = millis();

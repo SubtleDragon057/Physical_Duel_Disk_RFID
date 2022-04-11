@@ -1,5 +1,7 @@
 #include "ButtonHandler.h"
 
+#define DEBUG_BH
+
 //==============================================//
 // MULTI-CLICK: One Button, Multiple Events
 // By Jeff Saltzman Oct. 13, 2009

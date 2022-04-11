@@ -5,8 +5,6 @@
 #include "Core\Entities\Enums.h"
 #include "PeripheralsHandler.h"
 
-//#define DEBUG_BH
-
 //==============================================//
 // MULTI-CLICK: One Button, Multiple EventsStatic
 // By Jeff Saltzman Oct. 13, 2009

@@ -22,14 +22,14 @@ public:
 		Multi04
 	};
 	enum Communication {
-		Connection = 5,
+		CommunicationFailure = 2,
 		GetEventInfo = 3,
 		EndDuel = 4,
+		Connection = 5,
 		StartDuel = 6,
 		EnterWriteMode = 7,
-		AcknowledgeSuccess = 9,
 		ClearEventData = 8,
-		CommunicationFailure = 2
+		AcknowledgeSuccess = 9
 	};
 	enum DuelRoomState {
 		Lobby,

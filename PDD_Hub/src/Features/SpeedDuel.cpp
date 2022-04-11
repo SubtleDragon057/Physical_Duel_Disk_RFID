@@ -26,9 +26,16 @@ EventData SpeedDuel::HandleActivateSpell(String socketID, int zoneNumber) {
 EventData SpeedDuel::HandleActivateMonsterEffect(String socketID, int zoneNumber) {
 	int monsterID = _duelState.GetCardID(socketID, zoneNumber, true);
 	int copyNum = _duelState.GetCopyNumber(socketID, zoneNumber, true);
+	int position = _duelState.GetCardPosition(socketID, zoneNumber, true);
 	if (monsterID == 0) {
 		Serial.printf("No valid Monster on Zone: %i\n", zoneNumber);
 		return EventData();
+	}
+
+	if (position == Position::FaceDownDefence) {
+		String zone = GetZoneName(zoneNumber);
+		_duelState.UpdateDuelState(socketID, monsterID, copyNum, zone, 1);
+		return EventData("card:play", monsterID, copyNum, zone, "faceUpDefence");
 	}
 
 	Serial.printf("Monster %i activated on zone: %i\n", monsterID, zoneNumber);
@@ -150,6 +157,9 @@ String SpeedDuel::GetZoneName(int zone) {
 			break;
 		case 5:
 			zoneName = "spellTrap3";
+			break;
+		case 7:
+			zoneName = "skill";
 			break;
 	}
 

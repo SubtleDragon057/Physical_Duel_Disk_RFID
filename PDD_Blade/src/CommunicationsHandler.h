@@ -9,7 +9,10 @@ class CommunicationsHandler {
 private:
 	byte _recievedData;
 	const byte _espInterrupt = 8;
-	char* _newEventData;
+
+	String _previousEvent;
+
+	EventData _eventData;
 
 	char* GetEventData() { return _newEventData; }
 
@@ -18,7 +21,7 @@ public:
 	bool EnableWriteMode = false;
 	bool SendEventSuccess = false;
 	String IncomingCardID;
-	
+
 	CommunicationsHandler();
 
 	void HandleRecieve();
