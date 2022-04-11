@@ -72,6 +72,12 @@
     <ClInclude Include="src\Features\Entities\CrownCorp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\ZoneHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Features\Entities\ProximitySensor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ButtonHandler.cpp">
@@ -111,6 +117,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\PeripheralsHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ZoneHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Features\Entities\ProximitySensor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
